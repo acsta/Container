@@ -1,0 +1,22 @@
+{
+  "package": "com.application.demo.minigame",
+  "name": "webgl_qg",
+  "icon": "/image/logo.png",
+  "versionName": "1.0.0",
+  "versionCode": "1",
+  "minPlatformVersion": "1104",
+  "deviceOrientation": "portrait",
+  "orientation": "portrait",
+  "allianceVersion": 1300,
+  "type": "game",
+  "isUnity": true,
+  "networkTimeout": {
+    "request": 5000,
+    "connectSocket": 5000,
+    "uploadFile": 5000,
+    "downloadFile": 5000
+  },
+  "config": {
+    "logLevel": "log"
+  }
+}

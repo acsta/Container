@@ -1,0 +1,44 @@
+king_spine.png
+	size: 1024, 1024
+	filter: Linear, Linear
+	pma: true
+	scale: 0.5
+Crown
+	bounds: 0, 712, 458, 266
+	offsets: 1, 0, 460, 267
+crown_back
+	bounds: 219, 13, 359, 187
+	offsets: 1, 0, 361, 187
+	rotate: 90
+eye_left
+	bounds: 612, 294, 89, 88
+eye_off_left
+	bounds: 786, 712, 92, 36
+	offsets: 1, 0, 94, 36
+	rotate: 90
+eye_off_right
+	bounds: 0, 0, 93, 36
+	offsets: 1, 0, 95, 36
+eye_right
+	bounds: 853, 821, 89, 88
+face
+	bounds: 460, 806, 391, 172
+	offsets: 1, 0, 392, 172
+hair
+	bounds: 460, 603, 324, 201
+	offsets: 2, 1, 326, 211
+huzi
+	bounds: 853, 911, 163, 67
+jacket
+	bounds: 0, 374, 382, 336
+ling_back
+	bounds: 0, 38, 217, 334
+	offsets: 59, 0, 280, 335
+neck
+	bounds: 384, 675, 60, 35
+paints
+	bounds: 408, 96, 202, 286
+shirt
+	bounds: 384, 384, 217, 318
+	offsets: 59, 0, 280, 318
+	rotate: 90

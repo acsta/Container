@@ -1,0 +1,28 @@
+cowhorse_spine.png
+	size: 1024, 512
+	filter: Linear, Linear
+	pma: true
+	scale: 0.5
+Tie
+	bounds: 373, 115, 40, 172
+	rotate: 90
+eye_left
+	bounds: 373, 24, 90, 89
+eye_off_left
+	bounds: 988, 400, 94, 36
+	offsets: 0, 0, 95, 37
+	rotate: 90
+eye_off_right
+	bounds: 547, 118, 94, 37
+	offsets: 1, 0, 96, 37
+eye_right
+	bounds: 465, 24, 90, 89
+face
+	bounds: 373, 157, 397, 337
+	offsets: 1, 0, 402, 338
+hair
+	bounds: 772, 144, 350, 214
+	rotate: 90
+shirt
+	bounds: 0, 0, 371, 494
+	offsets: 0, 0, 371, 509

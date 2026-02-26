@@ -1,0 +1,49 @@
+# ===== 先忽略所有文件 =====
+*
+
+# 但不忽略文件夹（递归），否则 git 无法进入子目录
+!*/
+
+# ===== 忽略 Unity 常见无需提交的文件夹 =====
+/Library/
+/Temp/
+/Obj/
+/obj/
+/Build/
+/Build-Release/
+/Builds/
+/Logs/
+/UserSettings/
+/MemoryCaptures/
+/Recordings/
+/.vs/
+/.idea/
+/.gradle/
+/ExportedObj/
+/HybridCLRData/
+/kernelsCache/
+/Bundles/
+/Bin/
+/Release/
+/Debug/
+/FileServer/
+
+# ===== 只放行 Assets/ 下的指定文件类型 =====
+
+# C# 脚本（仅 Assets 目录下）
+!Assets/**/*.cs
+
+# Shader 相关
+!Assets/**/*.shader
+!Assets/**/*.cginc
+!Assets/**/*.hlsl
+
+# 配置/数据文件
+!Assets/**/*.json
+!Assets/**/*.xml
+!Assets/**/*.txt
+!Assets/**/*.csv
+
+# ===== 根目录级别的通用文件 =====
+!.gitignore
+!README.md

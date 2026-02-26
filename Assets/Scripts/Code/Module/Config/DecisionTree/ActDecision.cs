@@ -1,0 +1,46 @@
+﻿using Sirenix.OdinInspector;
+
+namespace TaoTie
+{
+    public enum ActDecision
+    {
+        [LabelText("无,保持当前动作")] NoActDecision = 0,
+        Action_Jump,
+        Action_Punch,
+        Action_Run,
+        Action_Walk,
+        Dance_1,
+        Dance_2,
+        Dance_3,
+        Dance_4,
+        Emoji_Aghast,
+        Emoji_Angry,
+        Emoji_Applaud,
+        Emoji_Be_Bashful,
+        Emoji_Cheer,
+        Emoji_Cry,
+        Emoji_Gas,
+        Emoji_Hi,
+        Emoji_Nice,
+        Emoji_Pester,
+        Emoji_Putter_Around,
+        Emoji_Showmanship,
+        Emoji_SideToSide,
+        Emoji_Sigh,
+        Emoji_Smile1,
+        Emoji_Smile2,
+        Interaction_Item_Put,
+        Interaction_Pickup,
+        Interaction_Shovel,
+        Interaction_Sickle,
+        Reaction_Agonize,
+        Reaction_Knockout,
+        Reaction_Struck,
+        Stand_Idle1,
+        Stand_Idle2,
+        Stand_idle3,
+        Stand_Idle4,
+        Stand_Idle5,
+        Stand_Idle6,
+    }
+}

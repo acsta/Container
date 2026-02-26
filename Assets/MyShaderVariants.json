@@ -1,0 +1,696 @@
+{
+    "ShaderTotalCount": 42,
+    "VariantTotalCount": 62,
+    "ShaderVariantInfos": [
+        {
+            "AssetPath": "Assets/AssetsPackage/Shaders/Add_CenterGlow.shader",
+            "ShaderName": "Hovl/Particles/Add_CenterGlow",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Assets/AssetsPackage/Shaders/AddTrail.shader",
+            "ShaderName": "Hovl/Particles/AddTrail",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Assets/AssetsPackage/Shaders/Blend_CenterGlow.shader",
+            "ShaderName": "Hovl/Particles/Blend_CenterGlow",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Assets/AssetsPackage/Shaders/UI/UIGray.shader",
+            "ShaderName": "UI/UIGray",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Assets/AssetsPackage/Shaders/UI/UIRoundRect.shader",
+            "ShaderName": "UI/UIRoundRect",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Assets/AssetsPackage/Shaders/UI/UITexBlur.shader",
+            "ShaderName": "UI/UITexBlur",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.esotericsoftware.spine.spine-unity/Runtime/spine-unity/Shaders/BlendModes/Spine-Skeleton-PMA-Additive.shader",
+            "ShaderName": "Spine/Blend Modes/Skeleton PMA Additive",
+            "ShaderVariantCount": 2,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                },
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.esotericsoftware.spine.spine-unity/Runtime/spine-unity/Shaders/BlendModes/Spine-Skeleton-PMA-Multiply.shader",
+            "ShaderName": "Spine/Blend Modes/Skeleton PMA Multiply",
+            "ShaderVariantCount": 2,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                },
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.esotericsoftware.spine.spine-unity/Runtime/spine-unity/Shaders/BlendModes/Spine-Skeleton-PMA-Screen.shader",
+            "ShaderName": "Spine/Blend Modes/Skeleton PMA Screen",
+            "ShaderVariantCount": 2,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                },
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.esotericsoftware.spine.spine-unity/Runtime/spine-unity/Shaders/SkeletonGraphic/Spine-SkeletonGraphic.shader",
+            "ShaderName": "Spine/SkeletonGraphic",
+            "ShaderVariantCount": 2,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_CANVAS_GROUP_COMPATIBLE",
+                        "_STRAIGHT_ALPHA_INPUT"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.esotericsoftware.spine.spine-unity/Runtime/spine-unity/Shaders/SkeletonGraphic/Spine-SkeletonGraphic-Additive.shader",
+            "ShaderName": "Spine/SkeletonGraphic Additive",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.esotericsoftware.spine.spine-unity/Runtime/spine-unity/Shaders/SkeletonGraphic/Spine-SkeletonGraphic-Multiply.shader",
+            "ShaderName": "Spine/SkeletonGraphic Multiply",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.esotericsoftware.spine.spine-unity/Runtime/spine-unity/Shaders/SkeletonGraphic/Spine-SkeletonGraphic-Screen.shader",
+            "ShaderName": "Spine/SkeletonGraphic Screen",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Runtime/Materials/PhysicalMaterial3DsMax/PhysicalMaterial3DsMax.shadergraph",
+            "ShaderName": "Shader Graphs/PhysicalMaterial3DsMax",
+            "ShaderVariantCount": 2,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 13,
+                    "Keywords": [
+                        "_MAIN_LIGHT_SHADOWS",
+                        "_REFLECTION_PROBE_BLENDING",
+                        "_REFLECTION_PROBE_BOX_PROJECTION",
+                        "_SHADOWS_SOFT"
+                    ]
+                },
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Particles/ParticlesUnlit.shader",
+            "ShaderName": "Universal Render Pipeline/Particles/Unlit",
+            "ShaderVariantCount": 3,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_COLOROVERLAY_ON",
+                        "_SURFACE_TYPE_TRANSPARENT"
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_EMISSION",
+                        "_SURFACE_TYPE_TRANSPARENT"
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_SURFACE_TYPE_TRANSPARENT"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Public/S_Cloud.shader",
+            "ShaderName": "Elysia/S_Cloud",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Public/S_ForwardLightPixel.shader",
+            "ShaderName": "Elysia/S_ForwardLightPixel",
+            "ShaderVariantCount": 4,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 13,
+                    "Keywords": [
+                        "_ENABLE_FRESNEL_ON",
+                        "_MAIN_LIGHT_SHADOWS",
+                        "_REFLECTION_PROBE_BLENDING",
+                        "_REFLECTION_PROBE_BOX_PROJECTION",
+                        "_SHADOWS_SOFT"
+                    ]
+                },
+                {
+                    "PassType": 13,
+                    "Keywords": [
+                        "_MAIN_LIGHT_SHADOWS",
+                        "_REFLECTION_PROBE_BLENDING",
+                        "_REFLECTION_PROBE_BOX_PROJECTION",
+                        "_SHADOWS_SOFT"
+                    ]
+                },
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        ""
+                    ]
+                },
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        "INSTANCING_ON"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Public/S_FX.shader",
+            "ShaderName": "Universal Render Pipeline/Particles/Unlit",
+            "ShaderVariantCount": 3,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_ALPHAMODULATE_ON",
+                        "_SURFACE_TYPE_TRANSPARENT"
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_COLORCOLOR_ON",
+                        "_SURFACE_TYPE_TRANSPARENT"
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_SURFACE_TYPE_TRANSPARENT"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Public/S_RampUnlit.shader",
+            "ShaderName": "Elysia/S_RampUnlit",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_ENABLE_MATCAP_ON"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Public/S_TurnAround.shader",
+            "ShaderName": "Elysia/S_TurnAround",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Public/S_Water.shader",
+            "ShaderName": "Elysia/S_Water",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_REFLECTION_PROBE_BLENDING",
+                        "_REFLECTION_PROBE_BOX_PROJECTION"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Public/UI/S_Shine.shader",
+            "ShaderName": "Elysia/S_Shine",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_ENABLE_CYCLE_ON",
+                        "_ENABLE_MAINTEX_ON",
+                        "_ENABLE_SHINE_ON"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Public/UI/S_TexturedOutline.shader",
+            "ShaderName": "Elysia/S_TexturedOutline",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Public/UI/S_UIEffect.shader",
+            "ShaderName": "Elysia/S_UIEffect",
+            "ShaderVariantCount": 2,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_ENABLE_HIT_ON"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Utils/CopyDepth.shader",
+            "ShaderName": "Hidden/Universal Render Pipeline/CopyDepth",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Utils/CoreBlit.shader",
+            "ShaderName": "Hidden/Universal/CoreBlit",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Packages/com.unity.render-pipelines.universal/Shaders/Utils/FallbackError.shader",
+            "ShaderName": "Hidden/Universal Render Pipeline/FallbackError",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Hidden/BlitCopy",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Hidden/Internal-GUIRoundedRect",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Hidden/Internal-GUIRoundedRectWithColorPerBorder",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Hidden/Internal-GUITexture",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Hidden/Internal-GUITextureBlit",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Hidden/Internal-GUITextureClip",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Hidden/Internal-GUITextureClipText",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Hidden/Internal-UIRAtlasBlitCopy",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Hidden/UIElements/EditorUIE",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Legacy Shaders/VertexLit",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Mobile/Particles/Additive",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Particles/Standard Unlit",
+            "ShaderVariantCount": 7,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_ALPHABLEND_ON"
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_ALPHABLEND_ON",
+                        "INSTANCING_ON"
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_ALPHABLEND_ON",
+                        "_EMISSION"
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "INSTANCING_ON"
+                    ]
+                },
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        "_ALPHABLEND_ON",
+                        "PROCEDURAL_INSTANCING_ON"
+                    ]
+                },
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        "_ALPHABLEND_ON",
+                        "SHADOWS_DEPTH"
+                    ]
+                },
+                {
+                    "PassType": 8,
+                    "Keywords": [
+                        "_ALPHABLEND_ON",
+                        "INSTANCING_ON",
+                        "SHADOWS_DEPTH"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Skybox/Procedural",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "_SUNDISK_SIMPLE"
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "Sprites/Default",
+            "ShaderVariantCount": 1,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                }
+            ]
+        },
+        {
+            "AssetPath": "Resources/unity_builtin_extra",
+            "ShaderName": "UI/Default",
+            "ShaderVariantCount": 2,
+            "ShaderVariantElements": [
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        ""
+                    ]
+                },
+                {
+                    "PassType": 0,
+                    "Keywords": [
+                        "UNITY_UI_ALPHACLIP"
+                    ]
+                }
+            ]
+        }
+    ]
+}

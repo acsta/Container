@@ -1,0 +1,40 @@
+﻿using TaoTie.LitJson.Extensions;
+using Nino.Core;
+using Sirenix.OdinInspector;
+using UnityEngine;
+
+namespace TaoTie
+{
+    [NinoType(false)]
+    public partial class ConfigEnvironment
+    {
+#if UNITY_EDITOR
+        [LabelText("策划备注")]
+        public string Remarks;
+#endif
+        [NinoMember(1)]
+        public int Id;
+        [NinoMember(2)]
+        public ConfigBlender Enter;
+        [NinoMember(3)]
+        public ConfigBlender Leave;
+
+        [NinoMember(5)]
+        public Color TintColor;
+
+        [NinoMember(9)] [LabelText("光照方向")]
+        public Vector3 LightDir = new Vector3(50, -30, 0);
+        [NinoMember(6)][LabelText("使用直接光")]
+        public bool UseDirLight;
+        [NinoMember(7)][LabelText("光照颜色")][ShowIf(nameof(UseDirLight))]
+        public Color LightColor = Color.white;
+        [NinoMember(8)][LabelText("光照强度")][ShowIf(nameof(UseDirLight))][MinValue(0)]
+        public float LightIntensity = 1;
+        [NinoMember(10)] [LabelText("阴影类型")] [ShowIf(nameof(UseDirLight))]
+        public LightShadows LightShadows = LightShadows.None;
+        [NinoMember(11)] [LabelText("星星移动速度")]
+        public float StarSpeed = 1;
+        [NinoMember(12)] [LabelText("银河移动速度")]
+        public float NebulaSpeed = 1;
+    }
+}

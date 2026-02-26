@@ -1,0 +1,94 @@
+using System;
+using System.Collections.Generic;
+using Nino.Serialization;
+
+namespace TaoTie
+{
+    [NinoSerialize]
+    [Config]
+    public partial class RedDotConfigCategory : ProtoObject, IMerge
+    {
+        public static RedDotConfigCategory Instance;
+		
+        
+        [NinoIgnore]
+        private Dictionary<int, RedDotConfig> dict = new Dictionary<int, RedDotConfig>();
+        
+        [NinoMember(1)]
+        private List<RedDotConfig> list = new List<RedDotConfig>();
+		
+        public RedDotConfigCategory()
+        {
+            Instance = this;
+        }
+        
+        public void Merge(object o)
+        {
+            RedDotConfigCategory s = o as RedDotConfigCategory;
+            this.list.AddRange(s.list);
+        }
+		
+        public override void EndInit()
+        {
+            for(int i =0 ;i<list.Count;i++)
+            {
+                RedDotConfig config = list[i];
+                config.EndInit();
+                this.dict.Add(config.Id, config);
+                config.AfterEndInit();
+            }            
+            this.AfterEndInit();
+        }
+		
+        public RedDotConfig Get(int id)
+        {
+            this.dict.TryGetValue(id, out RedDotConfig item);
+
+            if (item == null)
+            {
+#if !NOT_UNITY
+                Log.Error($"配置找不到，配置表名: {nameof (RedDotConfig)}，配置id: {id}");
+#endif
+            }
+
+            return item;
+        }
+		
+        public bool Contain(int id)
+        {
+            return this.dict.ContainsKey(id);
+        }
+
+        public Dictionary<int, RedDotConfig> GetAll()
+        {
+            return this.dict;
+        }
+        public List<RedDotConfig> GetAllList()
+        {
+            return this.list;
+        }
+        public RedDotConfig GetOne()
+        {
+            if (this.dict == null || this.dict.Count <= 0)
+            {
+                return null;
+            }
+            return this.dict.Values.GetEnumerator().Current;
+        }
+    }
+
+    [NinoSerialize]
+	public partial class RedDotConfig: ProtoObject
+	{
+		/// <summary>Id</summary>
+		[NinoMember(1)]
+		public int Id { get; set; }
+		/// <summary>标记</summary>
+		[NinoMember(2)]
+		public string Target { get; set; }
+		/// <summary>父节点</summary>
+		[NinoMember(3)]
+		public string Parent { get; set; }
+
+	}
+}

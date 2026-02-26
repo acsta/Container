@@ -1,0 +1,131 @@
+using System;
+using UnityEngine;
+
+namespace TaoTie
+{
+    public class UpdateTask
+    {
+        public int AppVer { get; private set; }
+        private UpdateProcess[] list;
+        private Action<long, long> onDownloadSize;
+        public int DownloadingMaxNum = 10;
+        public int FailedTryAgain = 2;
+        public int TimeOut = 8;
+        
+        public async ETTask Init(Action<long,long> downloadSizeCallBack,  params UpdateProcess[] process)
+        {
+            onDownloadSize = downloadSizeCallBack;
+            list = process;
+            var vs = Application.version.Split(".");
+            AppVer = int.Parse(vs[vs.Length-1]);
+            await GameObjectPoolManager.GetInstance().PreLoadGameObjectAsync(UIMsgBoxWin.PrefabPath,1);
+        }
+
+        public async ETTask<UpdateRes> Process()
+        {
+            if (list == null)
+            {
+                Log.Error("UpdateTask 未 Init");
+                return UpdateRes.Fail;
+            }
+
+            for (int i = 0; i < list.Length; i++)
+            {
+                if (list[i] == null) continue;
+                var res = await list[i].Process(this);
+                switch (res)
+                {
+                    case UpdateRes.Fail:
+                        Log.Error("Update Fail "+list[i].GetType().Name);
+                        return UpdateRes.Fail;
+                    case UpdateRes.Over:
+                        break;
+                    case UpdateRes.Quit:
+                        BridgeHelper.Quit();
+                        return UpdateRes.Quit;
+                    case UpdateRes.Restart:
+                        return UpdateRes.Restart;
+                }
+            }
+
+            return UpdateRes.Over;
+        }
+
+
+        public void SetDownloadSize(long totalDownloadBytes, long currentDownloadBytes)
+        {
+            onDownloadSize?.Invoke(totalDownloadBytes,currentDownloadBytes);
+        }
+
+
+        #region MsgBox
+
+        private MsgBoxPara para = new MsgBoxPara();
+
+        /// <summary>
+        /// 提示窗
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="confirmBtnText"></param>
+        /// <param name="cancelBtnText"></param>
+        /// <returns></returns>
+        public async ETTask<bool> ShowMsgBoxView(I18NKey content, I18NKey confirmBtnText, I18NKey cancelBtnText)
+        {
+            ETTask<bool> tcs = ETTask<bool>.Create();
+            void ConfirmBtnFunc(UIBaseView win)
+            { 
+                tcs.SetResult(true);
+                UIManager.Instance.CloseBox(win).Coroutine();
+            }
+            void CancelBtnFunc(UIBaseView win)
+            {
+                tcs.SetResult(false);
+                UIManager.Instance.CloseBox(win).Coroutine();
+            }
+
+            I18NManager.Instance.I18NTryGetText(content, out this.para.Content);
+            I18NManager.Instance.I18NTryGetText(confirmBtnText, out this.para.ConfirmText);
+            I18NManager.Instance.I18NTryGetText(cancelBtnText, out this.para.CancelText);
+            this.para.ConfirmCallback = ConfirmBtnFunc;
+            this.para.CancelCallback = CancelBtnFunc;
+            await UIManager.Instance.OpenBox<UIMsgBoxWin,MsgBoxPara>(UIMsgBoxWin.PrefabPath,
+                this.para,UILayerNames.TipLayer);
+            var result = await tcs;
+            return result;
+        }
+        
+        /// <summary>
+        /// 提示窗
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="confirmBtnText"></param>
+        /// <param name="cancelBtnText"></param>
+        /// <returns></returns>
+        public async ETTask<bool> ShowMsgBoxView(string content, I18NKey confirmBtnText, I18NKey cancelBtnText)
+        {
+            ETTask<bool> tcs = ETTask<bool>.Create();
+            void ConfirmBtnFunc(UIBaseView win)
+            { 
+                tcs.SetResult(true);
+                UIManager.Instance.CloseBox(win).Coroutine();
+            }
+            void CancelBtnFunc(UIBaseView win)
+            {
+                tcs.SetResult(false);
+                UIManager.Instance.CloseBox(win).Coroutine();
+            }
+
+            this.para.Content = content;
+            I18NManager.Instance.I18NTryGetText(confirmBtnText, out this.para.ConfirmText);
+            I18NManager.Instance.I18NTryGetText(cancelBtnText, out this.para.CancelText);
+            this.para.ConfirmCallback = ConfirmBtnFunc;
+            this.para.CancelCallback = CancelBtnFunc;
+            await UIManager.Instance.OpenBox<UIMsgBoxWin,MsgBoxPara>(UIMsgBoxWin.PrefabPath,
+                this.para,UILayerNames.TipLayer);
+            var result = await tcs;
+            return result;
+        }
+
+        #endregion
+    }
+}

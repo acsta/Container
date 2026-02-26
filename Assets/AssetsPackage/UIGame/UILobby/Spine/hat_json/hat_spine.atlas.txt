@@ -1,0 +1,26 @@
+hat_spine.png
+	size: 1024, 512
+	filter: Linear, Linear
+	pma: true
+	scale: 0.5
+coat
+	bounds: 0, 0, 378, 490
+eye_left
+	bounds: 779, 323, 90, 89
+eye_off_left
+	bounds: 779, 287, 90, 34
+	offsets: 0, 0, 91, 35
+eye_off_right
+	bounds: 742, 198, 90, 35
+	offsets: 1, 0, 92, 35
+	rotate: 90
+eye_right
+	bounds: 871, 324, 90, 88
+face
+	bounds: 380, 290, 397, 200
+glass
+	bounds: 779, 414, 239, 76
+hair
+	bounds: 380, 4, 343, 58
+hat
+	bounds: 380, 64, 360, 224

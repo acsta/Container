@@ -1,0 +1,40 @@
+pink_spine.png
+	size: 1024, 1024
+	filter: Linear, Linear
+	pma: true
+body
+	bounds: 0, 77, 421, 620
+	rotate: 90
+eyel
+	bounds: 622, 109, 123, 114
+	offsets: 1, 1, 125, 116
+	rotate: 90
+eyel2
+	bounds: 333, 12, 127, 63
+	offsets: 1, 1, 130, 65
+eyer
+	bounds: 738, 118, 123, 114
+	offsets: 1, 1, 125, 116
+	rotate: 90
+eyer2
+	bounds: 959, 771, 215, 57
+	offsets: 19, 1, 235, 59
+	rotate: 90
+hairb
+	bounds: 0, 0, 331, 75
+	offsets: 1, 1, 333, 77
+hairl
+	bounds: 731, 243, 103, 234
+	offsets: 0, 3, 108, 237
+hairm
+	bounds: 836, 297, 180, 93
+	rotate: 90
+hairr
+	bounds: 622, 234, 107, 243
+	offsets: 21, 3, 128, 246
+hat
+	bounds: 0, 500, 638, 486
+head
+	bounds: 640, 479, 507, 317
+	offsets: 1, 1, 509, 319
+	rotate: 90

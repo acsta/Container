@@ -1,0 +1,42 @@
+<linker>
+    <assembly fullname="Unity.Mono" preserve="all"/>
+    <assembly fullname="Unity.Code" preserve="all"/>
+    <assembly fullname="Unity.ThirdParty" preserve="all"/>
+    <assembly fullname="System" preserve="all" />
+    <assembly fullname="Unity.TextMeshPro">
+        <type fullname="TMPro.TextMeshProUGUI" preserve="all" />
+    </assembly>
+    <assembly fullname="StompyRobot.Options" preserve="all" />
+    <assembly fullname="UnityEngine.PhysicsModule">
+        <type fullname="UnityEngine.MeshCollider" preserve="all" />
+        <type fullname="UnityEngine.BoxCollider" preserve="all" />
+    </assembly>
+    <assembly fullname="UnityEngine.CoreModule">
+        <type fullname="UnityEngine.SkinnedMeshRenderer" preserve="all" />
+        <type fullname="UnityEngine.LightProbeGroup" preserve="all" />
+    </assembly>
+    <assembly fullname="UnityEngine.AnimationModule">
+        <type fullname="UnityEngine.AnimationClip" preserve="all" />
+        <type fullname="UnityEngine.Animator" preserve="all" />
+        <type fullname="UnityEngine.Animation" preserve="all" />
+        <type fullname="UnityEngine.RuntimeAnimatorController" preserve="all" />
+    </assembly>
+    <assembly fullname="Unity.RenderPipelines.Universal.Runtime">
+        <type fullname="UnityEngine.Rendering.Universal.CameraExtensions" preserve="all" />
+        <type fullname="UnityEngine.Rendering.Universal.CameraRenderType" preserve="all" />
+        <type fullname="UnityEngine.Rendering.Universal.UniversalAdditionalCameraData" preserve="all" />
+    </assembly>
+    <assembly fullname="Unity.Timeline"/>
+    <assembly fullname="UnityEngine.AudioModule">
+        <type fullname="UnityEngine.AudioClip" preserve="all" />
+        <type fullname="UnityEngine.AudioSource" preserve="all" />
+    </assembly>
+    <assembly fullname="spine-unity">
+        <type fullname="Spine.Unity.SkeletonDataAsset" preserve="all" />
+        <type fullname="Spine.Unity.SkeletonGraphic" preserve="all" />
+        <type fullname="Spine.Unity.SpineAtlasAsset" preserve="all" />
+        <type fullname="Spine.Unity.MeshGenerator" preserve="nothing" serialized="true" />
+        <type fullname="Spine.Unity.MeshGenerator/Settings" preserve="nothing" serialized="true" />
+        <type fullname="Spine.Unity.BlendModeMaterials" preserve="nothing" serialized="true" />
+    </assembly>
+</linker>

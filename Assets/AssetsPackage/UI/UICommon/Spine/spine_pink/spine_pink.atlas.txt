@@ -1,0 +1,83 @@
+
+spine_pink.png
+size: 1024, 1024
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+body
+  rotate: true
+  xy: 0, 77
+  size: 421, 620
+  orig: 421, 620
+  offset: 0, 0
+  index: -1
+eyel
+  rotate: true
+  xy: 622, 109
+  size: 123, 114
+  orig: 125, 116
+  offset: 1, 1
+  index: -1
+eyel2
+  rotate: false
+  xy: 333, 12
+  size: 127, 63
+  orig: 130, 65
+  offset: 1, 1
+  index: -1
+eyer
+  rotate: true
+  xy: 738, 118
+  size: 123, 114
+  orig: 125, 116
+  offset: 1, 1
+  index: -1
+eyer2
+  rotate: true
+  xy: 959, 771
+  size: 215, 57
+  orig: 235, 59
+  offset: 19, 1
+  index: -1
+hairb
+  rotate: false
+  xy: 0, 0
+  size: 331, 75
+  orig: 333, 77
+  offset: 1, 1
+  index: -1
+hairl
+  rotate: false
+  xy: 731, 243
+  size: 103, 234
+  orig: 108, 237
+  offset: 0, 3
+  index: -1
+hairm
+  rotate: true
+  xy: 836, 297
+  size: 180, 93
+  orig: 180, 93
+  offset: 0, 0
+  index: -1
+hairr
+  rotate: false
+  xy: 622, 234
+  size: 107, 243
+  orig: 128, 246
+  offset: 21, 3
+  index: -1
+hat
+  rotate: false
+  xy: 0, 500
+  size: 638, 486
+  orig: 638, 486
+  offset: 0, 0
+  index: -1
+head
+  rotate: true
+  xy: 640, 479
+  size: 507, 317
+  orig: 509, 319
+  offset: 1, 1
+  index: -1

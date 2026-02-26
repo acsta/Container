@@ -1,0 +1,410 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<linker>
+  <assembly fullname="DaGenGraph">
+    <type fullname="DaGenGraph.DrawIgnoreAttribute" preserve="all" />
+  </assembly>
+  <assembly fullname="Nino.Core">
+    <type fullname="Nino.Core.NinoIgnoreAttribute" preserve="all" />
+    <type fullname="Nino.Core.NinoMemberAttribute" preserve="all" />
+    <type fullname="Nino.Core.NinoTypeAttribute" preserve="all" />
+  </assembly>
+  <assembly fullname="Sirenix.Utilities">
+    <type fullname="Sirenix.Utilities.LinqExtensions" preserve="all" />
+  </assembly>
+  <assembly fullname="System">
+    <type fullname="System.CodeDom.Compiler.GeneratedCodeAttribute" preserve="all" />
+    <type fullname="System.Collections.Generic.LinkedListNode`1" preserve="all" />
+    <type fullname="System.Collections.Generic.LinkedList`1" preserve="all" />
+    <type fullname="System.Collections.Generic.LinkedList`1/Enumerator" preserve="all" />
+    <type fullname="System.Collections.Generic.Queue`1" preserve="all" />
+    <type fullname="System.Collections.Generic.SortedDictionary`2" preserve="all" />
+    <type fullname="System.Collections.Generic.SortedDictionary`2/Enumerator" preserve="all" />
+    <type fullname="System.ComponentModel.EditorBrowsableAttribute" preserve="all" />
+    <type fullname="System.ComponentModel.EditorBrowsableState" preserve="all" />
+  </assembly>
+  <assembly fullname="System.Core">
+    <type fullname="System.Collections.Generic.HashSet`1" preserve="all" />
+    <type fullname="System.Collections.Generic.HashSet`1/Enumerator" preserve="all" />
+    <type fullname="System.Linq.Enumerable" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.Mono">
+    <type fullname="BgAutoFit" preserve="all" />
+    <type fullname="BgRawAutoFit" preserve="all" />
+    <type fullname="CeilingDetector" preserve="all" />
+    <type fullname="ReferenceCollector" preserve="all" />
+    <type fullname="TaoTie.ATimer`1" preserve="all" />
+    <type fullname="TaoTie.AppConfig" preserve="all" />
+    <type fullname="TaoTie.AssemblyManager" preserve="all" />
+    <type fullname="TaoTie.AttributeManager" preserve="all" />
+    <type fullname="TaoTie.BaseAttribute" preserve="all" />
+    <type fullname="TaoTie.CDNConfig" preserve="all" />
+    <type fullname="TaoTie.CheckHitLayerType" preserve="all" />
+    <type fullname="TaoTie.CodeLoader" preserve="all" />
+    <type fullname="TaoTie.ColliderComponent" preserve="all" />
+    <type fullname="TaoTie.CopyGameObject" preserve="all" />
+    <type fullname="TaoTie.Define" preserve="all" />
+    <type fullname="TaoTie.DictionaryComponent`2" preserve="all" />
+    <type fullname="TaoTie.DynDictionary" preserve="all" />
+    <type fullname="TaoTie.DynDictionary/OnVariableChangeDelegate" preserve="all" />
+    <type fullname="TaoTie.EntityComponent" preserve="all" />
+    <type fullname="TaoTie.EntityType" preserve="all" />
+    <type fullname="TaoTie.GameTimerManager" preserve="all" />
+    <type fullname="TaoTie.HashSetComponent`1" preserve="all" />
+    <type fullname="TaoTie.HitBoxType" preserve="all" />
+    <type fullname="TaoTie.HitInfo" preserve="all" />
+    <type fullname="TaoTie.I18NBridge" preserve="all" />
+    <type fullname="TaoTie.I18NText" preserve="all" />
+    <type fullname="TaoTie.IFixedUpdate" preserve="all" />
+    <type fullname="TaoTie.ILog" preserve="all" />
+    <type fullname="TaoTie.IManager" preserve="all" />
+    <type fullname="TaoTie.IManagerDestroy" preserve="all" />
+    <type fullname="TaoTie.IManager`1" preserve="all" />
+    <type fullname="TaoTie.IManager`2" preserve="all" />
+    <type fullname="TaoTie.IManager`3" preserve="all" />
+    <type fullname="TaoTie.IPriorityStackItem" preserve="all" />
+    <type fullname="TaoTie.IUpdate" preserve="all" />
+    <type fullname="TaoTie.IdGenerater" preserve="all" />
+    <type fullname="TaoTie.JsonHelper" preserve="all" />
+    <type fullname="TaoTie.LinkedListComponent`1" preserve="all" />
+    <type fullname="TaoTie.ListComponent`1" preserve="all" />
+    <type fullname="TaoTie.Log" preserve="all" />
+    <type fullname="TaoTie.LruCache`2" preserve="all" />
+    <type fullname="TaoTie.ManagerProvider" preserve="all" />
+    <type fullname="TaoTie.Messager" preserve="all" />
+    <type fullname="TaoTie.Mover" preserve="all" />
+    <type fullname="TaoTie.MultiMapSet`2" preserve="all" />
+    <type fullname="TaoTie.MultiMap`2" preserve="all" />
+    <type fullname="TaoTie.ObjectPool" preserve="all" />
+    <type fullname="TaoTie.PackageConfig" preserve="all" />
+    <type fullname="TaoTie.PackageManager" preserve="all" />
+    <type fullname="TaoTie.PhysicsHelper" preserve="all" />
+    <type fullname="TaoTie.PlatformUtil" preserve="all" />
+    <type fullname="TaoTie.PointerClick" preserve="all" />
+    <type fullname="TaoTie.PointerInputBind" preserve="all" />
+    <type fullname="TaoTie.PriorityStack`1" preserve="all" />
+    <type fullname="TaoTie.Resver" preserve="all" />
+    <type fullname="TaoTie.StateData" preserve="all" />
+    <type fullname="TaoTie.TextMeshFontAssetManager" preserve="all" />
+    <type fullname="TaoTie.TimeHelper" preserve="all" />
+    <type fullname="TaoTie.TimerAttribute" preserve="all" />
+    <type fullname="TaoTie.TimerManager" preserve="all" />
+    <type fullname="TaoTie.TypeInfo`1" preserve="all" />
+    <type fullname="TaoTie.UnOrderDoubleKeyDictionary`3" preserve="all" />
+    <type fullname="TaoTie.UnOrderMultiMapSet`2" preserve="all" />
+    <type fullname="TaoTie.UnOrderMultiMap`2" preserve="all" />
+    <type fullname="TaoTie.UnityLogger" preserve="all" />
+    <type fullname="TaoTie.UpdateConfig" preserve="all" />
+    <type fullname="TaoTie.VectorMath" preserve="all" />
+    <type fullname="TaoTie.WaitHelper" preserve="all" />
+    <type fullname="TaoTie.WhiteConfig" preserve="all" />
+    <type fullname="TextColorCtrl" preserve="all" />
+    <type fullname="YooAsset.RemoteServices" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.RenderPipelines.Universal.Runtime">
+    <type fullname="UnityEngine.Rendering.Universal.CameraExtensions" preserve="all" />
+    <type fullname="UnityEngine.Rendering.Universal.CameraRenderType" preserve="all" />
+    <type fullname="UnityEngine.Rendering.Universal.UniversalAdditionalCameraData" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.TextMeshPro">
+    <type fullname="TMPro.TMP_CharacterInfo" preserve="all" />
+    <type fullname="TMPro.TMP_InputField" preserve="all" />
+    <type fullname="TMPro.TMP_InputField/OnChangeEvent" preserve="all" />
+    <type fullname="TMPro.TMP_InputField/SubmitEvent" preserve="all" />
+    <type fullname="TMPro.TMP_Text" preserve="all" />
+    <type fullname="TMPro.TMP_TextInfo" preserve="all" />
+    <type fullname="TMPro.TMP_Vertex" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.ThirdParty">
+    <type fullname="DotRecast.Core.RcVec3f" preserve="all" />
+    <type fullname="DotRecast.Detour.DtFindPathOption" preserve="all" />
+    <type fullname="DotRecast.Detour.DtNavMesh" preserve="all" />
+    <type fullname="DotRecast.Detour.DtNavMeshQuery" preserve="all" />
+    <type fullname="DotRecast.Detour.DtQueryDefaultFilter" preserve="all" />
+    <type fullname="DotRecast.Detour.DtStatus" preserve="all" />
+    <type fullname="DotRecast.Detour.IDtQueryFilter" preserve="all" />
+    <type fullname="DotRecast.Detour.Io.DtMeshSetReader" preserve="all" />
+    <type fullname="DotRecast.Detour.StraightPathItem" preserve="all" />
+    <type fullname="LitJson.Extensions.JsonIgnore" preserve="all" />
+    <type fullname="LitJson.JsonMapper" preserve="all" />
+    <type fullname="Nino.Serialization.CompressOption" preserve="all" />
+    <type fullname="Nino.Serialization.Deserializer" preserve="all" />
+    <type fullname="Nino.Serialization.NinoIgnoreAttribute" preserve="all" />
+    <type fullname="Nino.Serialization.NinoMemberAttribute" preserve="all" />
+    <type fullname="Nino.Serialization.NinoSerializeAttribute" preserve="all" />
+    <type fullname="Nino.Serialization.Serializer" preserve="all" />
+    <type fullname="SuperScrollView.LoopGridView" preserve="all" />
+    <type fullname="SuperScrollView.LoopGridViewInitParam" preserve="all" />
+    <type fullname="SuperScrollView.LoopGridViewItem" preserve="all" />
+    <type fullname="SuperScrollView.LoopGridViewSettingParam" preserve="all" />
+    <type fullname="SuperScrollView.LoopListView2" preserve="all" />
+    <type fullname="SuperScrollView.LoopListViewInitParam" preserve="all" />
+    <type fullname="SuperScrollView.LoopListViewItem2" preserve="all" />
+    <type fullname="TaoTie.ETAsyncTaskMethodBuilder" preserve="all" />
+    <type fullname="TaoTie.ETAsyncTaskMethodBuilder`1" preserve="all" />
+    <type fullname="TaoTie.ETCancellationToken" preserve="all" />
+    <type fullname="TaoTie.ETTask" preserve="all" />
+    <type fullname="TaoTie.ETTaskCompleted" preserve="all" />
+    <type fullname="TaoTie.ETTaskHelper" preserve="all" />
+    <type fullname="TaoTie.ETTask`1" preserve="all" />
+  </assembly>
+  <assembly fullname="Unity.Timeline">
+    <type fullname="UnityEngine.Timeline.TimelineAsset" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.AnimationModule">
+    <type fullname="UnityEngine.Animator" preserve="all" />
+    <type fullname="UnityEngine.RuntimeAnimatorController" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.AudioModule">
+    <type fullname="UnityEngine.Audio.AudioMixer" preserve="all" />
+    <type fullname="UnityEngine.Audio.AudioMixerGroup" preserve="all" />
+    <type fullname="UnityEngine.AudioClip" preserve="all" />
+    <type fullname="UnityEngine.AudioSource" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.CoreModule">
+    <type fullname="UnityEngine.AnimationCurve" preserve="all" />
+    <type fullname="UnityEngine.Application" preserve="all" />
+    <type fullname="UnityEngine.AsyncOperation" preserve="all" />
+    <type fullname="UnityEngine.AudioType" preserve="all" />
+    <type fullname="UnityEngine.Behaviour" preserve="all" />
+    <type fullname="UnityEngine.Camera" preserve="all" />
+    <type fullname="UnityEngine.Color" preserve="all" />
+    <type fullname="UnityEngine.ColorUtility" preserve="all" />
+    <type fullname="UnityEngine.Component" preserve="all" />
+    <type fullname="UnityEngine.Cubemap" preserve="all" />
+    <type fullname="UnityEngine.Cursor" preserve="all" />
+    <type fullname="UnityEngine.CursorLockMode" preserve="all" />
+    <type fullname="UnityEngine.Debug" preserve="all" />
+    <type fullname="UnityEngine.Events.UnityAction" preserve="all" />
+    <type fullname="UnityEngine.Events.UnityAction`1" preserve="all" />
+    <type fullname="UnityEngine.Events.UnityEvent" preserve="all" />
+    <type fullname="UnityEngine.Events.UnityEvent`1" preserve="all" />
+    <type fullname="UnityEngine.GameObject" preserve="all" />
+    <type fullname="UnityEngine.KeyCode" preserve="all" />
+    <type fullname="UnityEngine.LayerMask" preserve="all" />
+    <type fullname="UnityEngine.Material" preserve="all" />
+    <type fullname="UnityEngine.Mathf" preserve="all" />
+    <type fullname="UnityEngine.Matrix4x4" preserve="all" />
+    <type fullname="UnityEngine.Mesh" preserve="all" />
+    <type fullname="UnityEngine.MeshFilter" preserve="all" />
+    <type fullname="UnityEngine.MeshRenderer" preserve="all" />
+    <type fullname="UnityEngine.MinAttribute" preserve="all" />
+    <type fullname="UnityEngine.Object" preserve="all" />
+    <type fullname="UnityEngine.Playables.PlayableAsset" preserve="all" />
+    <type fullname="UnityEngine.Playables.PlayableBinding" preserve="all" />
+    <type fullname="UnityEngine.PlayerPrefs" preserve="all" />
+    <type fullname="UnityEngine.Quaternion" preserve="all" />
+    <type fullname="UnityEngine.Random" preserve="all" />
+    <type fullname="UnityEngine.RangeAttribute" preserve="all" />
+    <type fullname="UnityEngine.Rect" preserve="all" />
+    <type fullname="UnityEngine.RectTransform" preserve="all" />
+    <type fullname="UnityEngine.RenderSettings" preserve="all" />
+    <type fullname="UnityEngine.Renderer" preserve="all" />
+    <type fullname="UnityEngine.Rendering.LightProbeUsage" preserve="all" />
+    <type fullname="UnityEngine.Rendering.ReflectionProbeUsage" preserve="all" />
+    <type fullname="UnityEngine.Rendering.ShadowCastingMode" preserve="all" />
+    <type fullname="UnityEngine.Resources" preserve="all" />
+    <type fullname="UnityEngine.SceneManagement.LoadSceneMode" preserve="all" />
+    <type fullname="UnityEngine.Screen" preserve="all" />
+    <type fullname="UnityEngine.SerializeReference" preserve="all" />
+    <type fullname="UnityEngine.Sprite" preserve="all" />
+    <type fullname="UnityEngine.SpriteMeshType" preserve="all" />
+    <type fullname="UnityEngine.SystemLanguage" preserve="all" />
+    <type fullname="UnityEngine.TextAsset" preserve="all" />
+    <type fullname="UnityEngine.Texture" preserve="all" />
+    <type fullname="UnityEngine.Texture2D" preserve="all" />
+    <type fullname="UnityEngine.Time" preserve="all" />
+    <type fullname="UnityEngine.TooltipAttribute" preserve="all" />
+    <type fullname="UnityEngine.Transform" preserve="all" />
+    <type fullname="UnityEngine.U2D.SpriteAtlas" preserve="all" />
+    <type fullname="UnityEngine.Vector2" preserve="all" />
+    <type fullname="UnityEngine.Vector3" preserve="all" />
+    <type fullname="UnityEngine.Vector4" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.DirectorModule">
+    <type fullname="UnityEngine.Playables.PlayableDirector" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.ImageConversionModule">
+    <type fullname="UnityEngine.ImageConversion" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.InputLegacyModule">
+    <type fullname="UnityEngine.Gyroscope" preserve="all" />
+    <type fullname="UnityEngine.Input" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.PhysicsModule">
+    <type fullname="UnityEngine.BoxCollider" preserve="all" />
+    <type fullname="UnityEngine.Collider" preserve="all" />
+    <type fullname="UnityEngine.RaycastHit" preserve="all" />
+    <type fullname="UnityEngine.SphereCollider" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.TextRenderingModule">
+    <type fullname="UnityEngine.TextAlignment" preserve="all" />
+    <type fullname="UnityEngine.TextAnchor" preserve="all" />
+    <type fullname="UnityEngine.TextMesh" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UI">
+    <type fullname="UnityEngine.EventSystems.EventSystem" preserve="all" />
+    <type fullname="UnityEngine.EventSystems.PointerEventData" preserve="all" />
+    <type fullname="UnityEngine.EventSystems.RaycastResult" preserve="all" />
+    <type fullname="UnityEngine.UI.Button" preserve="all" />
+    <type fullname="UnityEngine.UI.Button/ButtonClickedEvent" preserve="all" />
+    <type fullname="UnityEngine.UI.CanvasScaler" preserve="all" />
+    <type fullname="UnityEngine.UI.CanvasScaler/ScaleMode" preserve="all" />
+    <type fullname="UnityEngine.UI.CanvasScaler/ScreenMatchMode" preserve="all" />
+    <type fullname="UnityEngine.UI.Dropdown" preserve="all" />
+    <type fullname="UnityEngine.UI.Dropdown/DropdownEvent" preserve="all" />
+    <type fullname="UnityEngine.UI.Graphic" preserve="all" />
+    <type fullname="UnityEngine.UI.GraphicRaycaster" preserve="all" />
+    <type fullname="UnityEngine.UI.Image" preserve="all" />
+    <type fullname="UnityEngine.UI.InputField" preserve="all" />
+    <type fullname="UnityEngine.UI.InputField/EndEditEvent" preserve="all" />
+    <type fullname="UnityEngine.UI.InputField/OnChangeEvent" preserve="all" />
+    <type fullname="UnityEngine.UI.RawImage" preserve="all" />
+    <type fullname="UnityEngine.UI.ScrollRect" preserve="all" />
+    <type fullname="UnityEngine.UI.Selectable" preserve="all" />
+    <type fullname="UnityEngine.UI.Slider" preserve="all" />
+    <type fullname="UnityEngine.UI.Slider/SliderEvent" preserve="all" />
+    <type fullname="UnityEngine.UI.Text" preserve="all" />
+    <type fullname="UnityEngine.UI.Toggle" preserve="all" />
+    <type fullname="UnityEngine.UI.Toggle/ToggleEvent" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UIModule">
+    <type fullname="UnityEngine.Canvas" preserve="all" />
+    <type fullname="UnityEngine.CanvasGroup" preserve="all" />
+    <type fullname="UnityEngine.RenderMode" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UnityWebRequestAudioModule">
+    <type fullname="UnityEngine.Networking.DownloadHandlerAudioClip" preserve="all" />
+    <type fullname="UnityEngine.Networking.UnityWebRequestMultimedia" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UnityWebRequestModule">
+    <type fullname="UnityEngine.Networking.CertificateHandler" preserve="all" />
+    <type fullname="UnityEngine.Networking.DownloadHandler" preserve="all" />
+    <type fullname="UnityEngine.Networking.DownloadHandlerBuffer" preserve="all" />
+    <type fullname="UnityEngine.Networking.UnityWebRequest" preserve="all" />
+    <type fullname="UnityEngine.Networking.UnityWebRequest/Result" preserve="all" />
+    <type fullname="UnityEngine.Networking.UnityWebRequestAsyncOperation" preserve="all" />
+    <type fullname="UnityEngine.Networking.UploadHandler" preserve="all" />
+    <type fullname="UnityEngine.Networking.UploadHandlerRaw" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.UnityWebRequestTextureModule">
+    <type fullname="UnityEngine.Networking.DownloadHandlerTexture" preserve="all" />
+    <type fullname="UnityEngine.Networking.UnityWebRequestTexture" preserve="all" />
+  </assembly>
+  <assembly fullname="YooAsset">
+    <type fullname="YooAsset.AssetHandle" preserve="all" />
+    <type fullname="YooAsset.AssetInfo" preserve="all" />
+    <type fullname="YooAsset.AsyncOperationBase" preserve="all" />
+    <type fullname="YooAsset.DownloadUpdateData" preserve="all" />
+    <type fullname="YooAsset.DownloaderOperation" preserve="all" />
+    <type fullname="YooAsset.DownloaderOperation/DownloadUpdate" preserve="all" />
+    <type fullname="YooAsset.EOperationStatus" preserve="all" />
+    <type fullname="YooAsset.EPlayMode" preserve="all" />
+    <type fullname="YooAsset.HandleBase" preserve="all" />
+    <type fullname="YooAsset.ResourceDownloaderOperation" preserve="all" />
+    <type fullname="YooAsset.ResourcePackage" preserve="all" />
+    <type fullname="YooAsset.SceneHandle" preserve="all" />
+    <type fullname="YooAsset.UpdatePackageManifestOperation" preserve="all" />
+    <type fullname="YooAsset.YooAssets" preserve="all" />
+  </assembly>
+  <assembly fullname="mscorlib">
+    <type fullname="System.Action" preserve="all" />
+    <type fullname="System.Action`1" preserve="all" />
+    <type fullname="System.Action`2" preserve="all" />
+    <type fullname="System.Action`3" preserve="all" />
+    <type fullname="System.Action`4" preserve="all" />
+    <type fullname="System.Activator" preserve="all" />
+    <type fullname="System.Array" preserve="all" />
+    <type fullname="System.AsyncCallback" preserve="all" />
+    <type fullname="System.Attribute" preserve="all" />
+    <type fullname="System.AttributeTargets" preserve="all" />
+    <type fullname="System.AttributeUsageAttribute" preserve="all" />
+    <type fullname="System.BitConverter" preserve="all" />
+    <type fullname="System.Boolean" preserve="all" />
+    <type fullname="System.Byte" preserve="all" />
+    <type fullname="System.Char" preserve="all" />
+    <type fullname="System.Collections.ArrayList" preserve="all" />
+    <type fullname="System.Collections.Generic.Dictionary`2" preserve="all" />
+    <type fullname="System.Collections.Generic.Dictionary`2/Enumerator" preserve="all" />
+    <type fullname="System.Collections.Generic.Dictionary`2/KeyCollection" preserve="all" />
+    <type fullname="System.Collections.Generic.Dictionary`2/ValueCollection" preserve="all" />
+    <type fullname="System.Collections.Generic.Dictionary`2/ValueCollection/Enumerator" preserve="all" />
+    <type fullname="System.Collections.Generic.ICollection`1" preserve="all" />
+    <type fullname="System.Collections.Generic.IEnumerable`1" preserve="all" />
+    <type fullname="System.Collections.Generic.IEnumerator`1" preserve="all" />
+    <type fullname="System.Collections.Generic.KeyValuePair`2" preserve="all" />
+    <type fullname="System.Collections.Generic.List`1" preserve="all" />
+    <type fullname="System.Collections.Generic.List`1/Enumerator" preserve="all" />
+    <type fullname="System.Collections.IEnumerator" preserve="all" />
+    <type fullname="System.Collections.IList" preserve="all" />
+    <type fullname="System.Comparison`1" preserve="all" />
+    <type fullname="System.Convert" preserve="all" />
+    <type fullname="System.DateTime" preserve="all" />
+    <type fullname="System.DayOfWeek" preserve="all" />
+    <type fullname="System.Delegate" preserve="all" />
+    <type fullname="System.Diagnostics.ConditionalAttribute" preserve="all" />
+    <type fullname="System.Diagnostics.DebuggableAttribute" preserve="all" />
+    <type fullname="System.Diagnostics.DebuggableAttribute/DebuggingModes" preserve="all" />
+    <type fullname="System.Diagnostics.DebuggerHiddenAttribute" preserve="all" />
+    <type fullname="System.Double" preserve="all" />
+    <type fullname="System.Enum" preserve="all" />
+    <type fullname="System.Exception" preserve="all" />
+    <type fullname="System.Func`1" preserve="all" />
+    <type fullname="System.Func`2" preserve="all" />
+    <type fullname="System.Func`3" preserve="all" />
+    <type fullname="System.Func`5" preserve="all" />
+    <type fullname="System.GC" preserve="all" />
+    <type fullname="System.IAsyncResult" preserve="all" />
+    <type fullname="System.IDisposable" preserve="all" />
+    <type fullname="System.IO.BinaryReader" preserve="all" />
+    <type fullname="System.IO.Directory" preserve="all" />
+    <type fullname="System.IO.DirectoryInfo" preserve="all" />
+    <type fullname="System.IO.File" preserve="all" />
+    <type fullname="System.IO.FileMode" preserve="all" />
+    <type fullname="System.IO.FileStream" preserve="all" />
+    <type fullname="System.IO.MemoryStream" preserve="all" />
+    <type fullname="System.IO.Path" preserve="all" />
+    <type fullname="System.IO.SeekOrigin" preserve="all" />
+    <type fullname="System.IO.Stream" preserve="all" />
+    <type fullname="System.Int32" preserve="all" />
+    <type fullname="System.Int64" preserve="all" />
+    <type fullname="System.Math" preserve="all" />
+    <type fullname="System.MulticastDelegate" preserve="all" />
+    <type fullname="System.NotImplementedException" preserve="all" />
+    <type fullname="System.Nullable`1" preserve="all" />
+    <type fullname="System.Object" preserve="all" />
+    <type fullname="System.ParamArrayAttribute" preserve="all" />
+    <type fullname="System.Reflection.Assembly" preserve="all" />
+    <type fullname="System.Reflection.DefaultMemberAttribute" preserve="all" />
+    <type fullname="System.Reflection.MemberInfo" preserve="all" />
+    <type fullname="System.Reflection.MethodBase" preserve="all" />
+    <type fullname="System.Reflection.MethodInfo" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.AsyncStateMachineAttribute" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.CompilationRelaxationsAttribute" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.CompilerGeneratedAttribute" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.IAsyncStateMachine" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.RuntimeCompatibilityAttribute" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.RuntimeHelpers" preserve="all" />
+    <type fullname="System.Runtime.CompilerServices.TaskAwaiter" preserve="all" />
+    <type fullname="System.Runtime.InteropServices.UnmanagedType" preserve="all" />
+    <type fullname="System.RuntimeFieldHandle" preserve="all" />
+    <type fullname="System.Security.Cryptography.HashAlgorithm" preserve="all" />
+    <type fullname="System.Security.Cryptography.MD5CryptoServiceProvider" preserve="all" />
+    <type fullname="System.Security.Permissions.SecurityAction" preserve="all" />
+    <type fullname="System.Security.Permissions.SecurityPermissionAttribute" preserve="all" />
+    <type fullname="System.Security.UnverifiableCodeAttribute" preserve="all" />
+    <type fullname="System.Single" preserve="all" />
+    <type fullname="System.String" preserve="all" />
+    <type fullname="System.StringSplitOptions" preserve="all" />
+    <type fullname="System.Text.Encoding" preserve="all" />
+    <type fullname="System.Text.StringBuilder" preserve="all" />
+    <type fullname="System.Threading.Interlocked" preserve="all" />
+    <type fullname="System.Threading.Monitor" preserve="all" />
+    <type fullname="System.Threading.Tasks.Task" preserve="all" />
+    <type fullname="System.Threading.ThreadPool" preserve="all" />
+    <type fullname="System.Threading.WaitCallback" preserve="all" />
+    <type fullname="System.Type" preserve="all" />
+    <type fullname="System.UInt64" preserve="all" />
+    <type fullname="System.ValueTuple`3" preserve="all" />
+    <type fullname="System.ValueType" preserve="all" />
+  </assembly>
+</linker>
