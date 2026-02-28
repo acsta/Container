@@ -63,8 +63,6 @@ public static ListComponent<T> Create()
 
 **调用者**: 任何需要临时列表的代码
 
-**被调用者**: `ObjectPool.Fetch<T>()`
-
 **使用示例**:
 ```csharp
 var list = ListComponent<int>.Create();
@@ -92,8 +90,6 @@ public void Dispose()
 ```
 
 **调用者**: using 语句块结束、手动调用
-
-**被调用者**: `List.Clear()`, `ObjectPool.Recycle<T>()`
 
 **使用示例**:
 ```csharp

@@ -6,110 +6,8 @@
 |------|------|
 | **文件名** | IdGenerater.cs |
 | **路径** | Assets/Scripts/Mono/Core/Object/IdGenerater.cs |
-| **所属模块** | Mono/Core/Object |
-| **文件职责** | 分布式 ID 生成器，生成全局唯一 ID |
-
----
-
-## 概述
-
-IdGenerater 提供三种 ID 生成策略，用于不同场景的唯一标识：
-
-| ID 类型 | 结构 | 用途 |
-|---------|------|------|
-| **IdStruct** | 时间 (30bit) + 进程 (18bit) + 自增 (16bit) | 通用全局 ID |
-| **InstanceIdStruct** | 时间 (28bit) + 进程 (18bit) + 自增 (18bit) | 实例 ID（当年内有效） |
-| **UnitIdStruct** | 时间 (30bit) + 分区 (10bit) + 进程 (8bit) + 自增 (16bit) | 单位 ID（支持分区） |
-
----
-
-## ID 结构详解
-
-### IdStruct
-
-**位分布**:
-```
-63                                    34 33            16 15             0
-┌─────────────────────────────────────┬─────────────────┬───────────────┐
-│              Time (30bit)           │  Process (18bit)│  Value (16bit)│
-│         秒级时间戳 (2020 年起)        │     进程 ID      │   秒内自增     │
-└─────────────────────────────────────┴─────────────────┴───────────────┘
-```
-
-**容量**:
-- 时间范围：2020 年起约 34 年
-- 进程数：2^18 = 262,144 个进程
-- 每秒每进程：2^16 = 65,536 个 ID
-
-**使用示例**:
-```csharp
-long id = IdGenerater.Instance.GenerateId();
-IdStruct idStruct = new IdStruct(id);
-
-Log.Info($"Process: {idStruct.Process}");
-Log.Info($"Time: {idStruct.Time}");
-Log.Info($"Value: {idStruct.Value}");
-```
-
----
-
-### InstanceIdStruct
-
-**位分布**:
-```
-63                                    36 35            18 17             0
-┌─────────────────────────────────────┬─────────────────┬───────────────┐
-│         Time (28bit)                │  Process (18bit)│  Value (18bit)│
-│    当年开始的秒数 (约 8.5 年)          │     进程 ID      │   秒内自增     │
-└─────────────────────────────────────┴─────────────────┴───────────────┘
-```
-
-**容量**:
-- 时间范围：当年起约 8.5 年（实际每年重置）
-- 进程数：2^18 = 262,144 个进程
-- 每秒每进程：2^18 = 262,144 个 ID
-
-**使用示例**:
-```csharp
-long instanceId = IdGenerater.Instance.GenerateInstanceId();
-InstanceIdStruct instanceStruct = new InstanceIdStruct(instanceId);
-
-// 也可以手动创建（用于 SceneId 等）
-var sceneId = new InstanceIdStruct(process: 1, value: 100);
-```
-
----
-
-### UnitIdStruct
-
-**位分布**:
-```
-63                                    34 33    24 23              16 15             0
-┌─────────────────────────────────────┬─────────┬──────────────────┬───────────────┐
-│         Time (30bit)                │Zone(10b)│ProcessMode(8bit) │  Value (16bit)│
-│    秒级时间戳 (2020 年起)            │ 分区 ID  │ 进程%256         │   秒内自增     │
-└─────────────────────────────────────┴─────────┴──────────────────┴───────────────┘
-```
-
-**容量**:
-- 时间范围：2020 年起约 34 年
-- 分区数：2^10 = 1,024 个区
-- 每区进程：256 个
-- 每秒每进程：2^16 = 65,536 个 ID
-
-**使用示例**:
-```csharp
-// 生成 Unit ID（需要指定区）
-long unitId = IdGenerater.Instance.GenerateUnitId(zone: 1);
-
-// 解析
-UnitIdStruct unitStruct = new UnitIdStruct(unitId);
-Log.Info($"Zone: {unitStruct.Zone}");
-Log.Info($"ProcessMode: {unitStruct.ProcessMode}");
-
-// 从 Unit ID 获取区
-int zone = UnitIdStruct.GetUnitZone(unitId);
-```
+| **所属模块** | 框架层 → Mono/Core/Object |
+| **文件职责** | 提供分布式唯一 ID 生成器，支持多种 ID 结构（Id/InstanceId/UnitId） |
 
 ---
 
@@ -119,62 +17,133 @@ int zone = UnitIdStruct.GetUnitZone(unitId);
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 单例 ID 生成器，管理时间戳和自增值 |
+| **职责** | 单例类，生成全局唯一的分布式 ID，支持时间戳 + 进程 ID+ 序列号组合 |
 | **泛型参数** | 无 |
 | **继承关系** | 无 |
 | **实现的接口** | `IDisposable` |
 
-**单例访问**:
+**设计模式**: 单例模式 + 生成器模式
+
 ```csharp
-var generator = IdGenerater.Instance;
+// 生成 ID
+long id = IdGenerater.Instance.GenerateId();
+long instanceId = IdGenerater.Instance.GenerateInstanceId();
+long unitId = IdGenerater.Instance.GenerateUnitId(zone: 1);
 ```
+
+---
+
+## ID 结构
+
+### IdStruct (34-18-16 位)
+
+| 字段 | 位数 | 说明 |
+|------|------|------|
+| `Time` | 30bit | 距 2020-01-01 的秒数（34 年） |
+| `Process` | 18bit | 进程 ID（262144 个进程） |
+| `Value` | 16bit | 每秒序列号（65536 个/秒） |
+
+**用途**: 通用唯一 ID
+
+---
+
+### InstanceIdStruct (28-18-18 位)
+
+| 字段 | 位数 | 说明 |
+|------|------|------|
+| `Time` | 28bit | 距今年 1 月 1 日的秒数 |
+| `Process` | 18bit | 进程 ID |
+| `Value` | 18bit | 每秒序列号（262144 个/秒） |
+
+**用途**: 实例 ID（更大的序列号空间）
+
+---
+
+### UnitIdStruct (30-10-8-16 位)
+
+| 字段 | 位数 | 说明 |
+|------|------|------|
+| `Time` | 30bit | 距 2020-01-01 的秒数 |
+| `Zone` | 10bit | 区服 ID（1024 个区） |
+| `ProcessMode` | 8bit | 进程 ID % 256 |
+| `Value` | 16bit | 每秒序列号 |
+
+**用途**: 游戏单位 ID（支持多区服）
 
 ---
 
 ## 常量
 
-| 名称 | 值 | 说明 |
-|------|-----|------|
-| `Mask18bit` | `0x03ffff` | 18 位掩码 |
-| `MaxZone` | `1024` | 最大分区数 |
+| 常量 | 类型 | 值 | 说明 |
+|------|------|-----|------|
+| `Mask18bit` | `int` | 0x03ffff | 18 位掩码（262143） |
+| `MaxZone` | `int` | 1024 | 最大区服数 |
+
+---
+
+## 字段与属性
+
+### Instance
+
+| 属性 | 值 |
+|------|------|
+| **类型** | `IdGenerater` |
+| **访问级别** | `public static` |
+| **说明** | 单例实例，全局访问点 |
+
+---
+
+### epoch2020
+
+| 属性 | 值 |
+|------|------|
+| **类型** | `long` |
+| **访问级别** | `private` |
+| **说明** | 2020-01-01 00:00:00 UTC 的时间戳（毫秒） |
+
+---
+
+### epochThisYear
+
+| 属性 | 值 |
+|------|------|
+| **类型** | `long` |
+| **访问级别** | `private` |
+| **说明** | 今年 1 月 1 日 00:00:00 UTC 的时间戳（毫秒） |
 
 ---
 
 ## 方法说明
 
-### GenerateId ⭐
+### GenerateId
 
 **签名**:
 ```csharp
 public long GenerateId()
 ```
 
-**职责**: 生成全局唯一 ID（IdStruct）
+**职责**: 生成通用唯一 ID（IdStruct）
 
 **核心逻辑**:
 ```
 1. 获取当前时间（距 2020 年的秒数）
-2. 如果时间 > 上次时间：
+2. 如果时间大于 lastIdTime：
    - 更新时间
-   - 重置自增值为 0
+   - 重置序列号 value = 0
 3. 否则：
-   - 自增值 +1
+   - 序列号 +1
    - 如果溢出，借用下一秒
-4. 组合 IdStruct 并返回 long
+4. 创建 IdStruct 并转换为 long
+5. 返回
 ```
 
-**使用示例**:
-```csharp
-long id1 = IdGenerater.Instance.GenerateId();
-long id2 = IdGenerater.Instance.GenerateId();
+**返回值**: `long` - 64 位唯一 ID
 
-// ID 单调递增（同一秒内）
-Log.Info(id1 < id2); // true
-```
+**调用者**: 需要唯一 ID 的地方
 
 ---
 
-### GenerateInstanceId ⭐
+### GenerateInstanceId
 
 **签名**:
 ```csharp
@@ -185,216 +154,185 @@ public long GenerateInstanceId()
 
 **核心逻辑**:
 ```
-1. 获取当年开始的秒数
-2. 如果时间 > 上次时间：
+1. 获取当前时间（距今年 1 月 1 日的秒数）
+2. 如果时间大于 lastInstanceIdTime：
    - 更新时间
-   - 重置自增值为 0
+   - 重置序列号 instanceIdValue = 0
 3. 否则：
-   - 自增值 +1
-   - 如果溢出，借用下一秒
-4. 组合 InstanceIdStruct 并返回 long
+   - 序列号 +1
+   - 如果溢出（>262143），借用下一秒
+4. 创建 InstanceIdStruct 并转换为 long
+5. 返回
 ```
 
-**使用示例**:
-```csharp
-long instanceId = IdGenerater.Instance.GenerateInstanceId();
-
-// 用于 Entity 实例 ID
-entity.InstanceId = instanceId;
-```
+**返回值**: `long` - 64 位实例 ID
 
 ---
 
-### GenerateUnitId ⭐
+### GenerateUnitId
 
 **签名**:
 ```csharp
 public long GenerateUnitId(int zone)
 ```
 
-**职责**: 生成单位 ID（UnitIdStruct）
-
-**参数**:
-- `zone`: 分区 ID（0-1023）
+**职责**: 生成游戏单位 ID（UnitIdStruct）
 
 **核心逻辑**:
 ```
 1. 检查 zone <= MaxZone
 2. 获取当前时间（距 2020 年的秒数）
-3. 如果时间 > 上次时间：
+3. 如果时间大于 lastUnitIdTime：
    - 更新时间
-   - 重置自增值为 0
+   - 重置序列号 unitIdValue = 0
 4. 否则：
-   - 自增值 +1
+   - 序列号 +1
    - 如果溢出，借用下一秒
-5. 组合 UnitIdStruct 并返回 long
+5. 创建 UnitIdStruct 并转换为 long
+6. 返回
 ```
 
-**使用示例**:
-```csharp
-// 为 1 区的单位生成 ID
-long unitId1 = IdGenerater.Instance.GenerateUnitId(zone: 1);
+**参数**:
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| `zone` | `int` | 区服 ID（0-1023） |
 
-// 为 2 区的单位生成 ID
-long unitId2 = IdGenerater.Instance.GenerateUnitId(zone: 2);
-
-// 提取区号
-int zone = UnitIdStruct.GetUnitZone(unitId1); // 1
-```
+**返回值**: `long` - 64 位单位 ID
 
 ---
 
-## 流程图
+### GetUnitZone
 
-### ID 生成流程
-
-```mermaid
-flowchart TD
-    A[GenerateId] --> B[获取当前时间]
-    B --> C{时间 > lastIdTime?}
-    C -->|是 | D[重置 value = 0]
-    C -->|否 | E[value++]
-    E --> F{value 溢出？}
-    F -->|是 | G[lastIdTime++<br/>Log.Error]
-    F -->|否 | H[生成 IdStruct]
-    D --> H
-    G --> H
-    H --> I[返回 long]
+**签名**:
+```csharp
+public static int GetUnitZone(long unitId)
 ```
 
-### ID 结构转换
+**职责**: 从单位 ID 中提取区服 ID
 
-```mermaid
-flowchart LR
-    A[long ID] --> B[IdStruct]
-    B --> C[Time]
-    B --> D[Process]
-    B --> E[Value]
-    
-    F[long ID] --> G[InstanceIdStruct]
-    G --> H[Time 当年]
-    G --> I[Process]
-    G --> J[Value]
-    
-    K[long ID] --> L[UnitIdStruct]
-    L --> M[Time]
-    L --> N[Zone]
-    L --> O[ProcessMode]
-    L --> P[Value]
+**核心逻辑**:
 ```
+1. 右移 24 位
+2. 与 0x03ff 按位与（取出 10bit）
+3. 返回区服 ID
+```
+
+**参数**:
+| 参数名 | 类型 | 说明 |
+|--------|------|------|
+| `unitId` | `long` | 单位 ID |
+
+**返回值**: `int` - 区服 ID（0-1023）
 
 ---
 
 ## 使用示例
 
-### Entity ID 系统
+### 示例 1: 生成玩家 ID
 
 ```csharp
-public class Entity
-{
-    public long Id { get; private set; }
-    public long InstanceId { get; private set; }
-    
-    public Entity()
-    {
-        // 全局唯一 ID
-        this.Id = IdGenerater.Instance.GenerateId();
-        
-        // 实例 ID（用于对象池等）
-        this.InstanceId = IdGenerater.Instance.GenerateInstanceId();
-    }
-}
+// 创建玩家时生成唯一 ID
+long playerId = IdGenerater.Instance.GenerateId();
+player.Id = playerId;
+
+// ID 结构：
+// - 时间戳（秒级）
+// - 进程 ID
+// - 序列号
 ```
 
-### 分布式单位系统
+### 示例 2: 生成实例 ID
 
 ```csharp
-public class UnitManager
-{
-    private int zoneId;
-    private Dictionary<long, Unit> units;
-    
-    public UnitManager(int zone)
-    {
-        zoneId = zone;
-        units = new Dictionary<long, Unit>();
-    }
-    
-    public Unit CreateUnit()
-    {
-        // 生成本区的单位 ID
-        long unitId = IdGenerater.Instance.GenerateUnitId(zoneId);
-        
-        var unit = new Unit
-        {
-            Id = unitId,
-            Zone = zoneId
-        };
-        
-        units[unitId] = unit;
-        return unit;
-    }
-    
-    public Unit GetUnit(long unitId)
-    {
-        units.TryGetValue(unitId, out var unit);
-        return unit;
-    }
-    
-    public int GetUnitZone(long unitId)
-    {
-        return UnitIdStruct.GetUnitZone(unitId);
-    }
-}
+// 创建 Entity 实例
+long instanceId = IdGenerater.Instance.GenerateInstanceId();
+entity.InstanceId = instanceId;
+
+// InstanceId 特点：
+// - 更大的序列号空间（262144/秒）
+// - 时间从每年 1 月 1 日开始
 ```
 
-### ID 解析与显示
+### 示例 3: 生成多区服单位 ID
 
 ```csharp
-public class IdHelper
-{
-    public static string FormatId(long id)
-    {
-        var idStruct = new IdStruct(id);
-        return $"P{idStruct.Process}-T{idStruct.Time}-V{idStruct.Value}";
-    }
-    
-    public static string FormatInstanceId(long id)
-    {
-        var instStruct = new InstanceIdStruct(id);
-        return $"I{instStruct.Process}-{instStruct.Value}";
-    }
-    
-    public static string FormatUnitId(long id)
-    {
-        var unitStruct = new UnitIdStruct(id);
-        return $"Z{unitStruct.Zone}-P{unitStruct.ProcessMode}-V{unitStruct.Value}";
-    }
-    
-    // 使用示例
-    // FormatId(123456789) → "P1-T12345-V6789"
-}
+// 1 区创建单位
+long unitId1 = IdGenerater.Instance.GenerateUnitId(zone: 1);
+
+// 2 区创建单位
+long unitId2 = IdGenerater.Instance.GenerateUnitId(zone: 2);
+
+// 从 ID 获取区服
+int zone = IdGenerater.GetUnitZone(unitId1);  // 返回 1
+```
+
+### 示例 4: ID 解析
+
+```csharp
+long id = IdGenerater.Instance.GenerateId();
+
+// 解析为结构体
+IdStruct idStruct = new IdStruct(id);
+Debug.Log($"进程：{idStruct.Process}, 时间：{idStruct.Time}, 序列号：{idStruct.Value}");
 ```
 
 ---
 
-## ⚠️ 注意事项
+## 设计要点
 
-| 问题 | 说明 | 解决方案 |
-|------|------|----------|
-| **时间回拨** | 系统时间回拨会导致 ID 重复 | 使用单调时钟或记录最大时间 |
-| **ID 溢出** | 每秒生成超过 65K 个 ID 会借用下一秒 | 控制生成频率或增加进程数 |
-| **进程 ID 冲突** | 不同进程使用相同 Process ID 会冲突 | 确保 Process 唯一 |
-| **跨年重置** | InstanceId 每年重置 | 新年时注意 ID 变化 |
-| **分区超限** | zone > 1024 会抛异常 | 检查 zone 范围 |
+### 为什么使用 64 位 ID？
+
+**优势**:
+1. **唯一性**: 全球分布式唯一
+2. **有序性**: 基于时间戳，大致有序
+3. **信息丰富**: 包含时间、进程、序列号
+4. **性能**: long 类型，数据库索引友好
+
+### 时间戳设计
+
+**IdStruct**: 从 2020-01-01 开始（30bit = 34 年）
+**InstanceIdStruct**: 从今年 1 月 1 日开始（28bit = 8.5 年）
+
+**原因**:
+- 减少位数占用
+- 保证 ID 在时间范围内唯一
+- InstanceId 需要更大的序列号空间，所以时间位数较少
+
+### 序列号溢出处理
+
+```csharp
+if (value > ushort.MaxValue - 1)
+{
+    this.value = 0;
+    ++this.lastIdTime;  // 借用下一秒
+    Log.Error($"id count per sec overflow: {time} {this.lastIdTime}");
+}
+```
+
+**说明**: 如果每秒生成的 ID 超过 65536 个，借用下一秒的时间戳
+
+**阈值**:
+- IdStruct: 65536 个/秒
+- InstanceId: 262144 个/秒
+- UnitId: 65536 个/秒/进程/区服
+
+### 进程 ID
+
+```csharp
+Define.Process  // 全局进程 ID
+```
+
+**用途**: 区分不同进程生成的 ID
+
+**配置**: 在 Define.cs 中设置
 
 ---
 
 ## 相关文档
 
-- [BigNumber.cs.md](./BigNumber.cs.md) - 大数运算
-- [ObjectPool.cs.md](../ObjectPool.cs.md) - 对象池
+- [Define.cs.md](../../Define.cs.md) - 全局配置（Process ID）
+- [TimeInfo.cs.md](../Timer/TimeInfo.cs.md) - 时间信息工具
 
 ---
 
-*文档由 OpenClaw AI 助手自动生成 | 基于静态代码分析*
+*文档生成时间：2026-02-28 | OpenClaw AI 助手*
