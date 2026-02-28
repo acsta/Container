@@ -43,6 +43,7 @@
 !Assets/**/*.xml
 !Assets/**/*.txt
 !Assets/**/*.csv
+!Assets/**/*.md
 
 # ===== 根目录级别的通用文件 =====
 !.gitignore
