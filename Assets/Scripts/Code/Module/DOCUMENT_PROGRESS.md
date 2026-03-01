@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-01 18:30  
+> **更新时间**: 2026-03-01 20:35  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 137 |
-| 覆盖率 | ~21% |
+| 已创建 .md 文档 | 147 |
+| 覆盖率 | ~23% |
 
 ---
 
@@ -73,6 +73,25 @@
 - [x] UIText.cs.md
 - [x] UITextmesh.cs.md
 - [x] UIToggle.cs.md
+
+### Mono/Module/Skybox (100%)
+- [x] Skybox.cs.md - 天空盒昼夜循环系统
+
+### Mono/Module/Const (100%)
+- [x] GameInfoType.cs.md - 游戏信息事件类型
+- [x] MessageId.cs.md - 全局消息 ID 常量
+
+### Mono/Module/Entity (100%)
+- [x] EntityType.cs.md - 实体类型定义
+- [x] ExportBones.cs.md - 骨骼导出工具
+- [x] BonesData.cs.md - 骨骼数据组件
+
+### Mono/Module/Entity/Hit (100%)
+- [x] ColliderBoxComponent.cs.md - 碰撞触发器
+- [x] CheckHitLayerType.cs.md - 检测层级类型
+- [x] HitBoxComponent.cs.md - HitBox 标记组件
+- [x] HitInfo.cs.md - 击中信息结构
+- [x] HitBoxType.cs.md - HitBox 类型枚举
 
 ---
 
