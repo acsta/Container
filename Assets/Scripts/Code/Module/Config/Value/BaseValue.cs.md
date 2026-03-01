@@ -1,318 +1,203 @@
-# BaseValue.cs 注解文档
+# BaseValue.cs 文档
 
-## 文件基本信息
+## 📄 文件信息表
 
 | 属性 | 值 |
 |------|------|
-| **文件名** | BaseValue.cs |
-| **路径** | Assets/Scripts/Code/Module/Config/Value/BaseValue.cs |
-| **所属模块** | 框架层 → Code/Module/Config/Value |
-| **文件职责** | 定义 AI 配置值类型的抽象基类，支持动态值解析 |
+| 文件路径 | `Assets/Scripts/Code/Module/Config/Value/BaseValue.cs` |
+| 命名空间 | `TaoTie` |
+| 类类型 | 抽象基类 |
+| 依赖模块 | Nino.Core |
+| 序列化 | NinoType |
 
 ---
 
-## 类/结构体说明
+## 🏗️ 类说明
 
-### BaseValue
+**BaseValue** 是配置值系统的抽象基类，用于定义 AI 决策树中可解析的数值类型。
 
-| 属性 | 说明 |
-|------|------|
-| **职责** | AI 配置值的抽象基类，定义值解析接口 |
-| **泛型参数** | 无 |
-| **继承关系** | 无 |
-| **实现的接口** | 无 |
+### 核心职责
 
-**设计模式**: 抽象基类 + 策略模式
+- 定义值解析的标准接口 `Resolve`
+- 作为所有配置值类型的基类
+- 支持 Nino 序列化
 
-```csharp
-// 所有配置值类型都继承 BaseValue
-public class SingleValue : BaseValue
-{
-    public float Value;
-    public override float Resolve(AIKnowledge knowledge) => Value;
-}
+### 设计模式
 
-public class FormulaValue : BaseValue
-{
-    public string Formula;
-    public override float Resolve(AIKnowledge knowledge)
-    {
-        // 根据 knowledge 计算复杂公式
-    }
-}
-```
+- **策略模式**: 不同的值类型实现不同的解析策略
+- **多态**: 通过基类引用调用子类的解析方法
 
 ---
 
-## 方法说明
+## 📊 字段表
+
+| 字段名 | 类型 | 访问修饰符 | 说明 |
+|--------|------|------------|------|
+| (无实例字段) | - | - | 纯抽象基类 |
+
+---
+
+## 🔧 方法说明
 
 ### Resolve
 
-**签名**:
 ```csharp
 public abstract float Resolve(AIKnowledge knowledge)
 ```
 
-**职责**: 根据 AI 知识库解析出实际的浮点数值
+解析值为具体的浮点数值。
 
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `knowledge` | `AIKnowledge` | AI 知识库，包含当前 AI 的状态、环境信息等 |
+**参数:**
+- `knowledge`: AI 知识对象，包含实体、配置、状态等信息
 
-**返回值**: `float` - 解析后的实际数值
+**返回:** 解析后的浮点数值
 
-**调用者**: AI 决策系统、数值计算模块
-
-**被调用者**: 子类实现
-
----
-
-## 设计意图
-
-### 为什么需要抽象值类型？
-
-1. **灵活性**: 支持固定值、公式、随机值等多种值类型
-2. **动态计算**: 值可以基于 AI 状态动态计算
-3. **配置友好**: 策划可以在配置表中灵活定义数值
-4. **扩展性**: 新增值类型无需修改 AI 逻辑
-
-### 值类型层次结构
-
-```
-BaseValue (抽象)
-├── SingleValue          → 固定单精度浮点数
-├── ZeroValue            → 固定值 0
-├── Range01Value         → 0-1 范围的值
-├── FormulaValue         → 公式计算的值
-├── OperatorValue        → 运算符组合的值
-├── RandomAuctionTime    → 随机拍卖时间
-├── MinAuctionTime       → 最小拍卖时间
-├── TimeSinceLastBid     → 距上次出价的时间
-└── ... (其他自定义类型)
-```
+**说明:**
+- 这是一个抽象方法，必须由子类实现
+- 不同的值类型有不同的解析逻辑
+- 返回值用于 AI 决策树的比较和计算
 
 ---
 
-## AIKnowledge 参数
+## 🔄 Mermaid 流程图
 
-### AIKnowledge 作用
+### 值解析流程
 
-`AIKnowledge` 是 AI 的"知识库"，包含：
-- AI 当前状态（血量、位置、目标等）
-- 环境信息（敌人位置、障碍物等）
-- 游戏上下文（时间、关卡等）
+```mermaid
+flowchart TD
+    A[调用 Resolve] --> B{值类型}
+    B -->|SingleValue| C[返回固定值]
+    B -->|FormulaValue| D[计算公式]
+    B -->|OperatorValue| E[执行运算]
+    B -->|Range01Value| F[返回随机 0-1]
+    B -->|ZeroValue| G[返回 0]
+    B -->|RandomAuctionTime| H[返回随机出价时间]
+    B -->|MinAuctionTime| I[返回最低出价时间]
+    B -->|TimeSinceLastBid| J[返回距上次出价时间]
+```
 
-### Resolve 使用示例
+### 继承关系
 
-```csharp
-// 固定值
-public class SingleValue : BaseValue
-{
-    public float Value;
+```mermaid
+classDiagram
+    class BaseValue {
+        <<abstract>>
+        +Resolve(AIKnowledge) float*
+    }
     
-    public override float Resolve(AIKnowledge knowledge)
-    {
-        return Value;  // 直接返回固定值
-    }
-}
-
-// 基于 AI 状态的值
-public class HealthPercentValue : BaseValue
-{
-    public override float Resolve(AIKnowledge knowledge)
-    {
-        // 返回当前血量百分比
-        return knowledge.CurrentHP / knowledge.MaxHP;
-    }
-}
-
-// 基于距离的值
-public class DistanceValue : BaseValue
-{
-    public override float Resolve(AIKnowledge knowledge)
-    {
-        // 返回到目标的距离
-        return Vector3.Distance(knowledge.Position, knowledge.TargetPosition);
-    }
-}
+    class SingleValue
+    class ZeroValue
+    class Range01Value
+    class FormulaValue
+    class OperatorValue
+    class RandomAuctionTime
+    class MinAuctionTime
+    class TimeSinceLastBid
+    
+    BaseValue <|-- SingleValue
+    BaseValue <|-- ZeroValue
+    BaseValue <|-- Range01Value
+    BaseValue <|-- FormulaValue
+    BaseValue <|-- OperatorValue
+    BaseValue <|-- RandomAuctionTime
+    BaseValue <|-- MinAuctionTime
+    BaseValue <|-- TimeSinceLastBid
 ```
 
 ---
 
-## Nino 序列化
+## 💡 使用示例
 
-### NinoType
+### 定义自定义值类型
 
 ```csharp
 [NinoType(false)]
-```
-
-**说明**: 标记为 Nino 可序列化类型，支持多态序列化。
-
-**多态序列化**: Nino 可以正确序列化/反序列化 BaseValue 的子类，保留实际类型信息。
-
-```csharp
-// 序列化
-BaseValue value = new SingleValue { Value = 5.0f };
-byte[] bytes = Serializer.Serialize(value);
-
-// 反序列化（正确恢复为 SingleValue 类型）
-BaseValue restored = Deserializer.Deserialize<BaseValue>(bytes);
-Debug.Log(restored is SingleValue);  // True
-```
-
----
-
-## 使用示例
-
-### 示例 1: 配置 AI 决策阈值
-
-```csharp
-// AI 决策树配置
-[Config]
-public class AIDecisionConfig : ProtoObject
+public partial class CustomValue : BaseValue
 {
-    public string DecisionType;
-    
-    // 使用 BaseValue 支持灵活配置
-    public BaseValue AttackThreshold;    // 攻击阈值
-    public BaseValue RetreatThreshold;   // 撤退阈值
-    public BaseValue SearchRadius;       // 搜索半径
-}
-
-// 配置示例（JSON）
-{
-  "DecisionType": "Combat",
-  "AttackThreshold": {
-    "$type": "SingleValue",
-    "Value": 30.0  // 固定值 30
-  },
-  "RetreatThreshold": {
-    "$type": "FormulaValue",
-    "Formula": "MaxHP * 0.3"  // 最大血量的 30%
-  },
-  "SearchRadius": {
-    "$type": "Range01Value",
-    "Value": 0.5  // 0-1 范围的值
-  }
-}
-```
-
-### 示例 2: AI 决策中使用
-
-```csharp
-public class AIController : MonoBehaviour
-{
-    public AIDecisionConfig config;
-    public AIKnowledge knowledge;
-    
-    void Update()
-    {
-        // 解析配置值
-        float attackThreshold = config.AttackThreshold.Resolve(knowledge);
-        float retreatThreshold = config.RetreatThreshold.Resolve(knowledge);
-        
-        // 根据阈值做决策
-        if (knowledge.CurrentHP < retreatThreshold)
-        {
-            Flee();
-        }
-        else if (knowledge.EnemyDistance < attackThreshold)
-        {
-            Attack();
-        }
-    }
-}
-```
-
-### 示例 3: 动态难度调整
-
-```csharp
-// 根据玩家等级动态调整 AI 行为阈值
-public class DynamicDifficultyValue : BaseValue
-{
-    public float BaseValue;
-    public float ScalingFactor;
+    [NinoMember(1)]
+    public float Multiplier = 1.0f;
     
     public override float Resolve(AIKnowledge knowledge)
     {
-        // 根据玩家等级调整难度
-        int playerLevel = knowledge.PlayerLevel;
-        return BaseValue + (playerLevel * ScalingFactor);
+        // 基于实体属性计算
+        var numeric = knowledge.Entity.GetComponent<NumericComponent>();
+        if (numeric != null)
+        {
+            return numeric.GetValue(ENumericType.Cost) * Multiplier;
+        }
+        return 0;
     }
 }
+```
 
-// 配置
-var difficultyValue = new DynamicDifficultyValue
+### 在决策树中使用
+
+```csharp
+// 创建比较节点
+var compareNode = new DecisionCompareNode
 {
-    BaseValue = 10.0f,
-    ScalingFactor = 0.5f  // 每级增加 0.5
+    LeftValue = new FormulaValue { Formula = "Cost" },
+    CompareMode = CompareMode.Greater,
+    RightValue = new SingleValue(100),
+    True = new DecisionActionNode { Tactic = AITactic.HighWeight },
+    False = new DecisionActionNode { Tactic = AITactic.LowWeight }
 };
 
-float threshold = difficultyValue.Resolve(knowledge);
-// 玩家等级 1: threshold = 10.5
-// 玩家等级 10: threshold = 15.0
-// 玩家等级 50: threshold = 35.0
+// 解析值进行比较
+float leftVal = compareNode.LeftValue.Resolve(knowledge);
+float rightVal = compareNode.RightValue.Resolve(knowledge);
+bool result = leftVal > rightVal;
 ```
 
----
-
-## 子类实现指南
-
-### 实现步骤
-
-1. 继承 `BaseValue`
-2. 添加 `[NinoType(false)]` 特性
-3. 实现 `Resolve` 方法
-4. 添加必要的字段和属性
-
-### 示例实现
+### 组合使用
 
 ```csharp
-[NinoType(false)]
-public class RandomValue : BaseValue
+// 复杂的值计算：(Cost * 1.5) + Random(0-10)
+var operatorValue = new OperatorValue
 {
-    [NinoMember(1)]
-    public float Min;
-    
-    [NinoMember(2)]
-    public float Max;
-    
-    public override float Resolve(AIKnowledge knowledge)
+    Left = new OperatorValue
     {
-        return UnityEngine.Random.Range(Min, Max);
+        Left = new FormulaValue { Formula = "Cost" },
+        Op = LogicMode.Mul,
+        Right = new SingleValue(1.5f)
+    },
+    Op = LogicMode.Add,
+    Right = new OperatorValue
+    {
+        Left = new Range01Value(),
+        Op = LogicMode.Mul,
+        Right = new SingleValue(10f)
     }
-}
+};
 
-[NinoType(false)]
-public class DistanceBasedValue : BaseValue
-{
-    [NinoMember(1)]
-    public float CloseValue;
-    
-    [NinoMember(2)]
-    public float FarValue;
-    
-    public override float Resolve(AIKnowledge knowledge)
-    {
-        float distance = Vector3.Distance(knowledge.Position, knowledge.TargetPosition);
-        float t = Mathf.InverseLerp(0, 50, distance);  // 0-50 米映射到 0-1
-        return Mathf.Lerp(CloseValue, FarValue, t);
-    }
-}
+float result = operatorValue.Resolve(knowledge);
 ```
 
 ---
 
-## 相关文档
+## 📝 子类列表
 
-- [SingleValue.cs.md](./SingleValue.cs.md) - 固定值实现
-- [FormulaValue.cs.md](./FormulaValue.cs.md) - 公式值实现
-- [Range01Value.cs.md](./Range01Value.cs.md) - 0-1 范围值实现
-- [AIKnowledge.cs.md](../AI/AIKnowledge.cs.md) - AI 知识库类
-- [Nino 序列化文档](https://github.com/ninochan/Nino) - Nino 序列化库
+| 子类 | 说明 |
+|------|------|
+| `SingleValue` | 固定数值 |
+| `ZeroValue` | 固定值 0 |
+| `Range01Value` | 随机 0-1 值 |
+| `FormulaValue` | 公式计算值 |
+| `OperatorValue` | 运算操作值 |
+| `RandomAuctionTime` | 随机出价时间 |
+| `MinAuctionTime` | 最低出价时间 |
+| `TimeSinceLastBid` | 距上次出价时间 |
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+## 🔗 相关文档链接
+
+- [SingleValue.cs.md](./SingleValue.cs.md) - 固定值
+- [FormulaValue.cs.md](./FormulaValue.cs.md) - 公式值
+- [OperatorValue.cs.md](./OperatorValue.cs.md) - 运算值
+- [DecisionCompareNode.cs.md](../DecisionTree/DecisionCompareNode.cs.md) - 比较节点
+- [AIKnowledge.cs.md](../../Game/Component/AI/Knowledge/AIKnowledge.cs.md) - AI 知识类
+
+---
+
+*最后更新：2026-03-02*

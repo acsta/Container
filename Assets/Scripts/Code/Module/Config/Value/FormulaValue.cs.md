@@ -1,246 +1,64 @@
-# FormulaValue.cs 注解文档
+# FormulaValue.cs 文档
 
-## 文件基本信息
-
-| 属性 | 值 |
-|------|------|
-| **文件名** | FormulaValue.cs |
-| **路径** | Assets/Scripts/Code/Module/Config/Value/FormulaValue.cs |
-| **所属模块** | 框架层 → Code/Module/Config/Value |
-| **文件职责** | 定义公式运算值类型，通过公式字符串计算复杂数值 |
-
----
-
-## 类/结构体说明
-
-### FormulaValue
-
-| 属性 | 说明 |
-|------|------|
-| **职责** | BaseValue 的公式实现，根据 Formula 字符串和 NumericComponent 计算数值 |
-| **泛型参数** | 无 |
-| **继承关系** | 继承 `BaseValue` |
-| **实现的接口** | 无 |
-
-**设计模式**: 解释器模式
-
-```csharp
-// 创建公式值
-var formula = new FormulaValue { Formula = "HP * 0.3 + STR * 2" };
-float result = formula.Resolve(knowledge);  // 根据 NumericComponent 计算
-```
-
----
-
-## 字段与属性
-
-### Formula
+## 📄 文件信息表
 
 | 属性 | 值 |
 |------|------|
-| **类型** | `string` |
-| **访问级别** | `public` |
-| **说明** | 公式字符串，定义数值计算逻辑 |
-
-**Nino 序列化**: `[NinoMember(1)]`
-
-**公式语法**: 由 `FormulaStringFx` 类解析和支持
-
-**示例公式**:
-- `"HP"` - 直接返回 HP 值
-- `"HP * 0.3"` - HP 的 30%
-- `"STR * 2 + INT"` - STR 的 2 倍加 INT
-- `"Level * 10 + EXP / 100"` - 等级相关计算
+| 文件路径 | `Assets/Scripts/Code/Module/Config/Value/FormulaValue.cs` |
+| 命名空间 | `TaoTie` |
+| 类类型 | 配置值类 |
+| 依赖模块 | Nino.Core |
+| 继承 | `BaseValue` |
+| 序列化 | NinoType |
 
 ---
 
-## 方法说明
+## 🏗️ 类说明
+
+**FormulaValue** 是一个基于公式字符串的动态值解析器，用于从实体的 NumericComponent 中获取计算后的数值。
+
+### 核心职责
+
+- 存储公式字符串
+- 通过 `FormulaStringFx` 解析公式
+- 从实体的数值组件中获取实际值
+
+### 使用场景
+
+- AI 决策树中需要动态获取实体属性
+- 配置表中定义可变的数值条件
+- 支持热配置无需重新编译
+
+---
+
+## 📊 字段表
+
+| 字段名 | 类型 | 访问修饰符 | 说明 |
+|--------|------|------------|------|
+| `Formula` | `string` | `public` | 公式字符串（如 "Cost", "Attack*1.5"） |
+
+---
+
+## 🔧 方法说明
 
 ### Resolve
 
-**签名**:
 ```csharp
 public override float Resolve(AIKnowledge knowledge)
 ```
 
-**职责**: 根据 Formula 字符串和 NumericComponent 计算数值
+解析公式值为具体数值。
 
-**核心逻辑**:
-```
-1. 从 knowledge.Entity 获取 NumericComponent
-2. 如果组件存在:
-   - 调用 FormulaStringFx.Get(Formula) 获取公式解析器
-   - 调用 GetData(numc) 计算结果
-   - 返回计算结果
-3. 如果组件不存在:
-   - 记录错误日志
-   - 返回 0
-```
+**参数:**
+- `knowledge`: AI 知识对象，包含实体引用
 
-**调用者**: DecisionCompareNode, DecisionActionNode, 等
+**返回:** 
+- 成功：公式计算后的浮点数值
+- 失败：0（并记录错误日志）
 
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `knowledge` | `AIKnowledge` | AI 知识库，包含 Entity 引用 |
-
-**返回值**: `float` - 公式计算结果
-
-**异常处理**: 如果 NumericComponent 不存在，记录错误并返回 0。
-
----
-
-## 依赖
-
-### NumericComponent
-
+**实现逻辑:**
 ```csharp
 var numc = knowledge.Entity.GetComponent<NumericComponent>();
-```
-
-**说明**: 数值组件，存储实体的所有数值属性（HP、STR、INT 等）
-
-### FormulaStringFx
-
-```csharp
-return FormulaStringFx.Get(Formula).GetData(numc);
-```
-
-**说明**: 公式字符串解析器，负责解析和计算公式
-
----
-
-## Nino 序列化特性
-
-### NinoType
-
-```csharp
-[NinoType(false)]
-```
-
-**说明**: 标记为 Nino 可序列化类型。
-
-### NinoMember
-
-```csharp
-[NinoMember(1)]  // Formula
-```
-
-**说明**: 显式指定成员序列化顺序。
-
----
-
-## 使用示例
-
-### 示例 1: 基础公式
-
-```csharp
-// 血量阈值 = 最大血量的 30%
-var healthThreshold = new FormulaValue
-{
-    Formula = "MaxHP * 0.3"
-};
-
-var compareNode = new DecisionCompareNode
-{
-    LeftValue = new CurrentHPValue(),
-    CompareMode = CompareMode.Less,
-    RightValue = healthThreshold,
-    True = new DecisionActionNode 
-    { 
-        Act = ActDecision.Action_Run,
-        Remarks = "血量低于 30%，逃跑"
-    },
-    False = new DecisionActionNode { Act = ActDecision.Action_Punch }
-};
-```
-
-### 示例 2: 复合公式
-
-```csharp
-// 攻击力 = 力量 * 2 + 等级 * 5
-var damageFormula = new FormulaValue
-{
-    Formula = "STR * 2 + Level * 5"
-};
-
-var actionNode = new DecisionActionNode
-{
-    Act = ActDecision.Action_Punch,
-    Delay = new SingleValue(500f),
-    // 伤害计算使用公式
-    // (实际伤害计算可能在其他地方使用此公式)
-};
-```
-
-### 示例 3: 复杂公式
-
-```csharp
-// 拍卖出价 = 当前价 * (1 + VIP 等级 * 0.1) + 金币 / 1000
-var bidFormula = new FormulaValue
-{
-    Formula = "CurrentPrice * (1 + VIP * 0.1) + Gold / 1000"
-};
-
-var bidDecision = new DecisionCompareNode
-{
-    LeftValue = new CurrentMoneyValue(),
-    CompareMode = CompareMode.Greater,
-    RightValue = bidFormula,
-    True = new DecisionActionNode 
-    { 
-        Act = ActDecision.Emoji_Nice,
-        Tactic = AITactic.LowWeight,
-        Remarks = "资金充足，可以出价"
-    },
-    False = new DecisionActionNode 
-    { 
-        Act = ActDecision.Emoji_Sigh,
-        Tactic = AITactic.Sidelines,
-        Remarks = "资金不足，观望"
-    }
-};
-```
-
----
-
-## 公式语法
-
-### 支持的运算符
-
-根据 `FormulaStringFx` 的实现，可能支持：
-
-| 运算符 | 说明 | 示例 |
-|--------|------|------|
-| `+` | 加法 | `A + B` |
-| `-` | 减法 | `A - B` |
-| `*` | 乘法 | `A * B` |
-| `/` | 除法 | `A / B` |
-| `%` | 取余 | `A % B` |
-| `^` 或 `Pow` | 次方 | `A ^ 2` |
-| `()` | 括号 | `(A + B) * C` |
-
-### 支持的数值类型
-
-取决于 `NumericComponent` 中定义的数值：
-
-- `HP` - 当前血量
-- `MaxHP` - 最大血量
-- `STR` - 力量
-- `INT` - 智力
-- `Level` - 等级
-- `EXP` - 经验值
-- `Gold` - 金币
-- `VIP` - VIP 等级
-- 等等...
-
----
-
-## 错误处理
-
-### NumericComponent 不存在
-
-```csharp
 if (numc != null)
 {
     return FormulaStringFx.Get(Formula).GetData(numc);
@@ -249,43 +67,173 @@ Log.Error($"获取{Formula}时，未找到 NumericComponent 组件");
 return 0;
 ```
 
-**说明**: 如果 Entity 没有 NumericComponent，记录错误并返回 0。
+---
 
-**调试建议**:
-1. 检查 Entity 是否正确添加了 NumericComponent
-2. 检查 knowledge.Entity 是否正确设置
-3. 在编辑器中验证配置
+## 🔄 Mermaid 流程图
+
+### 值解析流程
+
+```mermaid
+flowchart TD
+    A[Resolve 调用] --> B[从 knowledge 获取 Entity]
+    B --> C[获取 NumericComponent]
+    C --> D{组件存在？}
+    D -->|否 | E[记录错误日志]
+    E --> F[返回 0]
+    D -->|是 | G[FormulaStringFx.Get Formula]
+    G --> H[解析公式字符串]
+    H --> I[从 NumericComponent 获取数据]
+    I --> J[返回计算结果]
+```
+
+### 配置流程
+
+```mermaid
+flowchart LR
+    A[策划配置] --> B[填写 Formula 字段]
+    B --> C[如：Cost]
+    B --> D[如：Attack*1.5+10]
+    C --> E[序列化保存]
+    D --> E
+    E --> F[运行时解析]
+```
 
 ---
 
-## 设计要点
+## 💡 使用示例
 
-### 为什么使用字符串公式？
+### 基础使用
 
-1. **配置友好**: 策划可以直接编辑公式
-2. **灵活性**: 支持任意复杂计算
-3. **可扩展**: 新增数值类型无需修改代码
-4. **可维护**: 公式集中管理，易于调试
+```csharp
+// 创建公式值
+var formulaValue = new FormulaValue
+{
+    Formula = "Cost"  // 获取实体的 Cost 属性
+};
 
-### 与 OperatorValue 对比
+// 解析值
+float cost = formulaValue.Resolve(knowledge);
+```
 
-| 特性 | FormulaValue | OperatorValue |
-|------|--------------|---------------|
-| **配置方式** | 字符串公式 | 树形结构 |
-| **复杂度** | 适合复杂公式 | 适合简单运算 |
-| **可读性** | 高（类似数学） | 中（嵌套结构） |
-| **性能** | 需解析字符串 | 直接计算 |
-| **推荐场景** | 复杂公式 | 简单运算 |
+### 在决策树中使用
+
+```csharp
+// 比较节点：如果 Cost > 100 则出高价
+var compareNode = new DecisionCompareNode
+{
+    LeftValue = new FormulaValue { Formula = "Cost" },
+    CompareMode = CompareMode.Greater,
+    RightValue = new SingleValue(100),
+    True = new DecisionActionNode 
+    { 
+        Tactic = AITactic.HighWeight,
+        Act = ActDecision.Action_Run
+    },
+    False = new DecisionActionNode 
+    { 
+        Tactic = AITactic.LowWeight 
+    }
+};
+```
+
+### 复杂公式
+
+```csharp
+// 公式支持复杂表达式（由 FormulaStringFx 解析）
+var complexFormula = new FormulaValue
+{
+    Formula = "Attack * 1.5 + Defense * 0.5 - Cost * 0.1"
+};
+
+float value = complexFormula.Resolve(knowledge);
+```
+
+### 在配置表中使用
+
+```yaml
+# ConfigAIDecisionTree 配置示例
+Type: "BidderAI"
+Node:
+  Type: DecisionCompareNode
+  LeftValue:
+    Type: FormulaValue
+    Formula: "CurrentBid"
+  CompareMode: Greater
+  RightValue:
+    Type: FormulaValue
+    Formula: "Budget * 0.8"
+  True:
+    Type: DecisionActionNode
+    Tactic: HighWeight
+  False:
+    Type: DecisionActionNode
+    Tactic: Sidelines
+```
 
 ---
 
-## 相关文档
+## 📝 公式语法
 
-- [BaseValue.cs.md](./BaseValue.cs.md) - 值类型基类
-- [OperatorValue.cs.md](./OperatorValue.cs.md) - 运算符值
-- [NumericComponent.cs.md](../../Game/Numeric/NumericComponent.cs.md) - 数值组件
-- [FormulaStringFx.cs.md](../../Helper/FormulaStringFx.cs.md) - 公式解析器
+FormulaStringFx 支持的公式语法（由 NumericComponent 提供）：
+
+| 语法 | 说明 |
+|------|------|
+| `Cost` | 获取 Cost 属性值 |
+| `Attack` | 获取 Attack 属性值 |
+| `Attack*1.5` | 属性乘以系数 |
+| `Attack+10` | 属性加常数 |
+| `Attack*2+Defense` | 组合运算 |
+
+**注意:** 具体支持的公式语法取决于 `FormulaStringFx` 的实现。
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+## ⚠️ 错误处理
+
+### 常见错误
+
+1. **NumericComponent 不存在**
+   ```
+   Log.Error: 获取 Cost 时，未找到 NumericComponent 组件
+   ```
+   **解决:** 确保实体已添加 NumericComponent 组件
+
+2. **公式语法错误**
+   ```
+   FormulaStringFx 解析失败
+   ```
+   **解决:** 检查公式字符串格式
+
+### 防御性编程
+
+```csharp
+// 安全获取值
+var formulaValue = new FormulaValue { Formula = "Cost" };
+var numc = knowledge.Entity.GetComponent<NumericComponent>();
+
+if (numc != null)
+{
+    float value = formulaValue.Resolve(knowledge);
+    // 使用 value
+}
+else
+{
+    // 使用默认值
+    float value = 0;
+}
+```
+
+---
+
+## 🔗 相关文档链接
+
+- [BaseValue.cs.md](./BaseValue.cs.md) - 值基类
+- [SingleValue.cs.md](./SingleValue.cs.md) - 固定值
+- [OperatorValue.cs.md](./OperatorValue.cs.md) - 运算值
+- [NumericComponent.cs.md](../../../Game/Component/Numeric/NumericComponent.cs.md) - 数值组件
+- [FormulaStringFx.cs.md](../../../Game/Component/Numeric/FormulaStringFx.cs.md) - 公式解析器
+- [DecisionCompareNode.cs.md](../DecisionTree/DecisionCompareNode.cs.md) - 比较节点
+
+---
+
+*最后更新：2026-03-02*

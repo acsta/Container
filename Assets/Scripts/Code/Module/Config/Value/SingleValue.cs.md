@@ -1,228 +1,232 @@
-# SingleValue.cs 注解文档
+# SingleValue.cs 文档
 
-## 文件基本信息
-
-| 属性 | 值 |
-|------|-----|
-| **文件名** | SingleValue.cs |
-| **路径** | Assets/Scripts/Code/Module/Config/Value/SingleValue.cs |
-| **所属模块** | 框架层 → Code/Module/Config/Value |
-| **文件职责** | 定义固定值类型，返回预设的浮点数值 |
-
----
-
-## 类/结构体说明
-
-### SingleValue
-
-| 属性 | 说明 |
-|------|------|
-| **职责** | BaseValue 的最简单实现，始终返回固定的浮点数值 |
-| **泛型参数** | 无 |
-| **继承关系** | 继承 `BaseValue` |
-| **实现的接口** | 无 |
-
-**设计模式**: 常量模式
-
-```csharp
-// 创建固定值
-var value = new SingleValue { Value = 50f };
-float result = value.Resolve(knowledge);  // 始终返回 50
-```
-
----
-
-## 字段与属性
-
-### Value
+## 📄 文件信息表
 
 | 属性 | 值 |
 |------|------|
-| **类型** | `float` |
-| **访问级别** | `public` |
-| **默认值** | `0` |
-| **说明** | 固定的浮点数值 |
-
-**Nino 序列化**: `[NinoMember(1)]`
+| 文件路径 | `Assets/Scripts/Code/Module/Config/Value/SingleValue.cs` |
+| 命名空间 | `TaoTie` |
+| 类类型 | 配置值类 |
+| 依赖模块 | Nino.Core |
+| 继承 | `BaseValue` |
+| 序列化 | NinoType |
 
 ---
 
-## 构造函数
+## 🏗️ 类说明
 
-### 无参构造函数
+**SingleValue** 是最简单的值类型，用于表示固定的浮点数值。
+
+### 核心职责
+
+- 存储固定的 float 值
+- 在值解析时直接返回存储的值
+- 作为其他运算值的基础操作数
+
+### 使用场景
+
+- 决策树中的固定阈值比较
+- 运算操作的常量操作数
+- 配置表中的固定数值
+
+---
+
+## 📊 字段表
+
+| 字段名 | 类型 | 访问修饰符 | 说明 |
+|--------|------|------------|------|
+| `Value` | `float` | `public` | 固定的数值 |
+
+---
+
+## 🔧 方法说明
+
+### 构造函数
 
 ```csharp
 public SingleValue()
-{
-    Value = 0;
-}
 ```
 
-**用途**: 创建默认值为 0 的固定值
+默认构造函数，初始化 `Value = 0`。
 
 ---
-
-### 有参构造函数
 
 ```csharp
 public SingleValue(float val)
-{
-    Value = val;
-}
 ```
 
-**用途**: 创建指定值的固定值
+带参构造函数，初始化指定值。
 
-**使用示例**:
-```csharp
-var value = new SingleValue(50f);  // 创建值为 50 的固定值
-```
+**参数:**
+- `val`: 初始值
 
 ---
-
-## 方法说明
 
 ### Resolve
 
-**签名**:
 ```csharp
 public override float Resolve(AIKnowledge knowledge)
 ```
 
-**职责**: 返回固定的 Value 值（忽略 knowledge 参数）
+解析值为具体数值。
 
-**核心逻辑**:
+**参数:**
+- `knowledge`: AI 知识对象（未使用）
+
+**返回:** `Value` 字段的值
+
+**实现逻辑:**
+```csharp
+return Value;
 ```
-1. 直接返回 Value 字段
-2. 不依赖任何外部状态
-```
 
-**调用者**: DecisionCompareNode, DecisionActionNode, 等
-
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `knowledge` | `AIKnowledge` | AI 知识库（未使用） |
-
-**返回值**: `float` - 固定的 Value 值
+**注意:** 此方法不依赖 `knowledge` 参数，始终返回固定值。
 
 ---
 
-## Nino 序列化特性
+## 🔄 Mermaid 流程图
 
-### NinoType
+### 值解析流程
 
-```csharp
-[NinoType(false)]
+```mermaid
+flowchart TD
+    A[Resolve 调用] --> B[直接返回 Value]
+    B --> C[结束]
+    
+    style B fill:#90EE90
 ```
 
-**说明**: 标记为 Nino 可序列化类型。
+### 创建流程
 
-### NinoMember
-
-```csharp
-[NinoMember(1)]  // Value
+```mermaid
+flowchart LR
+    A[new SingleValue] --> B{有参数？}
+    B -->|是 | C[Value = val]
+    B -->|否 | D[Value = 0]
+    C --> E[完成]
+    D --> E
 ```
-
-**说明**: 显式指定成员序列化顺序。
 
 ---
 
-## 使用示例
+## 💡 使用示例
 
-### 示例 1: 基础使用
+### 基础使用
 
 ```csharp
-// 创建固定值
-var fixedValue = new SingleValue { Value = 100f };
+// 默认构造函数（值为 0）
+var zeroValue = new SingleValue();
+float result = zeroValue.Resolve(knowledge);  // 返回 0
 
-// 在比较节点中使用
+// 带参构造函数
+var hundredValue = new SingleValue(100);
+float result = hundredValue.Resolve(knowledge);  // 返回 100
+```
+
+### 在决策树中使用
+
+```csharp
+// 比较节点：如果 Cost > 100
 var compareNode = new DecisionCompareNode
 {
-    LeftValue = new SingleValue { Value = 50f },
+    LeftValue = new FormulaValue { Formula = "Cost" },
     CompareMode = CompareMode.Greater,
-    RightValue = new SingleValue { Value = 30f },
-    True = new DecisionActionNode { Act = ActDecision.Action_Punch },
-    False = new DecisionActionNode { Act = ActDecision.Action_Run }
+    RightValue = new SingleValue(100),  // 固定阈值 100
+    True = new DecisionActionNode { Tactic = AITactic.HighWeight },
+    False = new DecisionActionNode { Tactic = AITactic.LowWeight }
 };
 ```
 
-### 示例 2: 使用构造函数
+### 作为运算操作数
 
 ```csharp
-// 使用构造函数创建
-var healthThreshold = new SingleValue(30f);
-var distanceThreshold = new SingleValue(5f);
-
-// 在配置中使用
-var config = new DecisionCompareNode
+// 计算：Cost * 1.5
+var multiplyOp = new OperatorValue
 {
-    LeftValue = healthThreshold,
-    CompareMode = CompareMode.Greater,
-    RightValue = new SingleValue(30f)
+    Left = new FormulaValue { Formula = "Cost" },
+    Op = LogicMode.Mul,
+    Right = new SingleValue(1.5f)  // 固定系数
+};
+
+// 计算：Attack + 10
+var addOp = new OperatorValue
+{
+    Left = new FormulaValue { Formula = "Attack" },
+    Op = LogicMode.Add,
+    Right = new SingleValue(10)  // 固定加成
 };
 ```
 
-### 示例 3: 在 Action 节点中使用
+### 在配置表中使用
 
-```csharp
-// 延迟时间使用固定值
-var actionNode = new DecisionActionNode
-{
-    Act = ActDecision.Action_Punch,
-    Tactic = AITactic.HighWeight,
-    Delay = new SingleValue(1000f)  // 固定延迟 1 秒
-};
+```yaml
+# ConfigAIDecisionTree 配置示例
+Type: "BidderAI"
+Node:
+  Type: DecisionCompareNode
+  LeftValue:
+    Type: FormulaValue
+    Formula: "CurrentBid"
+  CompareMode: Greater
+  RightValue:
+    Type: SingleValue
+    Value: 500  # 固定阈值
+  True:
+    Type: DecisionActionNode
+    Tactic: AllIn
+  False:
+    Type: DecisionActionNode
+    Tactic: Sidelines
 ```
 
 ---
 
-## 与其他 Value 类型对比
+## 📝 与其他值类型的对比
 
-| 类型 | 返回值 | 使用场景 |
-|------|--------|----------|
-| `SingleValue` | 固定值 | 阈值、常量、固定延迟 |
-| `ZeroValue` | 始终 0 | 占位、重置 |
+| 值类型 | 特点 | 使用场景 |
+|--------|------|----------|
+| `SingleValue` | 固定值 | 阈值、常量 |
+| `ZeroValue` | 固定为 0 | 清零、默认值 |
 | `Range01Value` | 随机 0-1 | 概率、随机因子 |
-| `FormulaValue` | 公式计算 | 复杂数值关系 |
-| `OperatorValue` | 运算结果 | 加减乘除等运算 |
-| `RandomAuctionTime` | 配置随机时间 | 拍卖出价延迟 |
+| `FormulaValue` | 动态公式 | 实体属性 |
+| `OperatorValue` | 运算组合 | 复杂计算 |
 
 ---
 
-## 设计要点
+## ⚠️ 注意事项
 
-### 为什么需要 SingleValue？
-
-1. **最简单**: BaseValue 的最基础实现
-2. **默认选择**: 大多数情况下的首选
-3. **性能最优**: 无需计算，直接返回
-4. **配置友好**: 策划容易理解和使用
-
-### 忽略 knowledge 参数
+### 序列化
 
 ```csharp
-public override float Resolve(AIKnowledge knowledge)
-{
-    return Value;  // 完全忽略 knowledge
-}
+// Nino 序列化标记
+[NinoType(false)]
+[NinoMember(1)]
+public float Value;
 ```
 
-**原因**:
-- 固定值不依赖任何外部状态
-- 保持接口一致性（所有 BaseValue 子类都有此方法）
-- 未来可以扩展为依赖 knowledge
+- 使用 Nino 序列化
+- 字段序号为 1
+
+### 性能
+
+- `Resolve` 方法无计算开销，直接返回值
+- 适合频繁调用的场景
+
+### 默认值
+
+- 默认构造函数创建的值是 0
+- 注意与 `ZeroValue` 的区别（`ZeroValue` 是单例模式）
 
 ---
 
-## 相关文档
+## 🔗 相关文档链接
 
-- [BaseValue.cs.md](./BaseValue.cs.md) - 值类型基类
-- [ZeroValue.cs.md](./ZeroValue.cs.md) - 零值实现
-- [Range01Value.cs.md](./Range01Value.cs.md) - 随机 0-1 值
-- [FormulaValue.cs.md](./FormulaValue.cs.md) - 公式值
-- [DecisionCompareNode.cs.md](../DecisionTree/DecisionCompareNode.cs.md) - 使用 Value 的比较节点
+- [BaseValue.cs.md](./BaseValue.cs.md) - 值基类
+- [ZeroValue.cs.md](./ZeroValue.cs.md) - 零值
+- [OperatorValue.cs.md](./OperatorValue.cs.md) - 运算值
+- [DecisionCompareNode.cs.md](../DecisionTree/DecisionCompareNode.cs.md) - 比较节点
+- [LogicMode.cs.md](./LogicMode.cs.md) - 逻辑运算模式
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*最后更新：2026-03-02*
