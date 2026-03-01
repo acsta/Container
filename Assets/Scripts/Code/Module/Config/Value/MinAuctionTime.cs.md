@@ -1,297 +1,227 @@
-# MinAuctionTime.cs 注解文档
+# MinAuctionTime.cs 文档
 
-## 文件基本信息
+## 📄 文件信息表
 
 | 属性 | 值 |
 |------|------|
-| **文件名** | MinAuctionTime.cs |
-| **路径** | Assets/Scripts/Code/Module/Config/Value/MinAuctionTime.cs |
-| **所属模块** | 框架层 → Code/Module/Config/Value |
-| **文件职责** | 定义最小拍卖时间值类型，从配置中读取拍卖时间范围的最小值 |
+| 文件路径 | `Assets/Scripts/Code/Module/Config/Value/MinAuctionTime.cs` |
+| 命名空间 | `TaoTie` |
+| 类类型 | 配置值类 |
+| 依赖模块 | Nino.Core, Sirenix.OdinInspector, UnityEngine |
+| 继承 | `BaseValue` |
+| 序列化 | NinoType |
 
 ---
 
-## 类/结构体说明
+## 🏗️ 类说明
 
-### MinAuctionTime
+**MinAuctionTime** 是一个专用的值类型，用于从配置表中获取最低出价时间。
 
-| 属性 | 说明 |
-|------|------|
-| **职责** | BaseValue 的拍卖专用实现，从配置表读取拍卖时间范围的最小值 |
-| **泛型参数** | 无 |
-| **继承关系** | 继承 `BaseValue` |
-| **实现的接口** | 无 |
+### 核心职责
 
-**设计模式**: 配置驱动模式 + 常量模式
+- 从 `knowledge.Config.AuctionTime` 配置数组中读取最小值
+- 返回固定的最低出价时间
+- 用于 AI 出价时间的下限判断
 
-```csharp
-// 创建最小拍卖时间
-var minTime = new MinAuctionTime();
-float delay = minTime.Resolve(knowledge);  // 返回配置的最小值
-```
+### 配置依赖
+
+依赖 `AIKnowledge.Config.AuctionTime` 数组：
+- `AuctionTime[0]`: 最小出价时间（毫秒）
 
 ---
 
-## 字段与属性
+## 📊 字段表
 
-MinAuctionTime **没有字段**，完全依赖配置表数据。
-
-**配置依赖**: `knowledge.Config.AuctionTime[0]`
-
----
-
-## Odin Inspector 集成
-
-### LabelText 特性
-
-```csharp
-[NinoType(false)][LabelText("配置表最低出价时间")]
-public class MinAuctionTime: BaseValue
-```
-
-**效果**: Inspector 中显示友好的中文标签 "配置表最低出价时间"
-
-**用途**: 策划在配置编辑器中快速识别此类型
+| 字段名 | 类型 | 访问修饰符 | 说明 |
+|--------|------|------------|------|
+| (无实例字段) | - | - | 无状态类 |
 
 ---
 
-## 方法说明
+## 🔧 方法说明
 
 ### Resolve
 
-**签名**:
 ```csharp
 public override float Resolve(AIKnowledge knowledge)
 ```
 
-**职责**: 从配置表读取拍卖时间范围的最小值
+解析值为配置的最低出价时间。
 
-**核心逻辑**:
-```
-1. 从 knowledge.Config.AuctionTime 读取时间范围数组
-2. 返回 AuctionTime[0]（最小值）
-```
+**参数:**
+- `knowledge`: AI 知识对象，包含配置引用
 
-**调用者**: DecisionActionNode（用于 Delay 字段）
+**返回:** `AuctionTime[0]` 的值（毫秒）
 
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `knowledge` | `AIKnowledge` | AI 知识库，包含 Config 引用 |
-
-**返回值**: `float` - 拍卖时间最小值（毫秒）
-
----
-
-## 配置表依赖
-
-### AuctionTime 配置
-
+**实现逻辑:**
 ```csharp
-// knowledge.Config.AuctionTime 是一个数组
-AuctionTime = [minTime, maxTime]
-
-// MinAuctionTime 返回 AuctionTime[0]
-```
-
-**示例配置**:
-```json
-{
-  "AuctionTime": [500, 1500]
-}
-```
-
-**MinAuctionTime 返回**: `500` (ms)
-
----
-
-## 使用示例
-
-### 示例 1: 固定最小延迟
-
-```csharp
-// 拍卖 AI：使用最小延迟（快速出价）
-var quickBidAction = new DecisionActionNode
-{
-    Act = ActDecision.Emoji_Nice,
-    Tactic = AITactic.HighWeight,
-    Delay = new MinAuctionTime(),  // 固定使用最小延迟 500ms
-    Remarks = "快速出价策略"
-};
-```
-
-### 示例 2: 与 RandomAuctionTime 对比使用
-
-```csharp
-// 激进 AI：总是快速出价
-var aggressiveAI = new DecisionActionNode
-{
-    Act = ActDecision.Emoji_Cheer,
-    Tactic = AITactic.HighWeight,
-    Delay = new MinAuctionTime(),  // 最小延迟
-    Remarks = "激进策略，快速出价"
-};
-
-// 保守 AI：随机延迟
-var conservativeAI = new DecisionActionNode
-{
-    Act = ActDecision.Emoji_Smile1,
-    Tactic = AITactic.LowWeight,
-    Delay = new RandomAuctionTime(),  // 随机延迟
-    Remarks = "保守策略，随机延迟"
-};
-```
-
-### 示例 3: 条件延迟
-
-```csharp
-// 根据情况选择延迟
-var conditionalDelay = new DecisionConditionNode
-{
-    Condition = "IsLastItem",
-    True = new DecisionActionNode
-    {
-        Act = ActDecision.Emoji_Nice,
-        Tactic = AITactic.AllIn,
-        Delay = new MinAuctionTime(),  // 最后物品，快速出价
-        Remarks = "最后物品，快速梭哈"
-    },
-    False = new DecisionActionNode
-    {
-        Act = ActDecision.Emoji_Smile1,
-        Tactic = AITactic.LowWeight,
-        Delay = new RandomAuctionTime(),  // 普通物品，随机延迟
-        Remarks = "普通物品，正常出价"
-    }
-};
-```
-
----
-
-## 与 RandomAuctionTime 对比
-
-| 特性 | MinAuctionTime | RandomAuctionTime |
-|------|----------------|-------------------|
-| **返回值** | 固定值 min | 随机值 [min, max] |
-| **可预测性** | ✅ 完全可预测 | ❌ 不可预测 |
-| **使用场景** | 快速反应、紧急情况 | 自然模拟、增加变数 |
-| **自然度** | 低（机械感） | 高（拟人化） |
-
----
-
-## 设计要点
-
-### 为什么需要 MinAuctionTime？
-
-1. **策略表达**: 明确表达"总是最快"的策略意图
-2. **性能**: 无需随机数生成
-3. **可预测**: 便于调试和测试
-4. **配置驱动**: 策划可以调整最小延迟
-
-### 配置驱动的优势
-
-```csharp
-// 代码中无需硬编码数值
 return knowledge.Config.AuctionTime[0];
-
-// 策划可以在配置表中调整
-// [500, 1500] → [300, 1000] 加快节奏
-// [500, 1500] → [1000, 3000] 放慢节奏
-```
-
-### 毫秒单位
-
-**说明**: 返回值为毫秒（ms）
-
-**转换**:
-```csharp
-float seconds = minTime / 1000f;  // 转换为秒
-yield return new WaitForSeconds(seconds);
 ```
 
 ---
 
-## 典型使用场景
+## 🔄 Mermaid 流程图
 
-### 1. 激进 AI 策略
+### 值解析流程
+
+```mermaid
+flowchart TD
+    A[Resolve 调用] --> B[从 knowledge 获取 Config]
+    B --> C[读取 AuctionTime[0]]
+    C --> D[返回最小时间]
+    
+    style B fill:#e1f5ff
+    style C fill:#fff3e1
+    style D fill:#90EE90
+```
+
+---
+
+## 💡 使用示例
+
+### 基础使用
 
 ```csharp
-// 激进 AI：总是最快出价
-var aggressiveBid = new DecisionActionNode
+// 创建最低出价时间
+var minTime = new MinAuctionTime();
+
+// 解析值（假设配置 AuctionTime = [1000, 3000]）
+float minDelay = minTime.Resolve(knowledge);  // 返回 1000
+```
+
+### 在决策树中使用
+
+```csharp
+// 比较节点：检查延迟是否大于最小时间
+var compareNode = new DecisionCompareNode
 {
-    Delay = new MinAuctionTime(),
-    Tactic = AITactic.HighWeight,
-    Remarks = "快速高价竞标"
+    LeftValue = new TimeSinceLastBid(),  // 距上次出价时间
+    CompareMode = CompareMode.Greater,
+    RightValue = new MinAuctionTime(),  // 最小出价时间
+    True = new DecisionActionNode { Tactic = AITactic.LowWeight },
+    False = new DecisionActionNode { Tactic = AITactic.Sidelines }
 };
 ```
 
-### 2. 倒计时场景
+### 在配置表中使用
 
-```csharp
-// 拍卖即将结束，快速出价
-var lastChanceBid = new DecisionActionNode
-{
-    Delay = new MinAuctionTime(),
-    Tactic = AITactic.AllIn,
-    Remarks = "最后机会，梭哈"
-};
+```yaml
+# ConfigAIDecisionTree 配置示例
+Type: "ConservativeBidderAI"
+Node:
+  Type: DecisionCompareNode
+  LeftValue:
+    Type: TimeSinceLastBid  # 距上次出价时间
+  CompareMode: Greater
+  RightValue:
+    Type: MinAuctionTime  # 最小出价时间阈值
+  True:
+    Type: DecisionActionNode
+    Tactic: LowWeight
+  False:
+    Type: DecisionActionNode
+    Tactic: Sidelines  # 时间未到，继续观望
 ```
 
-### 3. 低价抢购
+### 与其他值类型组合
 
 ```csharp
-// 低价物品，快速抢购
-var quickSteal = new DecisionActionNode
+// 最小时间 + 缓冲时间
+var safeDelay = new OperatorValue
 {
-    Delay = new MinAuctionTime(),
-    Tactic = AITactic.LowWeight,
-    Remarks = "低价快抢"
+    Left = new MinAuctionTime(),
+    Op = LogicMode.Add,
+    Right = new SingleValue(200)  # 额外 200ms 缓冲
+};
+
+// 最小时间 * 安全系数
+var conservativeDelay = new OperatorValue
+{
+    Left = new MinAuctionTime(),
+    Op = LogicMode.Mul,
+    Right = new SingleValue(1.2f)  # 1.2 倍安全系数
 };
 ```
 
 ---
 
-## 配置表设计建议
+## 📝 配置示例
 
-### 推荐配置结构
+### AIKnowledge 配置
 
-```json
+```csharp
+// AIKnowledge 中的配置结构
+public class AIKnowledge
 {
-  "AIConfig": {
-    "AuctionTime": [500, 1500],
-    "ThinkTime": [200, 800],
-    "ReactionTime": [100, 300]
-  }
+    public ConfigAIDecisionTreeCategory Config;
+    public long LastBidTime;
+    // ...
+}
+
+// ConfigAIDecisionTreeCategory 中
+public class ConfigAIDecisionTreeCategory
+{
+    public float[] AuctionTime = new float[] { 1000, 3000 };  // [min, max]
+    // ...
 }
 ```
 
-### 多难度配置
+### 配置表设置
 
-```json
+在 Unity 编辑器中配置 `ConfigAIDecisionTreeCategory`：
+
+```yaml
+AuctionTime:
+  - 1000  # 最小出价时间 (ms) - MinAuctionTime 返回此值
+  - 3000  # 最大出价时间 (ms) - RandomAuctionTime 使用此范围
+```
+
+---
+
+## 🔄 相关值类型对比
+
+| 值类型 | 返回值 | 使用场景 |
+|--------|--------|----------|
+| `MinAuctionTime` | `AuctionTime[0]` | 最小时间阈值 |
+| `RandomAuctionTime` | `Random(AuctionTime[0], AuctionTime[1])` | 随机延迟 |
+| `TimeSinceLastBid` | `Now - LastBidTime` | 已等待时间 |
+
+---
+
+## ⚠️ 注意事项
+
+### 配置依赖
+
+- 必须确保 `knowledge.Config.AuctionTime` 已正确配置
+- 数组长度必须至少为 1
+- 建议值为正数（毫秒）
+
+### 空值保护
+
+```csharp
+// 建议在使用前检查配置
+if (knowledge.Config?.AuctionTime?.Length >= 1)
 {
-  "DifficultyConfig": {
-    "Easy": {
-      "AuctionTime": [1000, 3000]  // 简单：AI 慢
-    },
-    "Normal": {
-      "AuctionTime": [500, 1500]   // 普通：AI 正常
-    },
-    "Hard": {
-      "AuctionTime": [200, 800]    // 困难：AI 快
-    }
-  }
+    var minTime = new MinAuctionTime();
+    float minDelay = minTime.Resolve(knowledge);
+}
+else
+{
+    // 使用默认值
+    float minDelay = 1000;
 }
 ```
 
 ---
 
-## 相关文档
+## 🔗 相关文档链接
 
-- [BaseValue.cs.md](./BaseValue.cs.md) - 值类型基类
-- [RandomAuctionTime.cs.md](./RandomAuctionTime.cs.md) - 随机拍卖时间
+- [BaseValue.cs.md](./BaseValue.cs.md) - 值基类
+- [RandomAuctionTime.cs.md](./RandomAuctionTime.cs.md) - 随机出价时间
 - [TimeSinceLastBid.cs.md](./TimeSinceLastBid.cs.md) - 距上次出价时间
-- [DecisionActionNode.cs.md](../DecisionTree/DecisionActionNode.cs.md) - 使用 Delay 的动作节点
+- [AIKnowledge.cs.md](../../../Game/Component/AI/Knowledge/AIKnowledge.cs.md) - AI 知识类
+- [DecisionCompareNode.cs.md](../DecisionTree/DecisionCompareNode.cs.md) - 比较节点
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*最后更新：2026-03-02*

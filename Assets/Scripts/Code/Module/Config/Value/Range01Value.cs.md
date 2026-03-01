@@ -1,328 +1,234 @@
-# Range01Value.cs 注解文档
+# Range01Value.cs 文档
 
-## 文件基本信息
+## 📄 文件信息表
 
 | 属性 | 值 |
 |------|------|
-| **文件名** | Range01Value.cs |
-| **路径** | Assets/Scripts/Code/Module/Config/Value/Range01Value.cs |
-| **所属模块** | 框架层 → Code/Module/Config/Value |
-| **文件职责** | 定义随机 0-1 值类型，每次解析返回随机数 |
+| 文件路径 | `Assets/Scripts/Code/Module/Config/Value/Range01Value.cs` |
+| 命名空间 | `TaoTie` |
+| 类类型 | 配置值类 |
+| 依赖模块 | Nino.Core, UnityEngine |
+| 继承 | `BaseValue` |
+| 序列化 | NinoType |
 
 ---
 
-## 类/结构体说明
+## 🏗️ 类说明
 
-### Range01Value
+**Range01Value** 是一个随机值生成器，每次解析时返回 0 到 1 之间的随机浮点数。
 
-| 属性 | 说明 |
-|------|------|
-| **职责** | BaseValue 的随机实现，每次 Resolve 调用返回 0-1 之间的随机数 |
-| **泛型参数** | 无 |
-| **继承关系** | 继承 `BaseValue` |
-| **实现的接口** | 无 |
+### 核心职责
 
-**设计模式**: 随机模式
+- 生成 [0, 1] 区间的随机值
+- 用于概率判断和随机因子
+- 提供可配置的随机性
 
-```csharp
-// 创建随机值
-var randomValue = new Range01Value();
-float result1 = randomValue.Resolve(knowledge);  // 如 0.347
-float result2 = randomValue.Resolve(knowledge);  // 如 0.812（不同）
-```
+### 使用场景
+
+- AI 决策中的概率分支
+- 随机出价策略
+- 添加随机扰动
 
 ---
 
-## 字段与属性
+## 📊 字段表
 
-Range01Value **没有字段**，因为它是纯随机生成。
+| 字段名 | 类型 | 访问修饰符 | 说明 |
+|--------|------|------------|------|
+| (无实例字段) | - | - | 无状态类 |
 
 ---
 
-## 方法说明
+## 🔧 方法说明
 
 ### Resolve
 
-**签名**:
 ```csharp
 public override float Resolve(AIKnowledge knowledge)
 ```
 
-**职责**: 返回 0-1 之间的随机浮点数
+解析值为 0-1 之间的随机数。
 
-**核心逻辑**:
+**参数:**
+- `knowledge`: AI 知识对象（未使用）
+
+**返回:** [0, 1) 区间的随机浮点数
+
+**实现逻辑:**
+```csharp
+return Random.Range(0f, 1f);
 ```
-1. 调用 UnityEngine.Random.Range(0f, 1f)
-2. 返回随机数（包含 0，不包含 1）
-```
 
-**调用者**: DecisionCompareNode, DecisionActionNode, 等
-
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `knowledge` | `AIKnowledge` | AI 知识库（未使用） |
-
-**返回值**: `float` - 0-1 之间的随机数 [0, 1)
-
-**分布特性**:
-- 最小值：0.0（可能）
-- 最大值：接近 1.0（如 0.9999）
-- 平均值：0.5
-- 分布：均匀分布
+**注意:** 使用 Unity 的 `Random.Range`，每次调用返回不同的随机值。
 
 ---
 
-## 依赖
+## 🔄 Mermaid 流程图
 
-### UnityEngine.Random
+### 值解析流程
 
-```csharp
-using UnityEngine;
-
-// 使用 Unity 的随机数生成器
-Random.Range(0f, 1f)
+```mermaid
+flowchart TD
+    A[Resolve 调用] --> B[Random.Range 0, 1]
+    B --> C[返回随机值]
+    C --> D[结束]
+    
+    style B fill:#FFD700
+    style C fill:#90EE90
 ```
 
-**说明**: 使用 Unity 内置的随机数生成器，确保跨平台一致性。
+### 概率决策流程
+
+```mermaid
+flowchart TD
+    A[概率判断] --> B[Range01Value.Resolve]
+    B --> C{随机值 < 阈值？}
+    C -->|是 | D[执行低概率动作]
+    C -->|否 | E[执行高概率动作]
+```
 
 ---
 
-## Nino 序列化特性
+## 💡 使用示例
 
-### NinoType
+### 基础使用
 
 ```csharp
-[NinoType(false)]
+// 创建随机值
+var randomValue = new Range01Value();
+
+// 多次调用返回不同的随机值
+float r1 = randomValue.Resolve(knowledge);  // 例如：0.347
+float r2 = randomValue.Resolve(knowledge);  // 例如：0.892
+float r3 = randomValue.Resolve(knowledge);  // 例如：0.156
 ```
 
-**说明**: 标记为 Nino 可序列化类型。
-
-**序列化结果**: 由于没有字段，序列化后几乎不占空间。
-
----
-
-## 使用示例
-
-### 示例 1: 概率判断
+### 概率判断
 
 ```csharp
-// 50% 概率执行某个动作
-var probabilityCheck = new DecisionCompareNode
+// 30% 概率出高价
+var randomValue = new Range01Value();
+float chance = randomValue.Resolve(knowledge);
+
+if (chance < 0.3f)
 {
-    LeftValue = new Range01Value(),  // 随机 0-1
-    CompareMode = CompareMode.Less,
-    RightValue = new SingleValue { Value = 0.5f },  // 阈值 0.5
-    True = new DecisionActionNode 
-    { 
-        Act = ActDecision.Action_Punch,
-        Remarks = "50% 概率攻击"
-    },
-    False = new DecisionActionNode 
-    { 
-        Act = ActDecision.Stand_Idle1,
-        Remarks = "50% 概率待机"
-    }
+    // 30% 概率执行
+    tactic = AITactic.HighWeight;
+}
+else
+{
+    // 70% 概率执行
+    tactic = AITactic.LowWeight;
+}
+```
+
+### 在决策树中使用
+
+```csharp
+// 使用 OperatorValue 实现概率判断
+var probabilityCheck = new OperatorValue
+{
+    Left = new Range01Value(),  // 随机 0-1
+    Op = LogicMode.Less,
+    Right = new SingleValue(0.3f)  // 30% 阈值
 };
+
+// 注意：OperatorValue 的 Less 比较返回 float (0 或 1)
+// 实际使用时需要配合 DecisionCompareNode
 ```
 
-### 示例 2: 随机延迟
+### 随机出价系数
 
 ```csharp
-// 随机延迟（0-1 秒）
-var actionNode = new DecisionActionNode
+// 出价 = 基础价 * (0.8 + 随机 0-0.4)
+var randomBidMultiplier = new OperatorValue
 {
-    Act = ActDecision.Action_Punch,
-    Delay = new Range01Value()  // 随机 0-1 秒
-};
-```
-
-### 示例 3: 随机因子
-
-```csharp
-// 攻击力 = 基础值 * 随机因子 (0.8-1.2)
-var damageFormula = new OperatorValue
-{
-    Left = new BaseDamageValue(),
-    Op = LogicMode.Mul,
+    Left = new SingleValue(0.8f),
+    Op = LogicMode.Add,
     Right = new OperatorValue
     {
-        Left = new SingleValue { Value = 0.4f },  // 0.4
-        Op = LogicMode.Add,
-        Right = new OperatorValue
-        {
-            Left = new Range01Value(),  // 0-1
-            Op = LogicMode.Mul,
-            Right = new SingleValue { Value = 0.8f }  // *0.8 = 0-0.8
-        }  // 0.4 + 0-0.8 = 0.4-1.2
+        Left = new Range01Value(),
+        Op = LogicMode.Mul,
+        Right = new SingleValue(0.4f)
     }
+};
+
+var finalBid = new OperatorValue
+{
+    Left = new FormulaValue { Formula = "BasePrice" },
+    Op = LogicMode.Mul,
+    Right = randomBidMultiplier
 };
 ```
 
-### 示例 4: 多重随机判断
+### 在配置表中使用
+
+```yaml
+# ConfigAIDecisionTree 配置示例
+Type: "RandomBidderAI"
+Node:
+  Type: DecisionCompareNode
+  LeftValue:
+    Type: Range01Value  # 随机值
+  CompareMode: Less
+  RightValue:
+    Type: SingleValue
+    Value: 0.5  # 50% 概率
+  True:
+    Type: DecisionActionNode
+    Tactic: Random  # 随机策略
+  False:
+    Type: DecisionActionNode
+    Tactic: Sidelines  # 观望
+```
+
+---
+
+## 📝 随机数特性
+
+### Unity Random.Range
+
+- **范围:** [min, max) - 包含最小值，不包含最大值
+- **分布:** 均匀分布
+- **种子:** 使用 Unity 全局随机种子
+- **可重复性:** 可通过 `Random.InitState(seed)` 控制
+
+### 使用建议
 
 ```csharp
-// 三重随机判断
-var randomDecision = new ConfigAIDecisionTree
-{
-    Type = "RandomTest",
-    Node = new DecisionCompareNode
-    {
-        LeftValue = new Range01Value(),
-        CompareMode = CompareMode.Less,
-        RightValue = new SingleValue { Value = 0.33f },
-        True = new DecisionActionNode 
-        { 
-            Act = ActDecision.Dance_1,
-            Remarks = "33% 概率跳舞 1"
-        },
-        False = new DecisionCompareNode
-        {
-            LeftValue = new Range01Value(),
-            CompareMode = CompareMode.Less,
-            RightValue = new SingleValue { Value = 0.5f },  // 在剩余 67% 中的 50%
-            True = new DecisionActionNode 
-            { 
-                Act = ActDecision.Dance_2,
-                Remarks = "约 33% 概率跳舞 2"
-            },
-            False = new DecisionActionNode 
-            { 
-                Act = ActDecision.Dance_3,
-                Remarks = "约 34% 概率跳舞 3"
-            }
-        }
-    }
-};
+// 如果需要可重复的随机序列
+Random.InitState(42);
+var randomValue = new Range01Value();
+float r1 = randomValue.Resolve(knowledge);  // 固定种子下始终相同
+
+// 如果需要真正的随机
+// 无需额外操作，Unity 默认使用基于时间的种子
 ```
 
 ---
 
-## 随机数特性
+## ⚠️ 注意事项
 
-### 均匀分布
+### 性能
 
-```
-概率密度
-  ^
-  |
-1 |─────────────────
-  |                 │
-  |                 │
-  |                 │
-0 +─────────────────┴──> 值
-  0                 1
-```
+- 每次 `Resolve` 调用都会生成新的随机数
+- 在循环中频繁调用可能影响性能
+- 建议缓存结果如需多次使用
 
-**说明**: 每个值出现的概率相等
+### 调试
 
-### 多次调用结果示例
-
-```csharp
-var random = new Range01Value();
-
-random.Resolve(knowledge);  // 0.347821
-random.Resolve(knowledge);  // 0.812453
-random.Resolve(knowledge);  // 0.156789
-random.Resolve(knowledge);  // 0.923456
-random.Resolve(knowledge);  // 0.501234
-```
+- 随机值使调试变得困难
+- 测试时可设置固定种子：`Random.InitState(12345)`
 
 ---
 
-## 与 Unity Random.value 对比
+## 🔗 相关文档链接
 
-| 特性 | Range01Value | Random.value |
-|------|--------------|--------------|
-| **功能** | 相同 | 相同 |
-| **使用场景** | 配置系统 | 代码中 |
-| **可序列化** | ✅ 是 | ❌ 否 |
-| **可配置** | ✅ 是 | ❌ 否 |
-| **推荐** | 配置中使用 | 代码中使用 |
+- [BaseValue.cs.md](./BaseValue.cs.md) - 值基类
+- [SingleValue.cs.md](./SingleValue.cs.md) - 固定值
+- [OperatorValue.cs.md](./OperatorValue.cs.md) - 运算值
+- [DecisionCompareNode.cs.md](../DecisionTree/DecisionCompareNode.cs.md) - 比较节点
 
 ---
 
-## 设计要点
-
-### 为什么需要 Range01Value？
-
-1. **配置友好**: 策划可以在配置表中使用随机值
-2. **可序列化**: 可以保存到配置文件
-3. **语义清晰**: 明确表示"随机 0-1"
-4. **可组合**: 可以与其他 Value 类型组合使用
-
-### 不存储种子
-
-```csharp
-// 没有种子字段
-public partial class Range01Value: BaseValue
-{
-    // 每次调用都使用 Unity 的全局随机数生成器
-}
-```
-
-**原因**:
-- 简化配置
-- 依赖 Unity 的随机数系统
-- 如需可重复随机，应使用带种子的实现
-
----
-
-## 扩展建议
-
-### 带范围的随机值
-
-```csharp
-[NinoType(false)]
-public partial class RangeValue: BaseValue
-{
-    [NinoMember(1)]
-    public float Min;
-    
-    [NinoMember(2)]
-    public float Max;
-    
-    public override float Resolve(AIKnowledge knowledge)
-    {
-        return Random.Range(Min, Max);
-    }
-}
-
-// 使用
-var damage = new RangeValue { Min = 10f, Max = 20f };
-```
-
-### 带种子的随机值
-
-```csharp
-[NinoType(false)]
-public partial class SeededRandomValue: BaseValue
-{
-    [NinoMember(1)]
-    public int Seed;
-    
-    private System.Random random;
-    
-    public override float Resolve(AIKnowledge knowledge)
-    {
-        if (random == null)
-            random = new System.Random(Seed);
-        
-        return (float)random.NextDouble();  // 0-1
-    }
-}
-```
-
----
-
-## 相关文档
-
-- [BaseValue.cs.md](./BaseValue.cs.md) - 值类型基类
-- [SingleValue.cs.md](./SingleValue.cs.md) - 固定值实现
-- [ZeroValue.cs.md](./ZeroValue.cs.md) - 零值实现
-- [OperatorValue.cs.md](./OperatorValue.cs.md) - 运算符值
-- [Unity Random 文档](https://docs.unity3d.com/ScriptReference/Random.html)
-
----
-
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*最后更新：2026-03-02*

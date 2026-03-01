@@ -1,322 +1,234 @@
-# TimeSinceLastBid.cs 注解文档
+# TimeSinceLastBid.cs 文档
 
-## 文件基本信息
+## 📄 文件信息表
 
 | 属性 | 值 |
 |------|------|
-| **文件名** | TimeSinceLastBid.cs |
-| **路径** | Assets/Scripts/Code/Module/Config/Value/TimeSinceLastBid.cs |
-| **所属模块** | 框架层 → Code/Module/Config/Value |
-| **文件职责** | 定义距上次出价时间值类型，计算从上次出价到当前的时间间隔 |
+| 文件路径 | `Assets/Scripts/Code/Module/Config/Value/TimeSinceLastBid.cs` |
+| 命名空间 | `TaoTie` |
+| 类类型 | 配置值类 |
+| 依赖模块 | Sirenix.OdinInspector |
+| 继承 | `BaseValue` |
 
 ---
 
-## 类/结构体说明
+## 🏗️ 类说明
 
-### TimeSinceLastBid
+**TimeSinceLastBid** 是一个专用的值类型，用于计算距上次出价的时间间隔。
 
-| 属性 | 说明 |
-|------|------|
-| **职责** | BaseValue 的时间计算实现，返回从上次出价到当前的时间间隔（毫秒） |
-| **泛型参数** | 无 |
-| **继承关系** | 继承 `BaseValue` |
-| **实现的接口** | 无 |
+### 核心职责
 
-**设计模式**: 状态依赖模式
+- 获取当前游戏时间
+- 从 `knowledge.LastBidTime` 读取上次出价时间
+- 计算时间差（毫秒）
 
-```csharp
-// 创建距上次出价时间
-var timeSinceBid = new TimeSinceLastBid();
-float elapsed = timeSinceBid.Resolve(knowledge);  // 返回经过的毫秒数
-```
+### 使用场景
+
+- AI 决策中判断是否达到出价冷却时间
+- 评估出价频率
+- 时间相关的策略判断
 
 ---
 
-## 字段与属性
+## 📊 字段表
 
-TimeSinceLastBid **没有字段**，完全依赖 AI 知识库的状态数据。
-
-**状态依赖**: `knowledge.LastBidTime`
-
----
-
-## Odin Inspector 集成
-
-### LabelText 特性
-
-```csharp
-[LabelText("距上次出价时间（ms）")]
-public class TimeSinceLastBid: BaseValue
-```
-
-**效果**: Inspector 中显示友好的中文标签 "距上次出价时间（ms）"
-
-**用途**: 策划在配置编辑器中快速识别此类型
+| 字段名 | 类型 | 访问修饰符 | 说明 |
+|--------|------|------------|------|
+| (无实例字段) | - | - | 无状态类 |
 
 ---
 
-## 方法说明
+## 🔧 方法说明
 
 ### Resolve
 
-**签名**:
 ```csharp
 public override float Resolve(AIKnowledge knowledge)
 ```
 
-**职责**: 计算从上次出价到当前的时间间隔
+解析值为距上次出价的时间间隔。
 
-**核心逻辑**:
+**参数:**
+- `knowledge`: AI 知识对象，包含 `LastBidTime` 字段
+
+**返回:** 距上次出价的毫秒数
+
+**实现逻辑:**
+```csharp
+return GameTimerManager.Instance.GetTimeNow() - knowledge.LastBidTime;
 ```
-1. 获取当前时间：GameTimerManager.Instance.GetTimeNow()
-2. 获取上次出价时间：knowledge.LastBidTime
-3. 返回时间差：current - lastBid
-```
-
-**调用者**: DecisionCompareNode, DecisionActionNode
-
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `knowledge` | `AIKnowledge` | AI 知识库，包含 LastBidTime |
-
-**返回值**: `float` - 距上次出价的时间间隔（毫秒）
 
 ---
 
-## 依赖
+## 🔄 Mermaid 流程图
 
-### GameTimerManager
+### 值解析流程
 
-```csharp
-GameTimerManager.Instance.GetTimeNow()
+```mermaid
+flowchart TD
+    A[Resolve 调用] --> B[GameTimerManager.GetTimeNow]
+    B --> C[获取 knowledge.LastBidTime]
+    C --> D[计算时间差]
+    D --> E[返回毫秒数]
+    
+    style B fill:#e1f5ff
+    style C fill:#fff3e1
+    style D fill:#FFD700
+    style E fill:#90EE90
 ```
 
-**说明**: 游戏定时器管理器，提供当前时间戳
+### 时间线示意
 
-**返回值**: 当前时间（毫秒或秒，取决于实现）
+```mermaid
+gantt
+    title 时间间隔计算
+    dateFormat X
+    axisFormat %s
+    
+    section 时间线
+    LastBidTime : 0, 1000
+    Now : 1000, 1500
+    TimeSinceLastBid : 1000, 1500
+```
 
 ---
 
-### AIKnowledge.LastBidTime
+## 💡 使用示例
+
+### 基础使用
 
 ```csharp
-knowledge.LastBidTime
+// 创建时间间隔计算器
+var timeSinceBid = new TimeSinceLastBid();
+
+// 解析值（假设上次出价在 1000ms 前）
+float elapsed = timeSinceBid.Resolve(knowledge);  // 返回 1000
 ```
 
-**说明**: AI 上次出价的时间戳
-
-**初始化**: 在 AI 首次出价时设置
-
-**更新**: 每次出价后更新为当前时间
-
----
-
-## 使用示例
-
-### 示例 1: 冷却时间检查
+### 在决策树中使用
 
 ```csharp
-// 检查是否过了冷却时间（5 秒）
-var cooldownCheck = new DecisionCompareNode
+// 比较节点：检查是否超过最小出价间隔
+var compareNode = new DecisionCompareNode
 {
-    LeftValue = new TimeSinceLastBid(),
+    LeftValue = new TimeSinceLastBid(),  // 已等待时间
     CompareMode = CompareMode.Greater,
-    RightValue = new SingleValue(5000f),  // 5000ms = 5 秒
-    True = new DecisionActionNode
-    {
-        Act = ActDecision.Emoji_Nice,
-        Tactic = AITactic.LowWeight,
-        Remarks = "冷却时间已过，可以出价"
-    },
-    False = new DecisionActionNode
-    {
-        Act = ActDecision.Stand_Idle1,
-        Tactic = AITactic.Sidelines,
-        Remarks = "冷却中，等待"
-    }
+    RightValue = new MinAuctionTime(),  // 最小出价时间
+    True = new DecisionActionNode { Tactic = AITactic.LowWeight },
+    False = new DecisionActionNode { Tactic = AITactic.Sidelines }
 };
 ```
 
-### 示例 2: 犹豫时间判断
+### 在配置表中使用
 
-```csharp
-// 如果犹豫超过 10 秒，强制出价
-var hesitationCheck = new DecisionCompareNode
-{
-    LeftValue = new TimeSinceLastBid(),
-    CompareMode = CompareMode.Greater,
-    RightValue = new SingleValue(10000f),  // 10 秒
-    True = new DecisionActionNode
-    {
-        Act = ActDecision.Emoji_Sigh,
-        Tactic = AITactic.MediumWeight,
-        Remarks = "犹豫太久，随便出一个价"
-    },
-    False = new DecisionActionNode
-    {
-        Act = ActDecision.Stand_Idle1,
-        Tactic = AITactic.Sidelines,
-        Remarks = "继续思考"
-    }
-};
+```yaml
+# ConfigAIDecisionTree 配置示例
+Type: "CooldownBidderAI"
+Node:
+  Type: DecisionCompareNode
+  LeftValue:
+    Type: TimeSinceLastBid  # 距上次出价时间
+  CompareMode: Greater
+  RightValue:
+    Type: MinAuctionTime  # 最小冷却时间
+  True:
+    Type: DecisionActionNode
+    Tactic: LowWeight  # 冷却结束，可以出价
+  False:
+    Type: DecisionActionNode
+    Tactic: Sidelines  # 冷却中，继续观望
 ```
 
-### 示例 3: 快速连击检测
+### 与其他值类型组合
 
 ```csharp
-// 检查是否在快速连续出价（<1 秒）
-var rapidBidCheck = new DecisionCompareNode
+// 检查是否超过最小时间的 1.5 倍
+var extendedCooldown = new OperatorValue
 {
-    LeftValue = new TimeSinceLastBid(),
-    CompareMode = CompareMode.Less,
-    RightValue = new SingleValue(1000f),  // 1 秒
-    True = new DecisionActionNode
-    {
-        Act = ActDecision.Emoji_Cheer,
-        Tactic = AITactic.HighWeight,
-        Remarks = "快速连击，强势出价"
-    },
-    False = new DecisionActionNode
-    {
-        Act = ActDecision.Emoji_Smile1,
-        Tactic = AITactic.LowWeight,
-        Remarks = "正常节奏出价"
-    }
-};
-```
-
-### 示例 4: 动态延迟计算
-
-```csharp
-// 延迟 = 距上次出价时间 * 0.5（越久没出价，延迟越短）
-var dynamicDelay = new OperatorValue
-{
-    Left = new TimeSinceLastBid(),
+    Left = new MinAuctionTime(),
     Op = LogicMode.Mul,
-    Right = new SingleValue(0.5f)
+    Right = new SingleValue(1.5f)
 };
 
-var actionNode = new DecisionActionNode
+var compareNode = new DecisionCompareNode
 {
-    Act = ActDecision.Emoji_Nice,
-    Tactic = AITactic.LowWeight,
-    Delay = dynamicDelay,
-    Remarks = "动态延迟"
+    LeftValue = new TimeSinceLastBid(),
+    CompareMode = CompareMode.Greater,
+    RightValue = extendedCooldown,
+    True = new DecisionActionNode { Tactic = AITactic.HighWeight },
+    False = new DecisionActionNode { Tactic = AITactic.LowWeight }
 };
 ```
 
 ---
 
-## 典型使用场景
-
-### 1. 出价冷却
+## 📝 AIKnowledge 结构
 
 ```csharp
-// 防止 AI 过于频繁出价
-if (TimeSinceLastBid < CooldownTime)
+public class AIKnowledge
 {
-    // 冷却中，等待
+    public Entity Entity;
+    public ConfigAIDecisionTreeCategory Config;
+    public long LastBidTime;  // 上次出价时间戳（毫秒）
+    // ...
+}
+```
+
+### 时间戳更新
+
+```csharp
+// 出价时更新 LastBidTime
+knowledge.LastBidTime = GameTimerManager.Instance.GetTimeNow();
+
+// 下次计算 TimeSinceLastBid 时
+// Resolve 返回：GetTimeNow() - LastBidTime
+```
+
+---
+
+## ⚠️ 注意事项
+
+### 时间单位
+
+- 返回值单位为**毫秒**
+- `GameTimerManager.GetTimeNow()` 返回毫秒级时间戳
+
+### 初始值
+
+- 如果从未出价，`LastBidTime` 可能为 0
+- 此时 `TimeSinceLastBid` 返回当前时间（可能很大）
+
+```csharp
+// 建议检查是否已出过价
+if (knowledge.LastBidTime > 0)
+{
+    var timeSinceBid = new TimeSinceLastBid();
+    float elapsed = timeSinceBid.Resolve(knowledge);
 }
 else
 {
-    // 可以出价
+    // 首次出价，无冷却限制
+    float elapsed = float.MaxValue;
 }
 ```
 
-### 2. 超时强制行动
+### 负值处理
 
-```csharp
-// 防止 AI 犹豫太久
-if (TimeSinceLastBid > MaxThinkTime)
-{
-    // 超时，随机出价
-}
-```
-
-### 3. 行为模式分析
-
-```csharp
-// 分析 AI 出价模式
-if (TimeSinceLastBid < QuickBidThreshold)
-{
-    // 快速出价模式
-}
-else if (TimeSinceLastBid > SlowBidThreshold)
-{
-    // 慢速出价模式
-}
-```
+- 正常情况下不会出现负值
+- 如果 `LastBidTime` 大于当前时间，可能返回负数
+- 建议添加保护逻辑
 
 ---
 
-## 时间单位
+## 🔗 相关文档链接
 
-### 毫秒（ms）
-
-**说明**: 返回值为毫秒
-
-**常见阈值**:
-| 时间 | 毫秒 | 说明 |
-|------|------|------|
-| 0.5 秒 | 500 ms | 快速反应 |
-| 1 秒 | 1000 ms | 正常反应 |
-| 3 秒 | 3000 ms | 犹豫 |
-| 5 秒 | 5000 ms | 冷却时间 |
-| 10 秒 | 10000 ms | 超时 |
-
-### 转换
-
-```csharp
-// 毫秒转秒
-float seconds = milliseconds / 1000f;
-
-// 秒转毫秒
-float milliseconds = seconds * 1000f;
-```
+- [BaseValue.cs.md](./BaseValue.cs.md) - 值基类
+- [MinAuctionTime.cs.md](./MinAuctionTime.cs.md) - 最低出价时间
+- [RandomAuctionTime.cs.md](./RandomAuctionTime.cs.md) - 随机出价时间
+- [AIKnowledge.cs.md](../../../Game/Component/AI/Knowledge/AIKnowledge.cs.md) - AI 知识类
+- [GameTimerManager.cs.md](../../../Mono/Module/Timer/GameTimerManager.cs.md) - 游戏时间管理器
+- [DecisionCompareNode.cs.md](../DecisionTree/DecisionCompareNode.cs.md) - 比较节点
 
 ---
 
-## 设计要点
-
-### 为什么需要 TimeSinceLastBid？
-
-1. **状态感知**: 让 AI 决策基于历史行为
-2. **冷却控制**: 防止过于频繁的行动
-3. **超时处理**: 避免 AI 卡住不动
-4. **行为分析**: 支持复杂的决策逻辑
-
-### 与 RandomAuctionTime 对比
-
-| 特性 | TimeSinceLastBid | RandomAuctionTime |
-|------|------------------|-------------------|
-| **返回值** | 动态计算（状态依赖） | 随机值（配置依赖） |
-| **可预测性** | ✅ 可预测 | ❌ 不可预测 |
-| **用途** | 冷却检查、超时判断 | 延迟执行 |
-| **状态依赖** | ✅ LastBidTime | ❌ 无 |
-
-### 首次出价的处理
-
-```csharp
-// 如果 LastBidTime 为 0（首次出价）
-if (knowledge.LastBidTime == 0)
-{
-    return 0;  // 或返回一个很大的值表示"很久"
-}
-```
-
-**建议**: 在文档或代码中明确说明首次出价时的行为
-
----
-
-## 相关文档
-
-- [BaseValue.cs.md](./BaseValue.cs.md) - 值类型基类
-- [RandomAuctionTime.cs.md](./RandomAuctionTime.cs.md) - 随机拍卖时间
-- [MinAuctionTime.cs.md](./MinAuctionTime.cs.md) - 最小拍卖时间
-- [DecisionCompareNode.cs.md](../DecisionTree/DecisionCompareNode.cs.md) - 使用 Value 的比较节点
-- [GameTimerManager.cs.md](../../Mono/Module/Timer/GameTimerManager.cs.md) - 游戏定时器管理器
-
----
-
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*最后更新：2026-03-02*

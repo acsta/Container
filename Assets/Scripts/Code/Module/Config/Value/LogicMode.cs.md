@@ -1,340 +1,210 @@
-# LogicMode.cs 注解文档
+# LogicMode.cs 文档
 
-## 文件基本信息
+## 📄 文件信息表
 
 | 属性 | 值 |
 |------|------|
-| **文件名** | LogicMode.cs |
-| **路径** | Assets/Scripts/Code/Module/Config/Value/LogicMode.cs |
-| **所属模块** | 框架层 → Code/Module/Config/Value |
-| **文件职责** | 定义逻辑运算模式枚举，用于 OperatorValue |
+| 文件路径 | `Assets/Scripts/Code/Module/Config/Value/LogicMode.cs` |
+| 命名空间 | `TaoTie` |
+| 类类型 | 枚举 |
+| 依赖模块 | Sirenix.OdinInspector |
 
 ---
 
-## 类/结构体说明
+## 🏗️ 类说明
 
-### LogicMode 枚举
+**LogicMode** 枚举定义了 `OperatorValue` 支持的数学运算类型。
 
-| 属性 | 说明 |
-|------|------|
-| **职责** | 定义 OperatorValue 支持的所有运算类型 |
-| **泛型参数** | 无 |
-| **继承关系** | 继承 `System.Enum` |
-| **实现的接口** | 无 |
+### 核心职责
 
-**用途**:
-- 在 `OperatorValue.Op` 字段中使用
-- 策划通过下拉菜单选择运算类型
-- 运行时决定执行哪种运算
+- 定义二元运算的操作类型
+- 提供 Odin Inspector 的友好显示标签
+- 用于配置表中的运算选择
 
 ---
 
-## 枚举值详解
+## 📊 枚举值
 
-| 值 | 枚举名 | 中文标签 | 运算符 | 说明 |
-|----|--------|----------|--------|------|
-| 0 | `Default` | 无 | - | 无运算，直接返回 Left |
-| 1 | `Add` | 加 | `+` | 加法运算 |
-| 2 | `Red` | 减 | `-` | 减法运算 |
-| 3 | `Mul` | 乘 | `*` | 乘法运算 |
-| 4 | `Div` | 除 | `/` | 除法运算 |
-| 5 | `Rem` | 取余 | `%` | 取余运算 |
-| 6 | `Pow` | 次方 | `^` | 次方运算 |
+| 值 | 名称 | 标签 | 运算 | 示例 |
+|----|------|------|------|------|
+| 0 | `Default` | 无 | 返回左值 | Left |
+| 1 | `Add` | 加 | Left + Right | 5 + 3 = 8 |
+| 2 | `Red` | 减 | Left - Right | 5 - 3 = 2 |
+| 3 | `Mul` | 乘 | Left * Right | 5 * 3 = 15 |
+| 4 | `Div` | 除 | Left / Right | 6 / 3 = 2 |
+| 5 | `Rem` | 取余 | Left % Right | 7 % 3 = 1 |
+| 6 | `Pow` | 次方 | Left ^ Right | 2 ^ 3 = 8 |
 
 ---
 
-## Odin Inspector 集成
+## 🔄 Mermaid 流程图
 
-### LabelText 特性
+### 运算选择流程
+
+```mermaid
+flowchart TD
+    A[OperatorValue.Resolve] --> B{Op 值}
+    B -->|Default| C[返回 Left]
+    B -->|Add| D[Left + Right]
+    B -->|Red| E[Left - Right]
+    B -->|Mul| F[Left * Right]
+    B -->|Div| G[Left / Right]
+    B -->|Rem| H[Left % Right]
+    B -->|Pow| I[(int)pow Left, Right]
+```
+
+---
+
+## 💡 使用示例
+
+### 在 OperatorValue 中使用
 
 ```csharp
-public enum LogicMode
+// 加法
+var addOp = new OperatorValue
 {
-    [LabelText("无")]
-    Default,
-    
-    [LabelText("加")]
-    Add,
-    
-    [LabelText("减")]
-    Red,
-    
-    [LabelText("乘")]
-    Mul,
-    
-    [LabelText("除")]
-    Div,
-    
-    [LabelText("取余")]
-    Rem,
-    
-    [LabelText("次方")]
-    Pow,
-}
-```
-
-**效果**: Inspector 中显示中文标签，策划更易理解
-
-**Inspector 显示**:
-```
-运算类型：[加 ▼]
-```
-
----
-
-## 运算真值表
-
-### 示例输入
-- Left = 10
-- Right = 3
-
-### 运算结果
-
-| LogicMode | 计算 | 结果 |
-|-----------|------|------|
-| `Default` | Left | 10 |
-| `Add` | 10 + 3 | 13 |
-| `Red` | 10 - 3 | 7 |
-| `Mul` | 10 * 3 | 30 |
-| `Div` | 10 / 3 | 3.333... |
-| `Rem` | 10 % 3 | 1 |
-| `Pow` | 10 ^ 3 | 1000 |
-
----
-
-## 使用示例
-
-### 示例 1: 加法
-
-```csharp
-// 总血量 = 基础血量 + 装备加成
-var totalHP = new OperatorValue
-{
-    Left = new BaseHPValue(),
+    Left = new SingleValue(5),
     Op = LogicMode.Add,
-    Right = new EquipmentHPBonusValue()
+    Right = new SingleValue(3)
 };
-```
+float result = addOp.Resolve(knowledge);  // 8
 
-### 示例 2: 减法
-
-```csharp
-// 剩余生命 = 当前生命 - 伤害
-var remainingHP = new OperatorValue
+// 乘法
+var mulOp = new OperatorValue
 {
-    Left = new CurrentHPValue(),
-    Op = LogicMode.Red,
-    Right = new DamageValue()
-};
-```
-
-### 示例 3: 乘法
-
-```csharp
-// 最终伤害 = 基础伤害 * 暴击系数
-var finalDamage = new OperatorValue
-{
-    Left = new BaseDamageValue(),
+    Left = new SingleValue(5),
     Op = LogicMode.Mul,
-    Right = new CritMultiplierValue()
+    Right = new SingleValue(3)
 };
+float result = mulOp.Resolve(knowledge);  // 15
+
+// 次方
+var powOp = new OperatorValue
+{
+    Left = new SingleValue(2),
+    Op = LogicMode.Pow,
+    Right = new SingleValue(3)
+};
+float result = powOp.Resolve(knowledge);  // 8 (int)
 ```
 
-### 示例 4: 除法
+### 在配置表中使用
+
+```yaml
+# ConfigAIDecisionTree 配置示例
+Type: "CalculatorAI"
+Node:
+  Type: DecisionActionNode
+  Tactic: Sidelines
+  Delay:
+    Type: OperatorValue
+    Op: Mul  # 乘法
+    Left:
+      Type: FormulaValue
+      Formula: "BaseDelay"
+    Right:
+      Type: SingleValue
+      Value: 1.5  # 1.5 倍延迟
+```
+
+### 遍历所有运算模式
 
 ```csharp
-// 伤害减免比例 = 防御力 / (防御力 + 100)
-var damageReduction = new OperatorValue
+// 测试所有运算
+float left = 10;
+float right = 3;
+
+foreach (LogicMode mode in Enum.GetValues(typeof(LogicMode)))
 {
-    Left = new DefenseValue(),
+    var op = new OperatorValue
+    {
+        Left = new SingleValue(left),
+        Op = mode,
+        Right = new SingleValue(right)
+    };
+    
+    float result = op.Resolve(knowledge);
+    Log.Info($"{mode}: {left} op {right} = {result}");
+}
+
+// 输出:
+// Default: 10 op 3 = 10
+// Add: 10 op 3 = 13
+// Red: 10 op 3 = 7
+// Mul: 10 op 3 = 30
+// Div: 10 op 3 = 3.333...
+// Rem: 10 op 3 = 1
+// Pow: 10 op 3 = 1000 (int)
+```
+
+---
+
+## 📝 Odin Inspector 显示
+
+在 Unity 编辑器中，枚举值会显示为友好的中文标签：
+
+```
+[下拉选择]
+├─ 无 (Default)
+├─ 加 (Add)
+├─ 减 (Red)
+├─ 乘 (Mul)
+├─ 除 (Div)
+├─ 取余 (Rem)
+└─ 次方 (Pow)
+```
+
+---
+
+## ⚠️ 注意事项
+
+### 除法精度
+
+```csharp
+// 除法返回 float，保留小数
+var divOp = new OperatorValue
+{
+    Left = new SingleValue(10),
     Op = LogicMode.Div,
-    Right = new OperatorValue
-    {
-        Left = new DefenseValue(),
-        Op = LogicMode.Add,
-        Right = new SingleValue(100f)
-    }
+    Right = new SingleValue(3)
 };
+float result = divOp.Resolve(knowledge);  // 3.333333...
 ```
 
-### 示例 5: 取余
+### 次方取整
 
 ```csharp
-// 循环索引 = 当前索引 % 总数
-var loopIndex = new OperatorValue
+// Pow 运算结果转换为 int
+var powOp = new OperatorValue
 {
-    Left = new CurrentIndexValue(),
+    Left = new SingleValue(2.5f),
+    Op = LogicMode.Pow,
+    Right = new SingleValue(2)
+};
+float result = powOp.Resolve(knowledge);  // 6 (2.5^2 = 6.25 → 6)
+```
+
+### 取余除零保护
+
+```csharp
+// Rem 运算在除数为 0 时返回被除数
+var remOp = new OperatorValue
+{
+    Left = new SingleValue(10),
     Op = LogicMode.Rem,
-    Right = new TotalCountValue()
+    Right = new ZeroValue()
 };
-```
-
-### 示例 6: 次方
-
-```csharp
-// 升级经验 = 等级 ^ 2 * 100
-var levelUpExp = new OperatorValue
-{
-    Left = new OperatorValue
-    {
-        Left = new LevelValue(),
-        Op = LogicMode.Pow,
-        Right = new SingleValue(2f)
-    },
-    Op = LogicMode.Mul,
-    Right = new SingleValue(100f)
-};
+float result = remOp.Resolve(knowledge);  // 10 (不抛出异常)
 ```
 
 ---
 
-## 命名说明
+## 🔗 相关文档链接
 
-### Red vs Sub
-
-```csharp
-[LabelText("减")]
-Red,  // 而非 Sub
-```
-
-**说明**: 枚举名为 `Red` 而非更常见的 `Sub` (Subtract)
-
-**可能原因**:
-- 开发团队命名习惯
-- 避免与某些关键字冲突
-- 无特殊原因，历史遗留
-
-**建议**: 保持命名一致性，如果重构可考虑改为 `Sub`
+- [OperatorValue.cs.md](./OperatorValue.cs.md) - 运算值类
+- [BaseValue.cs.md](./BaseValue.cs.md) - 值基类
+- [SingleValue.cs.md](./SingleValue.cs.md) - 固定值
 
 ---
 
-## 扩展建议
-
-### 可能的扩展运算符
-
-```csharp
-public enum LogicMode
-{
-    // ... 现有值
-    
-    [LabelText("绝对值")]
-    Abs,       // 绝对值（只需要 Left）
-    
-    [LabelText("向下取整")]
-    Floor,     // 向下取整
-    
-    [LabelText("向上取整")]
-    Ceil,      // 向上取整
-    
-    [LabelText("四舍五入")]
-    Round,     // 四舍五入
-    
-    [LabelText("最小值")]
-    Min,       // Min(Left, Right)
-    
-    [LabelText("最大值")]
-    Max,       // Max(Left, Right)
-    
-    [LabelText("平均值")]
-    Average,   // (Left + Right) / 2
-}
-```
-
-### 实现示例
-
-```csharp
-public override float Resolve(AIKnowledge knowledge)
-{
-    switch (Op)
-    {
-        // ... 现有 case
-        
-        case LogicMode.Abs:
-            return Mathf.Abs(Left.Resolve(knowledge));
-        
-        case LogicMode.Floor:
-            return Mathf.Floor(Left.Resolve(knowledge));
-        
-        case LogicMode.Ceil:
-            return Mathf.Ceil(Left.Resolve(knowledge));
-        
-        case LogicMode.Min:
-            return Mathf.Min(Left.Resolve(knowledge), Right.Resolve(knowledge));
-        
-        case LogicMode.Max:
-            return Mathf.Max(Left.Resolve(knowledge), Right.Resolve(knowledge));
-        
-        case LogicMode.Average:
-            return (Left.Resolve(knowledge) + Right.Resolve(knowledge)) / 2f;
-    }
-}
-```
-
----
-
-## 设计要点
-
-### 为什么使用枚举？
-
-1. **类型安全**: 避免字符串拼写错误
-2. **性能**: 整数 switch 比字符串解析快
-3. **编辑器友好**: 下拉菜单选择
-4. **完整性**: 集中管理所有运算符
-5. **可扩展**: 新增运算符只需添加枚举值
-
-### Default 的特殊性
-
-```csharp
-case LogicMode.Default:
-    return Left.Resolve(knowledge);
-```
-
-**说明**: Default 不使用 Right 操作数
-
-**用途**:
-- 包装单个值（统一接口）
-- 作为默认/初始状态
-- 条件禁用右侧操作数
-
-### 除零处理
-
-**现状**:
-- `Rem` 有除零保护（返回 Left）
-- `Div` 没有除零保护
-
-**建议**: 为 `Div` 添加保护
-```csharp
-case LogicMode.Div:
-    float right = Right.Resolve(knowledge);
-    if (right == 0)
-    {
-        Log.Warning("LogicMode.Div: 除零错误");
-        return 0;  // 或 float.MaxValue
-    }
-    return Left.Resolve(knowledge) / right;
-```
-
----
-
-## 与 CompareMode 对比
-
-| 特性 | LogicMode | CompareMode |
-|------|-----------|-------------|
-| **用途** | 数值运算 | 数值比较 |
-| **返回值** | float | bool（通过 DecisionCompareNode） |
-| **使用位置** | OperatorValue | DecisionCompareNode |
-| **操作数** | 2 个（Left + Right） | 2 个（Left + Right） |
-| **数量** | 7 种 | 6 种 |
-
----
-
-## 相关文档
-
-- [OperatorValue.cs.md](./OperatorValue.cs.md) - 使用 LogicMode 的运算值
-- [BaseValue.cs.md](./BaseValue.cs.md) - 值类型基类
-- [DecisionCompareNode.cs.md](../DecisionTree/DecisionCompareNode.cs.md) - 使用 CompareMode 的比较节点
-- [CompareMode.cs.md](../DecisionTree/CompareMode.cs.md) - 比较模式枚举
-
----
-
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*最后更新：2026-03-02*
