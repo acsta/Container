@@ -6,40 +6,39 @@
 |------|-----|
 | **文件名** | LruCache.cs |
 | **路径** | Assets/Scripts/Mono/Core/Object/LruCache.cs |
-| **所属模块** | Mono/Core/Object |
-| **文件职责** | LRU（最近最少使用）缓存实现，支持线程安全和自动淘汰 |
+| **所属模块** | 框架层 → Mono/Core/Object |
+| **命名空间** | `TaoTie` |
+| **文件职责** | 提供线程安全的 LRU（最近最少使用）缓存实现 |
 
 ---
 
-## 类/结构体说明
+## 类说明
 
 ### LruCache<TKey, TValue>
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 线程安全的 LRU 缓存，支持容量限制、自动淘汰、回调通知 |
-| **泛型参数** | `TKey` - 键类型, `TValue` - 值类型 |
-| **继承关系** | 无 |
+| **职责** | 实现 LRU 缓存算法，支持容量限制、线程安全、自定义淘汰策略 |
+| **泛型参数** | `TKey` - 键类型<br>`TValue` - 值类型 |
+| **继承关系** | 无继承 |
 | **实现的接口** | `IEnumerable<KeyValuePair<TKey, TValue>>` |
 
-**设计模式**: LRU 淘汰策略 + 读写锁 + 双向链表
+**设计模式**: LRU 缓存 + 读写锁 + 对象池（可选）
 
 ```csharp
-// 创建缓存（默认容量 255）
-var cache = new LruCache<string, int>();
+// 创建缓存（容量 255）
+var cache = new LruCache<string, GameObject>(100);
 
-// 创建缓存（自定义容量）
-var cache = new LruCache<string, int>(capacity: 100);
+// 添加数据
+cache.Set("prefab1", gameObject1);
 
-// 设置值
-cache["key1"] = 100;
-cache.Set("key2", 200);
+// 获取数据
+GameObject go = cache["prefab1"];
 
-// 获取值（会更新访问顺序）
-if (cache.TryGet("key1", out var value))
-{
-    Log.Info($"Value: {value}");
-}
+// 设置淘汰回调
+cache.SetPopCallback((key, value) => {
+    // 缓存淘汰时的清理逻辑
+});
 ```
 
 ---
@@ -48,693 +47,487 @@ if (cache.TryGet("key1", out var value))
 
 | 名称 | 类型 | 访问级别 | 说明 |
 |------|------|----------|------|
-| `capacity` | `int` | `private` | 缓存容量上限 |
-| `locker` | `ReaderWriterLockSlim` | `private` | 读写锁，支持并发 |
+| `DEFAULT_CAPACITY` | `int` | `const` | 默认容量 255 |
+| `capacity` | `int` | `private` | 当前容量限制 |
+| `locker` | `ReaderWriterLockSlim` | `private` | 读写锁 |
 | `dictionary` | `Dictionary<TKey, TValue>` | `private` | 数据存储 |
-| `linkedList` | `LinkedList<TKey>` | `private` | 访问顺序追踪（LRU） |
-| `checkCanPopFunc` | `Func<TKey, TValue, bool>` | `private` | 检查是否可以淘汰的回调 |
-| `popCb` | `Action<TKey, TValue>` | `private` | 淘汰时的回调 |
+| `linkedList` | `LinkedList<TKey>` | `private` | LRU 顺序（头部=最新） |
+| `checkCanPopFunc` | `Func<TKey, TValue, bool>` | `private` | 检查是否可淘汰回调 |
+| `popCb` | `Action<TKey, TValue>` | `private` | 淘汰回调 |
+| `this[TKey t]` | `TValue` | `public` | 索引器（获取/设置） |
+| `Count` | `int` | `public` | 当前缓存数量 |
+| `Capacity` | `int` | `public` | 容量限制（可调整） |
+| `Keys` | `ICollection<TKey>` | `public` | 所有键 |
+| `Values` | `ICollection<TValue>` | `public` | 所有值 |
 
 ---
 
-## 方法说明（按重要程度排序）
+## 方法说明
 
-### Set ⭐
+### 构造函数
+
+**签名**:
+```csharp
+public LruCache()                    // 默认容量 255
+public LruCache(int capacity)        // 自定义容量
+```
+
+**职责**: 创建 LRU 缓存实例
+
+**核心逻辑**:
+```
+1. 初始化读写锁
+2. 创建 Dictionary 和 LinkedList
+3. 设置容量
+```
+
+**使用示例**:
+```csharp
+var cache1 = new LruCache<string, int>();           // 容量 255
+var cache2 = new LruCache<string, int>(100);        // 容量 100
+```
+
+---
+
+### Set(TKey key, TValue value)
 
 **签名**:
 ```csharp
 public void Set(TKey key, TValue value)
 ```
 
-**职责**: 设置缓存值，自动管理容量和访问顺序
+**职责**: 添加或更新缓存项
 
 **核心逻辑**:
 ```
 1. 获取写锁
-2. 如果设置了 checkCanPopFunc，调用 MakeFreeSpace() 清理空间
-3. 更新 dictionary[key] = value
-4. 将 key 移到链表头部（最新访问）
-5. 如果超过容量且未设置 checkCanPopFunc:
-   - 移除链表尾部（最久未使用）
-   - 从 dictionary 删除
+2. 如果需要，腾出空间（MakeFreeSpace）
+3. 设置值到 Dictionary
+4. 将键移到 LinkedList 头部（标记为最新）
+5. 如果超过容量，淘汰尾部（最旧）项
 6. 释放写锁
 ```
 
+**调用者**: 任何需要缓存数据的代码
+
 **使用示例**:
 ```csharp
-var cache = new LruCache<string, int>(capacity: 10);
-
-// 设置值
-cache.Set("key1", 100);
-cache["key2"] = 200; // 使用索引器
-
-// 当容量满时，最久未使用的键会自动淘汰
+cache.Set("key1", value1);
+cache.Set("key2", value2);
 ```
 
 ---
 
-### TryGet ⭐
+### TryGet(TKey key, out TValue value)
 
 **签名**:
 ```csharp
 public bool TryGet(TKey key, out TValue value)
 ```
 
-**职责**: 获取缓存值，同时更新访问顺序（移到链表头部）
+**职责**: 获取缓存项（同时更新 LRU 顺序）
 
 **核心逻辑**:
 ```
-1. 获取升级读锁（可升级为写锁）
-2. 从 dictionary 查找
-3. 如果找到:
-   - 获取写锁
-   - 将 key 从链表移除并重新添加到头部
-   - 释放写锁
-4. 释放升级读锁
-5. 返回值
+1. 获取升级读锁
+2. 从 Dictionary 查找
+3. 如果找到，将键移到 LinkedList 头部（标记为最新）
+4. 释放锁
+5. 返回是否找到
 ```
+
+**返回值**: `true` - 找到；`false` - 未找到
 
 **使用示例**:
 ```csharp
 if (cache.TryGet("key1", out var value))
 {
-    Log.Info($"Found: {value}");
-}
-else
-{
-    Log.Info("Not found");
+    Log.Info($"找到：{value}");
 }
 ```
 
 ---
 
-### TryOnlyGet
+### TryOnlyGet(TKey key, out TValue value)
 
 **签名**:
 ```csharp
 public bool TryOnlyGet(TKey key, out TValue value)
 ```
 
-**职责**: 仅获取值，**不更新访问顺序**
+**职责**: 仅获取值，不更新 LRU 顺序
 
 **核心逻辑**:
 ```
-1. 从 dictionary 查找（无锁）
-2. 返回值
+1. 从 Dictionary 查找（无锁）
+2. 返回是否找到
 ```
 
-**使用场景**: 仅检查值但不希望影响 LRU 顺序
-
-**使用示例**:
-```csharp
-// 仅检查，不影响 LRU 顺序
-if (cache.TryOnlyGet("key1", out var value))
-{
-    Log.Info($"Peek: {value}");
-}
-```
+**注意**: 不调用此方法，因为会影响 LRU 顺序
 
 ---
 
-### Remove
+### Remove(TKey key)
 
 **签名**:
 ```csharp
 public void Remove(TKey key)
 ```
 
-**职责**: 从缓存移除键
+**职责**: 移除缓存项
 
 **核心逻辑**:
 ```
 1. 获取写锁
-2. 从 dictionary 和 linkedList 同时移除
+2. 从 Dictionary 和 LinkedList 移除
 3. 释放写锁
+```
+
+**使用示例**:
+```csharp
+cache.Remove("key1");
 ```
 
 ---
 
-### ContainsKey
+### ContainsKey(TKey key)
 
 **签名**:
 ```csharp
 public bool ContainsKey(TKey key)
 ```
 
-**职责**: 检查键是否存在
+**职责**: 检查是否包含键
 
 **核心逻辑**:
 ```
 1. 获取读锁
-2. 调用 dictionary.ContainsKey
+2. 检查 Dictionary
 3. 释放读锁
 ```
 
 ---
 
-### SetCheckCanPopCallback
+### SetCheckCanPopCallback(Func<TKey, TValue, bool> func)
 
 **签名**:
 ```csharp
 public void SetCheckCanPopCallback(Func<TKey, TValue, bool> func)
 ```
 
-**职责**: 设置淘汰前检查回调
+**职责**: 设置检查是否可淘汰的回调
 
-**参数说明**:
-- `func`: 返回 `true` 表示可以淘汰，`false` 表示保留
+**参数**: 
+- `func` - 返回 true 表示可以淘汰
 
 **使用示例**:
 ```csharp
-// 只淘汰值小于 100 的项
-cache.SetCheckCanPopCallback((key, value) => value < 100);
-
-// 只淘汰特定类型的项
-cache.SetCheckCanPopCallback((key, value) => 
+cache.SetCheckCanPopCallback((key, value) =>
 {
-    return key.StartsWith("temp_");
+    // 检查是否正在使用
+    return !value.IsInUse;
 });
 ```
 
 ---
 
-### SetPopCallback
+### SetPopCallback(Action<TKey, TValue> func)
 
 **签名**:
 ```csharp
 public void SetPopCallback(Action<TKey, TValue> func)
 ```
 
-**职责**: 设置淘汰时的回调通知
+**职责**: 设置淘汰回调
 
-**使用场景**: 淘汰前清理资源、保存数据等
+**参数**: 
+- `func` - 淘汰时调用的清理函数
 
 **使用示例**:
 ```csharp
-// 淘汰时记录日志
-cache.SetPopCallback((key, value) => 
+cache.SetPopCallback((key, value) =>
 {
-    Log.Info($"Evicted: {key} = {value}");
-});
-
-// 淘汰前保存数据
-cache.SetPopCallback((key, value) => 
-{
-    SaveToDisk(key, value);
+    // 清理资源
+    value.Dispose();
+    Log.Info($"淘汰：{key}");
 });
 ```
 
 ---
 
-### CleanUp
+### CleanUp()
 
 **签名**:
 ```csharp
 public void CleanUp()
 ```
 
-**职责**: 清理所有可淘汰的项（根据 checkCanPopFunc）
+**职责**: 清理所有可淘汰的项
 
 **核心逻辑**:
 ```
-1. 从链表尾部向前遍历
-2. 对每个项调用 checkCanPopFunc
-3. 如果返回 true，淘汰该项
-4. 调用 popCb 回调
+1. 从尾部开始遍历 LinkedList
+2. 检查每个项是否可淘汰
+3. 淘汰可淘汰的项
 ```
 
 **使用示例**:
 ```csharp
-// 设置检查回调
-cache.SetCheckCanPopCallback((key, value) => value < 100);
-
-// 清理所有可淘汰的项
-cache.CleanUp();
+cache.CleanUp(); // 手动清理
 ```
 
 ---
 
-### Clear
+### Clear()
 
 **签名**:
 ```csharp
 public void Clear()
 ```
 
-**职责**: 清空缓存
+**职责**: 清空所有缓存
 
 **核心逻辑**:
 ```
-1. 调用 dictionary.Clear()
-2. 调用 linkedList.Clear()
+1. 清空 Dictionary
+2. 清空 LinkedList
 ```
 
 ---
 
-### 索引器
+### GetAll()
 
 **签名**:
 ```csharp
-public TValue this[TKey t] { get; set; }
+public Dictionary<TKey, TValue> GetAll()
 ```
 
-**职责**: 通过索引器访问缓存
+**职责**: 获取所有缓存数据
 
-**使用示例**:
-```csharp
-// 设置
-cache["key1"] = 100;
-
-// 获取（不存在会抛异常）
-var value = cache["key1"];
-
-// 推荐：使用 TryGet 更安全
-if (cache.TryGet("key1", out var value)) { }
+**核心逻辑**:
 ```
+1. 返回 dictionary 引用
+```
+
+**注意**: 返回的是内部字典引用，外部修改会影响缓存
 
 ---
 
-## 流程图
+## 核心流程
 
-### LRU 缓存工作原理
-
-```mermaid
-flowchart TD
-    A[Setkey, value] --> B{容量满？}
-    B -->|是 | C{有 checkCanPopFunc?}
-    B -->|否 | D[添加到字典和链表头部]
-    
-    C -->|是 | E[调用 MakeFreeSpace]
-    C -->|否 | F[淘汰链表尾部]
-    
-    E --> G{可以淘汰？}
-    G -->|是 | H[淘汰并调用 popCb]
-    G -->|否 | I[保留]
-    
-    H --> D
-    F --> D
-    
-    J[TryGetkey] --> K{存在？}
-    K -->|是 | L[移到链表头部]
-    K -->|否 | M[返回 false]
-    L --> N[返回 true 和 value]
-```
-
-### 线程安全机制
+### LRU 缓存流程
 
 ```mermaid
 sequenceDiagram
-    participant T1 as Thread 1 (写)
-    participant T2 as Thread 2 (读)
-    participant Lock as ReaderWriterLockSlim
+    participant Caller as 调用者
     participant Cache as LruCache
+    participant Dict as Dictionary
+    participant List as LinkedList
 
-    T1->>Lock: EnterWriteLock()
-    T2->>Lock: EnterReadLock()
-    Note over Lock: 写锁阻塞读锁
-    Lock-->>T2: 等待...
-    
-    T1->>Cache: Set(key, value)
-    T1->>Lock: ExitWriteLock()
-    
-    Lock-->>T2: 获取读锁
-    T2->>Cache: TryGet(key)
-    T2->>Lock: ExitReadLock()
+    Caller->>Cache: Set(key, value)
+    Cache->>Cache: 获取写锁
+    Cache->>Cache: MakeFreeSpace (如果需要)
+    Cache->>Dict: dictionary[key] = value
+    Cache->>List: 移除 key
+    Cache->>List: AddFirst(key) 标记为最新
+    alt 超过容量
+        Cache->>List: RemoveLast() 淘汰最旧
+        Cache->>Dict: 移除对应值
+        Cache->>Caller: 触发 popCb 回调
+    end
+    Cache->>Cache: 释放写锁
 ```
 
----
-
-## 与其他模块的交互
+### 获取缓存流程
 
 ```mermaid
-graph TB
-    subgraph Cache["LruCache"]
-        LC[LruCache]
+sequenceDiagram
+    participant Caller as 调用者
+    participant Cache as LruCache
+    participant Dict as Dictionary
+    participant List as LinkedList
+
+    Caller->>Cache: TryGet(key)
+    Cache->>Cache: 获取升级读锁
+    Cache->>Dict: TryGetValue(key)
+    alt 找到
+        Cache->>List: 移除 key
+        Cache->>List: AddFirst(key) 更新为最新
+        Cache-->>Caller: true, value
+    else 未找到
+        Cache-->>Caller: false, default
     end
-    
-    subgraph Usage["使用场景"]
-        Res[资源缓存]
-        Data[数据缓存]
-        Net[网络响应缓存]
-    end
-    
-    subgraph System["系统组件"]
-        RWLock[ReaderWriterLockSlim]
-        Dict[Dictionary]
-        LList[LinkedList]
-    end
-    
-    LC --> RWLock
-    LC --> Dict
-    LC --> LList
-    
-    Res --> LC
-    Data --> LC
-    Net --> LC
-    
-    note right of LC "LruCache 提供线程安全<br/>的 LRU 缓存功能"
-    
-    style Cache fill:#e1f5ff
-    style Usage fill:#fff4e1
-    style System fill:#e8f5e9
+    Cache->>Cache: 释放锁
 ```
 
 ---
 
-## 学习重点与陷阱
+## 使用示例
 
-### ✅ 学习重点
-
-1. **LRU 策略**: 最近最少使用的项会被优先淘汰
-2. **线程安全**: 使用 ReaderWriterLockSlim 支持并发读写
-3. **双向链表**: 追踪访问顺序，头部=最新，尾部=最旧
-4. **淘汰回调**: 可在淘汰前检查或收到淘汰通知
-5. **容量管理**: 超过容量自动淘汰，无需手动清理
-
-### ⚠️ 陷阱与注意事项
-
-| 问题 | 说明 | 解决方案 |
-|------|------|----------|
-| **Get 改变顺序** | TryGet 会更新访问顺序 | 仅检查用 TryOnlyGet |
-| **索引器抛异常** | 访问不存在的键会抛异常 | 使用 TryGet 或 ContainsKey |
-| **回调阻塞** | checkCanPopFunc 阻塞会影响性能 | 回调保持轻量 |
-| **容量过小** | 容量太小会导致频繁淘汰 | 根据实际场景设置 |
-| **死锁风险** | 回调中访问缓存可能死锁 | 回调中不要访问缓存 |
-
----
-
-## 最佳实践
-
-### 资源缓存
+### 示例 1: 基础使用
 
 ```csharp
-public class ResourceCache
+// 创建缓存
+var cache = new LruCache<string, GameObject>(50);
+
+// 添加数据
+cache.Set("prefab1", prefab1);
+cache.Set("prefab2", prefab2);
+
+// 获取数据
+if (cache.TryGet("prefab1", out var go))
 {
-    private LruCache<string, GameObject> prefabCache;
-    
-    public ResourceCache(int capacity = 100)
-    {
-        prefabCache = new LruCache<string, GameObject>(capacity);
-        
-        // 淘汰时销毁资源
-        prefabCache.SetPopCallback((key, prefab) => 
-        {
-            UnityEngine.Object.Destroy(prefab);
-            Log.Info($"Destroyed prefab: {key}");
-        });
-    }
-    
-    public async ETTask<GameObject> GetPrefab(string path)
-    {
-        // 先查缓存
-        if (prefabCache.TryGet(path, out var prefab))
-        {
-            return prefab;
-        }
-        
-        // 缓存未命中，加载资源
-        prefab = await ResourcesManager.Instance.LoadAsync<GameObject>(path);
-        
-        // 存入缓存
-        prefabCache.Set(path, prefab);
-        
-        return prefab;
-    }
+    // 使用 GameObject
 }
+
+// 检查包含
+if (cache.ContainsKey("prefab1"))
+{
+    Log.Info("缓存中存在");
+}
+
+// 移除
+cache.Remove("prefab1");
+
+// 清空
+cache.Clear();
 ```
 
-### 网络响应缓存
+### 示例 2: 资源缓存（带淘汰回调）
 
 ```csharp
-public class ApiResponseCache
+// 创建资源缓存
+var resourceCache = new LruCache<string, Texture2D>(100);
+
+// 设置淘汰回调
+resourceCache.SetPopCallback((key, texture) =>
 {
-    private LruCache<string, ApiResponse> cache;
-    
-    public ApiResponseCache()
-    {
-        cache = new LruCache<string, ApiResponse>(capacity: 50);
-        
-        // 只缓存成功响应，且未过期的
-        cache.SetCheckCanPopCallback((key, response) => 
-        {
-            return !response.IsSuccess || response.IsExpired;
-        });
-    }
-    
-    public async ETTask<ApiResponse> GetAsync(string url)
-    {
-        // 查缓存
-        if (cache.TryGet(url, out var cached))
-        {
-            if (!cached.IsExpired)
-            {
-                return cached;
-            }
-        }
-        
-        // 请求网络
-        var response = await HttpClient.GetAsync(url);
-        
-        // 缓存成功响应
-        if (response.IsSuccess)
-        {
-            cache.Set(url, response);
-        }
-        
-        return response;
-    }
-}
+    // 销毁资源
+    UnityEngine.Object.Destroy(texture);
+    Log.Info($"淘汰纹理：{key}");
+});
 
-public class ApiResponse
+// 加载资源
+Texture2D LoadTexture(string path)
 {
-    public bool IsSuccess { get; set; }
-    public DateTime ExpireTime { get; set; }
-    public bool IsExpired => DateTime.Now > ExpireTime;
-}
-```
-
-### 数据缓存（带过期时间）
-
-```csharp
-public class DataCache<TKey, TValue>
-{
-    private class CacheItem
+    // 先查缓存
+    if (resourceCache.TryGet(path, out var texture))
     {
-        public TValue Value { get; set; }
-        public DateTime ExpireTime { get; set; }
-        public bool IsExpired => DateTime.Now > ExpireTime;
-    }
-    
-    private LruCache<TKey, CacheItem> cache;
-    
-    public DataCache(int capacity, TimeSpan defaultExpire)
-    {
-        cache = new LruCache<TKey, CacheItem>(capacity);
-        
-        // 淘汰过期项
-        cache.SetCheckCanPopCallback((key, item) => item.IsExpired);
-        
-        // 淘汰通知
-        cache.SetPopCallback((key, item) => 
-        {
-            Log.Info($"Evicted: {key}, Expired: {item.IsExpired}");
-        });
-    }
-    
-    public void Set(TKey key, TValue value, TimeSpan? expire = null)
-    {
-        var item = new CacheItem
-        {
-            Value = value,
-            ExpireTime = DateTime.Now + (expire ?? TimeSpan.FromMinutes(5))
-        };
-        cache.Set(key, item);
-    }
-    
-    public bool TryGet(TKey key, out TValue value)
-    {
-        if (cache.TryGet(key, out var item))
-        {
-            if (!item.IsExpired)
-            {
-                value = item.Value;
-                return true;
-            }
-        }
-        value = default;
-        return false;
-    }
-}
-
-// 使用
-var cache = new DataCache<string, string>(100, TimeSpan.FromMinutes(10));
-cache.Set("key", "value", TimeSpan.FromMinutes(5));
-
-if (cache.TryGet("key", out var value))
-{
-    Log.Info($"Got: {value}");
-}
-```
-
----
-
-## 完整示例：图片缓存系统
-
-```csharp
-public class ImageCache
-{
-    private LruCache<string, Texture2D> textureCache;
-    private int maxMemoryMB = 100;
-    private int currentMemoryMB = 0;
-    
-    public ImageCache(int capacity = 50)
-    {
-        textureCache = new LruCache<string, Texture2D>(capacity);
-        
-        // 检查是否可以淘汰（基于内存）
-        textureCache.SetCheckCanPopCallback((path, texture) => 
-        {
-            // 如果内存超限，可以淘汰
-            return currentMemoryMB > maxMemoryMB;
-        });
-        
-        // 淘汰时释放内存
-        textureCache.SetPopCallback((path, texture) => 
-        {
-            if (texture != null)
-            {
-                int mem = texture.width * texture.height * 4 / 1024 / 1024;
-                currentMemoryMB -= mem;
-                UnityEngine.Object.Destroy(texture);
-                Log.Info($"Freed texture: {path}, {mem}MB");
-            }
-        });
-    }
-    
-    public async ETTask<Texture2D> LoadTexture(string path)
-    {
-        // 查缓存
-        if (textureCache.TryGet(path, out var texture))
-        {
-            Log.Info($"Cache hit: {path}");
-            return texture;
-        }
-        
-        // 加载图片
-        Log.Info($"Loading: {path}");
-        texture = await ResourcesManager.Instance.LoadAsync<Texture2D>(path);
-        
-        if (texture != null)
-        {
-            // 计算内存
-            int mem = texture.width * texture.height * 4 / 1024 / 1024;
-            currentMemoryMB += mem;
-            
-            // 存入缓存
-            textureCache.Set(path, texture);
-            
-            Log.Info($"Loaded: {path}, {mem}MB, Total: {currentMemoryMB}MB");
-        }
-        
         return texture;
     }
+
+    // 加载新资源
+    texture = Resources.Load<Texture2D>(path);
     
-    public void Preload(List<string> paths)
+    // 加入缓存
+    resourceCache.Set(path, texture);
+    
+    return texture;
+}
+```
+
+### 示例 3: 自定义淘汰策略
+
+```csharp
+// 创建缓存
+var cache = new LruCache<string, DataItem>(50);
+
+// 设置检查回调（只淘汰未使用的项）
+cache.SetCheckCanPopCallback((key, item) =>
+{
+    return !item.IsInUse; // 只淘汰未使用的
+});
+
+// 设置淘汰回调
+cache.SetPopCallback((key, item) =>
+{
+    item.Cleanup();
+});
+
+// 手动清理
+cache.CleanUp();
+```
+
+### 示例 4: 数据缓存（带容量调整）
+
+```csharp
+var cache = new LruCache<string, string>(100);
+
+// 根据内存情况调整容量
+void AdjustCapacity()
+{
+    if (SystemInfo.memorySize < 2048)
     {
-        foreach (var path in paths)
-        {
-            LoadTexture(path).Coroutine();
-        }
+        cache.Capacity = 50; // 低内存设备
     }
-    
-    public void Clear()
+    else
     {
-        textureCache.Clear();
-        currentMemoryMB = 0;
+        cache.Capacity = 200; // 高内存设备
     }
 }
 
-// 使用示例
-public class Game : MonoBehaviour
+// 遍历缓存
+foreach (var kvp in cache)
 {
-    private ImageCache imageCache;
-    
-    void Start()
-    {
-        imageCache = new ImageCache(capacity: 100);
-        
-        // 预加载
-        var levelImages = new List<string> 
-        { 
-            "Textures/Level1/bg", 
-            "Textures/Level1/hero" 
-        };
-        imageCache.Preload(levelImages);
-    }
-    
-    async void OnClickLoadImage()
-    {
-        var texture = await imageCache.LoadTexture("Textures/Level1/bg");
-        // 使用 texture...
-    }
+    Log.Info($"{kvp.Key}: {kvp.Value}");
 }
 ```
 
 ---
 
-## 性能优化建议
+## 线程安全
 
-### 1. 合理设置容量
-
-```csharp
-// ❌ 容量太小，频繁淘汰
-var cache = new LruCache<string, int>(capacity: 5);
-
-// ✅ 根据实际场景设置
-var cache = new LruCache<string, int>(capacity: 100);
-```
-
-### 2. 使用 TryGet 而非索引器
+### 读写锁机制
 
 ```csharp
-// ❌ 可能抛异常
+// 读操作（共享锁）
+locker.EnterReadLock();
+try { ... }
+finally { locker.ExitReadLock(); }
+
+// 写操作（独占锁）
+locker.EnterWriteLock();
+try { ... }
+finally { locker.ExitWriteLock(); }
+
+// 升级读锁（读→写）
+locker.EnterUpgradeableReadLock();
 try
 {
-    var value = cache["key"];
+    // 读操作
+    locker.EnterWriteLock();
+    try { ... }
+    finally { locker.ExitWriteLock(); }
 }
-catch { }
-
-// ✅ 安全
-if (cache.TryGet("key", out var value))
-{
-    // 使用 value
-}
+finally { locker.ExitUpgradeableReadLock(); }
 ```
 
-### 3. 轻量回调
+---
 
-```csharp
-// ❌ 回调中执行耗时操作
-cache.SetCheckCanPopCallback((key, value) => 
-{
-    var result = HeavyComputation(value); // 耗时
-    return result;
-});
+## 性能特性
 
-// ✅ 回调保持轻量
-cache.SetCheckCanPopCallback((key, value) => 
-{
-    return value < threshold; // 快速判断
-});
-```
+### 时间复杂度
+
+| 操作 | 时间复杂度 | 说明 |
+|------|-----------|------|
+| **Set** | O(1) | Dictionary + LinkedList 操作 |
+| **Get** | O(1) | Dictionary 查找 |
+| **Remove** | O(1) | Dictionary + LinkedList 操作 |
+| **Contains** | O(1) | Dictionary 查找 |
+
+### 空间复杂度
+
+- **O(n)** - n 为缓存容量
+- Dictionary + LinkedList 各存储 n 个元素
 
 ---
 
 ## 相关文档
 
-- [ObjectPool.cs.md](../ObjectPool.cs.md) - 对象池
-- [Component_Collections.cs.md](./Component_Collections.cs.md) - 集合组件
+- [ObjectPool.cs.md](../ObjectPool.cs.md) - 对象池（可与 LruCache 配合使用）
+- [ResourcesManager.cs.md](../../../Code/Module/Resource/ResourcesManager.cs.md) - 资源管理器（可能使用 LruCache）
+- [GameObjectPoolManager.cs.md](../../../Code/Module/Resource/GameObjectPoolManager.cs.md) - 对象池管理器
 
 ---
 
-*文档由 OpenClaw AI 助手自动生成 | 基于静态代码分析*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*
