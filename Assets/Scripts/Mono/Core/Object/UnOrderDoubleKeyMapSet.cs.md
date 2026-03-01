@@ -3,69 +3,96 @@
 ## 文件基本信息
 
 | 属性 | 值 |
-|------|------|
+|------|-----|
 | **文件名** | UnOrderDoubleKeyMapSet.cs |
 | **路径** | Assets/Scripts/Mono/Core/Object/UnOrderDoubleKeyMapSet.cs |
 | **所属模块** | 框架层 → Mono/Core/Object |
-| **文件职责** | 提供双键多值映射的数据结构 |
+| **命名空间** | `TaoTie` |
+| **文件职责** | 提供双键无序多重映射（T → M → HashSet<N>，去重） |
 
 ---
 
-## 类/结构体说明
+## 类说明
 
-### UnOrderDoubleKeyMapSet<K1, K2, V>
+### UnOrderDoubleKeyMapSet<T, M, N>
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 双键多值映射，可以通过 K1 或 K2 访问多个值（使用 HashSet 存储） |
-| **泛型参数** | `K1` - 第一个键类型，`K2` - 第二个键类型，`V` - 值类型 |
-| **继承关系** | 无 |
-| **实现的接口** | 无 |
+| **职责** | 继承 `Dictionary<T, UnOrderMultiMapSet<M, N>>`，支持双键索引的去重多重映射 |
+| **泛型参数** | `T` - 第一层键类型<br>`M` - 第二层键类型<br>`N` - 值类型（HashSet 存储，自动去重） |
+| **继承关系** | `Dictionary<T, UnOrderMultiMapSet<M, N>>` |
 
-**设计模式**: 双向索引 + 多值模式
-
-```csharp
-// 创建双键多值映射
-var map = new UnOrderDoubleKeyMapSet<long, string, Entity>();
-
-// 添加
-map.Add(entity.Zone, entity.Type, entity);
-
-// 通过区服查找
-HashSet<Entity> zoneEntities = map.GetByKey1(1);
-
-// 通过类型查找
-HashSet<Entity> typeEntities = map.GetByKey2("enemy");
+**数据结构**:
 ```
+T (第一层键)
+  └─ UnOrderMultiMapSet<M, N> (第二层映射，HashSet 去重)
+       └─ M (第二层键)
+            └─ HashSet<N> (值集合，去重)
+```
+
+---
+
+## 方法说明
+
+### Add(T t, M m, N k)
+
+添加键值对（自动去重）
+
+### Remove(T t, M m, N k)
+
+移除指定的键值对
+
+### Contains(T t, M m, N k)
+
+检查是否包含指定的键值对
+
+### this[T t, M m]
+
+双键索引器，返回 HashSet<N>
+
+### Count
+
+获取所有值的总数
+
+---
+
+## 与 UnOrderDoubleKeyMap 的区别
+
+| 特性 | UnOrderDoubleKeyMapSet | UnOrderDoubleKeyMap |
+|------|------------------------|---------------------|
+| **内层容器** | `HashSet<N>` | `List<N>` |
+| **值是否去重** | ✅ 自动去重 | ❌ 允许重复 |
 
 ---
 
 ## 使用示例
 
-### 示例 1: 多条件查询
-
 ```csharp
-// 按区服和类型查找实体
-UnOrderDoubleKeyMapSet<int, string, Entity> entities = new UnOrderDoubleKeyMapSet<int, string, Entity>();
+var map = new UnOrderDoubleKeyMapSet<string, int, float>();
 
-// 添加实体
-entities.Add(1, "enemy", enemy1);
-entities.Add(1, "enemy", enemy2);
-entities.Add(1, "npc", npc1);
+// 添加（自动去重）
+map.Add("category1", 1, 100f);
+map.Add("category1", 1, 100f); // 重复值被忽略
+map.Add("category1", 1, 200f);
 
-// 查找 1 区所有敌人
-HashSet<Entity> enemies = entities.GetByKey1(1);
+// 获取 HashSet
+HashSet<float> values = map["category1", 1];
 
-// 查找所有 NPC
-HashSet<Entity> npcs = entities.GetByKey2("npc");
+// 检查
+bool has = map.Contains("category1", 1, 100f); // true
+
+// 移除
+map.Remove("category1", 1, 100f);
 ```
 
 ---
 
 ## 相关文档
 
-- [UnOrderDoubleKeyMap.cs.md](./UnOrderDoubleKeyMap.cs.md) - 单值版本
+- [UnOrderDoubleKeyMap.cs.md](./UnOrderDoubleKeyMap.cs.md) - List 版本的双键映射
+- [UnOrderMultiMapSet.cs.md](./UnOrderMultiMapSet.cs.md) - 内层使用的多重映射
+- [MultiMapSet.cs.md](./MultiMapSet.cs.md) - 单键去重版本
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

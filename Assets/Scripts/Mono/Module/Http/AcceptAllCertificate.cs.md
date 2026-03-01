@@ -3,149 +3,87 @@
 ## 文件基本信息
 
 | 属性 | 值 |
-|------|------|
+|------|-----|
 | **文件名** | AcceptAllCertificate.cs |
 | **路径** | Assets/Scripts/Mono/Module/Http/AcceptAllCertificate.cs |
 | **所属模块** | 框架层 → Mono/Module/Http |
-| **文件职责** | 提供接受所有 HTTPS 证书的处理器，用于开发环境调试 |
+| **命名空间** | `TaoTie` |
+| **文件职责** | 提供接受所有 SSL 证书的证书处理器（用于开发/测试环境） |
 
 ---
 
-## 类/结构体说明
+## 类说明
 
 ### AcceptAllCertificate
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 继承 CertificateHandler，跳过 HTTPS 证书验证 |
-| **泛型参数** | 无 |
-| **继承关系** | 继承 `CertificateHandler` |
-| **实现的接口** | 无 |
+| **职责** | 继承 `CertificateHandler`，重写验证方法始终返回 true |
+| **继承关系** | `CertificateHandler` (Unity Networking) |
+| **安全警告** | ⚠️ 仅用于开发/测试环境，生产环境应使用正式证书 |
 
-**设计模式**: 适配器模式
-
-```csharp
-// 使用示例（在 HttpManager 中）
-var request = UnityWebRequest.Get(url);
-request.certificateHandler = new AcceptAllCertificate();  // 跳过证书验证
-```
+**设计模式**: 证书处理器模式
 
 ---
 
 ## 方法说明
 
-### ValidateCertificate
+### ValidateCertificate()
 
 **签名**:
 ```csharp
 protected override bool ValidateCertificate(byte[] certificateData)
 ```
 
-**职责**: 验证 HTTPS 证书
+**职责**: 验证 SSL 证书
 
 **核心逻辑**:
 ```
-始终返回 true（接受所有证书）
+1. 始终返回 true（接受所有证书）
 ```
 
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `certificateData` | `byte[]` | 证书数据（未使用） |
-
-**返回值**: `bool` - 始终为 `true`
-
-**调用者**: UnityWebRequest HTTPS 请求时
+**安全警告**: 此实现会接受任何 SSL 证书，包括自签名证书和过期证书，存在中间人攻击风险。
 
 ---
 
 ## 使用示例
 
-### 示例 1: 在 HttpManager 中使用
+### HttpManager 中的使用
 
 ```csharp
 public class HttpManager
 {
     private AcceptAllCertificate certificateHandler = new AcceptAllCertificate();
     
-    public UnityWebRequest HttpGet(string url)
+    public UnityWebRequest HttpGet(string url, ...)
     {
         var request = UnityWebRequest.Get(url);
-        request.certificateHandler = certificateHandler;  // 跳过证书验证
+        request.certificateHandler = certificateHandler; // 接受所有证书
         request.SendWebRequest();
         return request;
     }
 }
 ```
 
-### 示例 2: 直接使用
-
-```csharp
-var request = UnityWebRequest.Get("https://self-signed.example.com/api");
-request.certificateHandler = new AcceptAllCertificate();
-await request.SendWebRequest();
-
-if (request.result == UnityWebRequest.Result.Success)
-{
-    string response = request.downloadHandler.text;
-}
-```
-
 ---
 
-## 设计要点
+## 安全建议
 
-### 为什么需要跳过证书验证？
-
-**开发环境**:
-- 自签名证书（开发服务器）
-- 过期证书（测试环境）
-- 域名不匹配（本地测试）
-
-**生产环境**:
-- ⚠️ **不建议使用**
-- 应实现正确的证书验证
-
-### 安全风险
-
-```csharp
-protected override bool ValidateCertificate(byte[] certificateData)
-{
-    return true;  // ⚠️ 接受所有证书（包括伪造的）
-}
-```
-
-**风险**:
-- 中间人攻击（MITM）
-- 数据泄露
-- 证书伪造
-
-**建议**:
-- 开发环境：可以使用
-- 生产环境：应实现正确的证书验证
-- 配置开关：通过编译符号或配置控制
+| 环境 | 建议 |
+|------|------|
+| **开发/测试** | 可使用 AcceptAllCertificate |
+| **生产环境** | 应使用正式 SSL 证书，自定义 CertificateHandler 验证 |
 
 ### 生产环境替代方案
-
-```csharp
-#if DEVELOPMENT
-    request.certificateHandler = new AcceptAllCertificate();
-#else
-    request.certificateHandler = null;  // 使用默认验证
-#endif
-```
-
-或者实现自定义验证：
 
 ```csharp
 public class SecureCertificateHandler : CertificateHandler
 {
     protected override bool ValidateCertificate(byte[] certificateData)
     {
-        // 验证证书颁发机构
-        // 验证证书有效期
-        // 验证域名匹配
-        return true;  // 仅当验证通过时返回 true
+        // 实现正式的证书验证逻辑
+        // 例如：验证证书链、检查有效期、验证域名等
+        return true; // 仅当验证通过时返回 true
     }
 }
 ```
@@ -155,8 +93,7 @@ public class SecureCertificateHandler : CertificateHandler
 ## 相关文档
 
 - [HttpManager.cs.md](./HttpManager.cs.md) - HTTP 管理器（使用 AcceptAllCertificate）
-- [UnityWebRequest 文档](https://docs.unity3d.com/ScriptReference/Networking.CertificateHandler.html)
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

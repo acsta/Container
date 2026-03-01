@@ -3,290 +3,234 @@
 ## 文件基本信息
 
 | 属性 | 值 |
-|------|------|
+|------|-----|
 | **文件名** | AttributeManager.cs |
 | **路径** | Assets/Scripts/Mono/Module/Assembly/AttributeManager.cs |
 | **所属模块** | 框架层 → Mono/Module/Assembly |
-| **文件职责** | 管理特性标记的类型，提供按特性类型查找类的功能 |
+| **命名空间** | `TaoTie` |
+| **文件职责** | 管理带有特定 Attribute 标记的类型，支持反射扫描和查询 |
 
 ---
 
-## 类/结构体说明
+## 类说明
 
 ### AttributeManager
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 单例模式的管理器，扫描并索引所有标记了 BaseAttribute 子类的类型 |
-| **泛型参数** | 无 |
-| **继承关系** | 实现 `IManager` |
+| **职责** | 扫描所有程序集，收集带有 `BaseAttribute` 标记的类型，提供按 Attribute 类型查询的功能 |
+| **单例** | `static AttributeManager Instance` |
 | **实现的接口** | `IManager` |
 
-**设计模式**: 单例模式 + 管理器模式 + 注册表模式
-
-```csharp
-// 获取所有标记了 [Timer] 的类
-var timerTypes = AttributeManager.Instance.GetTypes(TypeInfo<TimerAttribute>.Type);
-
-// 获取所有标记了 [Config] 的类
-var configTypes = AttributeManager.Instance.GetTypes(TypeInfo<ConfigAttribute>.Type);
-```
+**设计模式**: 单例模式 + 注册表模式
 
 ---
 
 ## 字段与属性
 
-### Instance
-
-| 属性 | 值 |
-|------|------|
-| **类型** | `AttributeManager` |
-| **访问级别** | `public static` |
-| **说明** | 单例实例，全局访问点 |
-
----
-
-### types
-
-| 属性 | 值 |
-|------|------|
-| **类型** | `UnOrderMultiMap<Type, Type>` |
-| **访问级别** | `private readonly` |
-| **说明** | 特性类型到标记类型的多对多映射 |
-
-**结构**:
-- Key: 特性类型（如 TimerAttribute）
-- Value: 标记了该特性的类型（如 ResetTimeScale, HeartbeatTimer 等）
-
----
-
-### Empty
-
-| 属性 | 值 |
-|------|------|
-| **类型** | `List<Type>` |
-| **访问级别** | `private readonly` |
-| **说明** | 空列表，用于找不到时返回 |
-
-**用途**: 避免返回 null，减少空检查
+| 名称 | 类型 | 访问级别 | 说明 |
+|------|------|----------|------|
+| `Instance` | `AttributeManager` | `public static` | 全局单例 |
+| `types` | `UnOrderMultiMap<Type, Type>` | `private readonly` | Attribute 类型 → 被标记类型的映射 |
+| `Empty` | `List<Type>` | `private readonly` | 空列表缓存，避免 null 返回 |
 
 ---
 
 ## 方法说明
 
-### Init
+### Init()
 
 **签名**:
 ```csharp
 public void Init()
 ```
 
-**职责**: 初始化，扫描所有程序集并索引特性标记的类型
+**职责**: 初始化属性管理器，扫描所有程序集
 
 **核心逻辑**:
 ```
 1. 设置单例 Instance = this
-2. 清空 types 字典
+2. 清空 types 映射
 3. 从 AssemblyManager 获取所有类型
 4. 遍历所有类型：
    - 跳过抽象类
-   - 获取所有 BaseAttribute 标记
-   - 记录特性类型和标记类型的关系
+   - 获取类型上的所有 BaseAttribute 派生特性
+   - 将特性类型 → 被标记类型 加入映射
 ```
 
-**调用者**: ManagerProvider.RegisterManager<AttributeManager>(), 热更新后重新初始化
+**调用者**: ManagerProvider.RegisterManager<AttributeManager>()
 
 ---
 
-### Destroy
+### Destroy()
 
 **签名**:
 ```csharp
 public void Destroy()
 ```
 
-**职责**: 销毁管理器，清空索引
+**职责**: 销毁属性管理器
 
 **核心逻辑**:
 ```
 1. 设置 Instance = null
-2. 清空 types 字典
+2. 清空 types 映射
 ```
-
-**调用者**: ManagerProvider.RemoveManager<AttributeManager>()
 
 ---
 
-### GetTypes
+### GetTypes(Type systemAttributeType)
 
 **签名**:
 ```csharp
 public List<Type> GetTypes(Type systemAttributeType)
 ```
 
-**职责**: 根据特性类型获取所有标记了该特性的类
+**职责**: 获取带有指定 Attribute 标记的所有类型
 
-**核心逻辑**:
-```
-1. 从 types 字典查找
-2. 如果找到，返回对应的类型列表
-3. 否则返回空列表
-```
+**参数**: `systemAttributeType` - Attribute 类型
 
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `systemAttributeType` | `Type` | 特性类型（如 typeof(TimerAttribute)） |
-
-**返回值**: `List<Type>` - 标记了该特性的所有类型
-
-**调用者**: TimerManager.InitAction(), ConfigManager.LoadAsync() 等
+**返回值**: 类型列表，如果未找到返回空列表
 
 **使用示例**:
 ```csharp
-// 获取所有定时器类
-var timerTypes = AttributeManager.Instance.GetTypes(TypeInfo<TimerAttribute>.Type);
+// 获取所有带有 ConfigAttribute 标记的类型
+var configTypes = AttributeManager.Instance.GetTypes(typeof(ConfigAttribute));
 
-foreach (var type in timerTypes)
-{
-    // 创建定时器实例
-    var timer = Activator.CreateInstance(type);
-}
+// 获取所有带有 TimerAttribute 标记的类型
+var timerTypes = AttributeManager.Instance.GetTypes(typeof(TimerAttribute));
 ```
 
 ---
 
-## 扫描流程
+## 核心流程
+
+### 初始化扫描流程
 
 ```mermaid
-flowchart TD
-    Start[开始 Init] --> GetTypes[从 AssemblyManager 获取所有类型]
-    GetTypes --> Loop{遍历每个类型}
+sequenceDiagram
+    participant AM as AttributeManager
+    participant ASM as AssemblyManager
+    participant Type as 类型
+    participant Attr as Attribute
+
+    AM->>ASM: GetTypes()
+    ASM-->>AM: 所有类型字典
     
-    Loop --> IsAbstract{是抽象类？}
-    IsAbstract -->|是 | Skip[跳过]
-    IsAbstract -->|否 | GetAttrs[获取 BaseAttribute 标记]
-    
-    GetAttrs --> AttrLoop{遍历特性}
-    AttrLoop --> HasAttr{有特性？}
-    HasAttr -->|否 | Loop
-    HasAttr -->|是 | Record[记录 特性类型 → 标记类型]
-    
-    Record --> AttrLoop
-    Loop --> Done[完成扫描]
+    loop 遍历所有类型
+        AM->>Type: 检查是否抽象类
+        alt 非抽象类
+            AM->>Type: GetCustomAttributes(BaseAttribute)
+            loop 遍历特性
+                AM->>Attr: 获取特性类型
+                AM->>AM: types.Add(Attr 类型，Type)
+            end
+        end
+    end
 ```
 
 ---
 
 ## 使用示例
 
-### 示例 1: 获取定时器类型
+### 示例 1: 获取配置类型
 
 ```csharp
-// TimerManager.InitAction()
-var timerTypes = AttributeManager.Instance.GetTypes(TypeInfo<TimerAttribute>.Type);
-
-foreach (var type in timerTypes)
+// 定义配置特性
+public class ConfigAttribute : BaseAttribute
 {
-    // 获取 Timer 特性的 Type 参数
-    var attr = type.GetCustomAttribute<TimerAttribute>();
-    
-    // 注册定时器
-    RegisterTimer(attr.Type, type);
 }
-```
 
-### 示例 2: 获取配置类型
+// 标记配置类
+[Config]
+public class ItemConfig : IConfig
+{
+}
 
-```csharp
-// ConfigManager.LoadAsync()
-var configTypes = AttributeManager.Instance.GetTypes(TypeInfo<ConfigAttribute>.Type);
+[Config]
+public class SkillConfig : IConfig
+{
+}
 
+// 获取所有配置类型
+var configTypes = AttributeManager.Instance.GetTypes(typeof(ConfigAttribute));
 foreach (var type in configTypes)
 {
-    // 加载配置
-    LoadConfig(type);
+    Log.Info($"配置类：{type.Name}");
 }
 ```
 
-### 示例 3: 热更新后重新扫描
+### 示例 2: 获取定时器类型
 
 ```csharp
-public async ETTask HotfixCode()
+// 定义定时器特性
+[AttributeUsage(AttributeTargets.Class)]
+public class TimerAttribute : BaseAttribute
 {
-    // 1. 卸载旧代码
-    AssemblyManager.Instance.RemoveHotfixAssembly();
-    
-    // 2. 加载新代码
-    Assembly newAssembly = Assembly.Load(newDllBytes);
-    AssemblyManager.Instance.AddHotfixAssembly(newAssembly);
-    
-    // 3. 重新扫描特性
-    AttributeManager.Instance.Init();
-    
-    // 4. 重新注册定时器
-    TimerManager.Instance.InitAction();
-    
-    Log.Info("热更新完成");
+    public int Type;
+}
+
+// 标记定时器类
+[Timer(Type = 1001)]
+public class MyTimer : ITimer
+{
+    public void Handle(object obj) { }
+}
+
+// 获取所有定时器类型
+var timerTypes = AttributeManager.Instance.GetTypes(typeof(TimerAttribute));
+foreach (var type in timerTypes)
+{
+    var attr = type.GetCustomAttribute<TimerAttribute>();
+    Log.Info($"定时器类型：{attr.Type} - {type.Name}");
+}
+```
+
+### 示例 3: 实体组件注册
+
+```csharp
+// 定义组件特性
+[AttributeUsage(AttributeTargets.Class)]
+public class ComponentAttribute : BaseAttribute
+{
+}
+
+// 标记组件类
+[Component]
+public class MovementComponent : IComponent { }
+
+[Component]
+public class RenderComponent : IComponent { }
+
+// 获取所有组件类型并注册
+var componentTypes = AttributeManager.Instance.GetTypes(typeof(ComponentAttribute));
+foreach (var type in componentTypes)
+{
+    var component = Activator.CreateInstance(type) as IComponent;
+    entityManager.RegisterComponent(component);
 }
 ```
 
 ---
 
-## 设计要点
+## 应用场景
 
-### 为什么使用 UnOrderMultiMap？
-
-```csharp
-private readonly UnOrderMultiMap<Type, Type> types;
-```
-
-**原因**:
-- 一个特性类型可以对应多个标记类型
-- 无序，性能更好
-- 支持快速查找和添加
-
-### 为什么返回空列表而非 null？
-
-```csharp
-private readonly List<Type> Empty = new List<Type>();
-
-public List<Type> GetTypes(Type systemAttributeType)
-{
-    if (this.types.TryGetValue(systemAttributeType, out var res))
-        return res;
-    return Empty;  // 返回空列表而非 null
-}
-```
-
-**优势**:
-- 调用者无需空检查
-- 可以直接遍历
-- 代码更简洁
-
-### 为什么要跳过抽象类？
-
-```csharp
-if (type.IsAbstract)
-{
-    continue;
-}
-```
-
-**原因**:
-- 抽象类不能被实例化
-- 特性通常标记具体实现类
-- 减少不必要的扫描
+| 场景 | 说明 |
+|------|------|
+| **配置系统** | 扫描所有配置类，自动加载 |
+| **定时器系统** | 扫描所有定时器类，注册到 TimerManager |
+| **实体组件** | 扫描所有组件类，自动注册 |
+| **消息处理器** | 扫描所有消息处理类，注册到 Messager |
+| **AI 决策** | 扫描所有决策节点类，构建决策树 |
 
 ---
 
 ## 相关文档
 
-- [AssemblyManager.cs.md](./AssemblyManager.cs.md) - 程序集管理器（提供类型来源）
+- [AssemblyManager.cs.md](./AssemblyManager.cs.md) - 程序集管理器
 - [BaseAttribute.cs.md](./BaseAttribute.cs.md) - 基础特性类
-- [TimerAttribute.cs.md](../Timer/TimerAttribute.cs.md) - 定时器特性
-- [ConfigAttribute.cs.md](../../Code/Module/Config/ConfigAttribute.cs.md) - 配置特性
+- [ManagerProvider.cs.md](../../Core/Manager/ManagerProvider.cs.md) - 管理器注册
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

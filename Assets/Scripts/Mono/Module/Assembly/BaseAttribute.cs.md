@@ -3,193 +3,119 @@
 ## 文件基本信息
 
 | 属性 | 值 |
-|------|------|
+|------|-----|
 | **文件名** | BaseAttribute.cs |
 | **路径** | Assets/Scripts/Mono/Module/Assembly/BaseAttribute.cs |
 | **所属模块** | 框架层 → Mono/Module/Assembly |
-| **文件职责** | 定义基础特性类，所有自定义特性的基类 |
+| **命名空间** | `TaoTie` |
+| **文件职责** | 提供框架特性的基类，用于标记可被 AttributeManager 扫描的类型 |
 
 ---
 
-## 类/结构体说明
+## 类说明
 
 ### BaseAttribute
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 所有自定义特性的基类，用于标记特定类型的类 |
-| **泛型参数** | 无 |
-| **继承关系** | 继承 `System.Attribute` |
-| **实现的接口** | 无 |
+| **职责** | 所有框架特性的基类，继承自 `System.Attribute` |
+| **继承关系** | `Attribute` |
+| **特性用法** | `AttributeTargets.Class, AllowMultiple = true` |
 
-**设计模式**: 基类模式
-
-```csharp
-// 继承 BaseAttribute
-[AttributeUsage(AttributeTargets.Class)]
-public class TimerAttribute : BaseAttribute
-{
-    public int Type { get; }
-    
-    public TimerAttribute(int type)
-    {
-        this.Type = type;
-    }
-}
-
-// 使用特性
-[Timer(TimerType.Heartbeat)]
-public class HeartbeatTimer : ATimer<NetworkManager>
-{
-    public override void Run(NetworkManager t)
-    {
-        t.SendHeartbeat();
-    }
-}
-```
-
----
-
-## 特性定义
-
-### AttributeUsage
+**设计模式**: 标记特性模式
 
 ```csharp
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-```
+// 定义派生特性
+public class ConfigAttribute : BaseAttribute
+{
+}
 
-**说明**:
-- `AttributeTargets.Class`: 只能应用于类
-- `AllowMultiple = true`: 同一个类可以应用多个此特性
-
----
-
-## 继承关系
-
-```
-System.Attribute
-    ↓
-TaoTie.BaseAttribute
-    ↓
-各种自定义特性（TimerAttribute, ConfigAttribute, etc.）
+// 标记类
+[Config]
+public class ItemConfig { }
 ```
 
 ---
 
 ## 使用示例
 
-### 示例 1: 定义定时器特性
+### 示例 1: 配置类标记
 
 ```csharp
-[AttributeUsage(AttributeTargets.Class)]
-public class TimerAttribute : BaseAttribute
-{
-    public int Type { get; }
-    
-    public TimerAttribute(int type)
-    {
-        this.Type = type;
-    }
-}
-
-// 使用
-[Timer(TimerType.ResetTimeScale)]
-public class ResetTimeScale : ATimer<GameTimerManager>
-{
-    public override void Run(GameTimerManager t)
-    {
-        t.SetTimeScale(1);
-    }
-}
-```
-
-### 示例 2: 定义配置特性
-
-```csharp
-[AttributeUsage(AttributeTargets.Class)]
+// 定义配置特性
 public class ConfigAttribute : BaseAttribute
 {
 }
 
-// 使用
+// 标记配置类
 [Config]
-public class LevelConfig : ProtoObject
+public class ItemConfig : IConfig
 {
     public int Id;
     public string Name;
 }
 ```
 
-### 示例 3: 扫描特性
+### 示例 2: 定时器标记
 
 ```csharp
-// AttributeManager 扫描所有标记了 BaseAttribute 子类的类型
-var allTypes = AssemblyManager.Instance.GetTypes();
-
-foreach (var item in allTypes)
+// 定义定时器特性
+[AttributeUsage(AttributeTargets.Class)]
+public class TimerAttribute : BaseAttribute
 {
-    Type type = item.Value;
+    public int Type;
+}
+
+// 标记定时器类
+[Timer(Type = 1001)]
+public class MyTimer : ITimer
+{
+    public void Handle(object obj) { }
+}
+```
+
+### 示例 3: 组件标记
+
+```csharp
+// 定义组件特性
+[AttributeUsage(AttributeTargets.Class)]
+public class ComponentAttribute : BaseAttribute
+{
+}
+
+// 标记组件类
+[Component]
+public class MovementComponent : IComponent { }
+```
+
+---
+
+## 扫描机制
+
+```csharp
+// AttributeManager 扫描所有带有 BaseAttribute 派生特性的类型
+foreach (var type in AssemblyManager.Instance.GetTypes())
+{
+    if (type.IsAbstract) continue;
     
-    // 获取所有 BaseAttribute 标记
-    object[] objects = type.GetCustomAttributes(TypeInfo<BaseAttribute>.Type, true);
+    // 获取所有 BaseAttribute 派生特性
+    object[] attrs = type.GetCustomAttributes(typeof(BaseAttribute), true);
     
-    foreach (object o in objects)
+    foreach (var attr in attrs)
     {
-        Type attrType = o.GetType();
-        // 记录类型和特性的关系
-        types.Add(attrType, type);
+        // 记录 特性类型 → 被标记类型 的映射
+        AttributeManager.Instance.types.Add(attr.GetType(), type);
     }
 }
 ```
 
 ---
 
-## 设计要点
-
-### 为什么需要 BaseAttribute？
-
-1. **统一标记**: 所有自定义特性都继承 BaseAttribute
-2. **便于扫描**: AttributeManager 只需扫描 BaseAttribute 类型
-3. **解耦**: 不依赖具体的特性类型
-4. **可扩展**: 新增特性无需修改扫描逻辑
-
-### AllowMultiple 的意义
-
-```csharp
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-```
-
-**用途**: 允许一个类有多个相同的特性
-
-**示例**:
-```csharp
-[EventHandler("Event1")]
-[EventHandler("Event2")]
-public class MultiEventHandler : BaseAttribute
-{
-    // 可以处理多个事件
-}
-```
-
-### 与 AttributeManager 配合
-
-```
-BaseAttribute (基类)
-    ↑
-TimerAttribute, ConfigAttribute, ... (具体特性)
-    ↓
-AttributeManager (扫描所有标记了这些特性的类)
-```
-
----
-
 ## 相关文档
 
-- [AttributeManager.cs.md](./AttributeManager.cs.md) - 属性管理器（扫描 BaseAttribute）
+- [AttributeManager.cs.md](./AttributeManager.cs.md) - 属性管理器
 - [AssemblyManager.cs.md](./AssemblyManager.cs.md) - 程序集管理器
-- [TimerAttribute.cs.md](../Timer/TimerAttribute.cs.md) - 定时器特性示例
-- [ConfigAttribute.cs.md](../../Code/Module/Config/ConfigAttribute.cs.md) - 配置特性示例
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

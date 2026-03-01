@@ -3,75 +3,93 @@
 ## 文件基本信息
 
 | 属性 | 值 |
-|------|------|
+|------|-----|
 | **文件名** | UnOrderMultiMap.cs |
 | **路径** | Assets/Scripts/Mono/Core/Object/UnOrderMultiMap.cs |
 | **所属模块** | 框架层 → Mono/Core/Object |
-| **文件职责** | 提供无序多对多映射的数据结构，使用 List 存储值 |
+| **命名空间** | `TaoTie` |
+| **文件职责** | 提供一键多值的无序多重映射集合（内层为 List） |
 
 ---
 
-## 类/结构体说明
+## 类说明
 
-### UnOrderMultiMap<K, V>
+### UnOrderMultiMap<T, K>
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 无序多对多映射，一个键可以对应多个值（使用 List 存储值） |
-| **泛型参数** | `K` - 键类型，`V` - 值类型 |
-| **继承关系** | 无 |
-| **实现的接口** | 无 |
-
-**设计模式**: 多值字典模式
-
-```csharp
-// 创建无序多对多映射
-var multiMap = new UnOrderMultiMap<string, int>();
-
-multiMap.Add("fruits", 1);
-multiMap.Add("fruits", 2);
-
-// 获取所有水果
-List<int> fruits = multiMap["fruits"];
-```
+| **职责** | 继承 `Dictionary<T, List<K>>`，支持一个键对应多个值（允许重复），无序 |
+| **泛型参数** | `T` - 键类型（无序）<br>`K` - 值类型（允许重复） |
+| **继承关系** | `Dictionary<T, List<K>>` |
+| **实现的接口** | 无额外接口 |
 
 ---
 
-## 与 UnOrderMultiMapSet 对比
+## 方法说明
 
-| 特性 | UnOrderMultiMap | UnOrderMultiMapSet |
-|------|-----------------|-------------------|
-| **值存储** | List | HashSet |
-| **重复值** | ✅ 允许 | ❌ 不允许 |
-| **查找速度** | O(n) | O(1) |
-| **使用场景** | 允许重复 | 不允许重复 |
+### Add(T t, K k)
+
+添加键值对，自动创建内层 List
+
+### Remove(T t, K k)
+
+移除指定的键值对，如果 List 为空则移除整个键
+
+### GetAll(T t)
+
+获取键对应的所有值（返回副本数组）
+
+### GetOne(T t)
+
+获取键对应的第一个值
+
+### Contains(T t, K k)
+
+检查是否包含指定的键值对
+
+---
+
+## 与 MultiMap 的区别
+
+| 特性 | UnOrderMultiMap | MultiMap |
+|------|-----------------|----------|
+| **基类** | `Dictionary<T, List<K>>` | `SortedDictionary<T, List<K>>` |
+| **键是否有序** | ❌ 无序 | ✅ 有序 |
+| **性能** | 更快（O(1)） | 稍慢（O(log n)） |
 
 ---
 
 ## 使用示例
 
-### 示例 1: 程序集类型映射
-
 ```csharp
-// 按程序集索引类型
-UnOrderMultiMap<Assembly, Type> mapTypes = new UnOrderMultiMap<Assembly, Type>();
+var map = new UnOrderMultiMap<string, int>();
 
-foreach (Type type in assembly.GetTypes())
-{
-    mapTypes.Add(assembly, type);
-}
+// 添加（允许重复）
+map.Add("cat", 1);
+map.Add("cat", 2);
+map.Add("cat", 1); // 重复也添加
 
-// 获取程序集的所有类型
-List<Type> types = mapTypes[assembly];
+// 获取所有
+int[] values = map.GetAll("cat"); // [1, 2, 1]
+
+// 获取第一个
+int first = map.GetOne("cat"); // 1
+
+// 检查
+bool has = map.Contains("cat", 2); // true
+
+// 移除
+map.Remove("cat", 1); // 只移除一个 1
 ```
 
 ---
 
 ## 相关文档
 
-- [UnOrderMultiMapSet.cs.md](./UnOrderMultiMapSet.cs.md) - 使用 HashSet 的版本
-- [AssemblyManager.cs.md](../../Module/Assembly/AssemblyManager.cs.md) - 程序集管理器（使用 UnOrderMultiMap）
+- [MultiMap.cs.md](./MultiMap.cs.md) - 有序版本
+- [UnOrderMultiMapSet.cs.md](./UnOrderMultiMapSet.cs.md) - HashSet 去重版本
+- [UnOrderDoubleKeyMap.cs.md](./UnOrderDoubleKeyMap.cs.md) - 双键版本
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*
