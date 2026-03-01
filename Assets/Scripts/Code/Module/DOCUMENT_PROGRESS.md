@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-02-28 09:35  
+> **更新时间**: 2026-03-01 18:30  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -9,13 +9,30 @@
 
 | 类别 | 数量 |
 |------|------|
-| 总 .cs 文件数 | ~575 |
-| 已创建 .md 文档 | 126 |
-| 覆盖率 | ~22% |
+| 总 .cs 文件数 | ~646 |
+| 已创建 .md 文档 | 137 |
+| 覆盖率 | ~21% |
 
 ---
 
 ## ✅ 已完成的模块
+
+### Core 核心模块 (100%)
+- [x] ObjectPool.cs - 对象池核心
+- [x] ManagerProvider.cs - 管理器注册与调度中心
+- [x] IManager.cs - 管理器接口定义
+
+### Timer 定时器模块 (100%)
+- [x] TimerManager.cs - 定时器管理系统
+- [x] TimeInfo.cs - 时间信息服务
+- [x] GameTimerManager.cs - 游戏时间管理器
+- [x] ITimer.cs - 定时器处理器接口
+- [x] TimerAction.cs - 定时器动作数据结构
+
+### Log 日志模块 (100%)
+- [x] Log.cs - 日志系统入口
+- [x] ILog.cs - 日志接口定义
+- [x] UnityLogger.cs - Unity 日志实现
 
 ### UI 模块 (100%)
 - [x] UIBaseContainer.cs.md
@@ -64,7 +81,6 @@
 ### 🔴 高优先级 - 核心框架
 
 #### Mono/Core (对象系统)
-- [ ] ObjectPool.cs - 对象池核心
 - [ ] Object/HashSetComponent.cs
 - [ ] Object/MultiMapSet.cs
 - [ ] Object/IdGenerater.cs
@@ -85,17 +101,8 @@
 - [ ] BaseAttribute.cs
 - [ ] AssemblyManager.cs
 
-#### Mono/Module/Timer (定时器系统)
-- [ ] TimerAttribute.cs
-- [ ] TimeInfo.cs
-- [ ] GameTimerManager.cs
-- [ ] ITimer.cs
-- [ ] TimerAction.cs
-
 #### Mono/Module/Log (日志系统)
-- [ ] UnityLogger.cs
-- [ ] ILog.cs
-- [ ] Log.cs
+- (已完成)
 
 #### Mono/Module/Http (HTTP 请求)
 - [ ] AcceptAllCertificate.cs
@@ -288,4 +295,4 @@
 
 ---
 
-*最后更新：2026-02-28 09:35*
+*最后更新：2026-03-01 18:30*
