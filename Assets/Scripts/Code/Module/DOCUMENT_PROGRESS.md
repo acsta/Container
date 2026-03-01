@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 04:30  
+> **更新时间**: 2026-03-02 05:00  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 307 |
-| 覆盖率 | ~47.5% |
+| 已创建 .md 文档 | 316 |
+| 覆盖率 | ~48.9% |
 
 ---
 
@@ -197,6 +197,96 @@
 - [x] View/BlackBoyComponent.cs.md - 黑色角色效果组件
 - [x] View/CasualActionComponent.cs.md - 休闲动作组件
 - [x] View/GameObjectHolderComponent.cs.md - 游戏对象持有组件
+
+### Code/Game/System/Numeric (数值系统) (100%)
+- [x] NumericSystem.cs.md - 数值系统管理器
+
+### Code/Game/System/Environment (环境系统) (部分完成)
+- [x] EnvironmentPriorityType.cs.md - 环境优先级
+- [x] Data/DayTimeType.cs.md - 昼夜类型
+- [x] Runner/DayEnvironmentRunner.cs.md - 昼夜环境运行器
+- [ ] EnvironmentManager.cs
+- [ ] EnvironmentManager.Light.cs
+- [ ] EnvironmentManager.Skybox.cs
+- [ ] EnvironmentInfo.cs
+- [ ] Runner/NormalEnvironmentRunner.cs
+- [ ] Runner/BlenderEnvironmentRunner.cs
+
+### Code/Game/UIGame/UITT (抖音小游戏 UI) (部分完成)
+- [x] UISidebarRewardsWin.cs.md - 侧边栏奖励窗口
+- [ ] UIAssistantView.cs
+- [ ] UIAuctionItem.cs
+- [ ] UIBubbleItem.cs
+- [ ] UIButtonView.cs
+- [ ] UIDiceWin.cs
+- [ ] UIEmojiItem.cs
+- [ ] UIGameInfoView.cs
+- [ ] UIGameView.cs
+- [ ] UIGuideGameView.cs
+- [ ] UIItemsView.cs
+- [ ] UIRaiseSuccessWin.cs
+- [ ] UIReportItem.cs
+- [ ] UIReportWin.cs
+- [ ] UISuccessAuction.cs
+- [ ] UITargetView.cs
+- [ ] UITaskInfoWin.cs
+- [ ] GameInfoItem.cs
+- [ ] TaskListItem.cs
+- [ ] TurntableItem.cs
+
+### Code/Game/UIGame/UICreate (角色创建 UI) (部分完成)
+- [x] GroupInfo.cs.md - 套装信息
+- [x] EffectItem.cs.md - 效果项
+- [ ] UICreateView.cs (已完成)
+- [ ] UIBagWin.cs (已完成)
+- [ ] UIShopWin.cs (已完成)
+- [ ] UIEquipWin.cs (已完成)
+- [ ] UIBuyWin.cs (已完成)
+- [ ] CreateItem.cs (已完成)
+- [ ] ClothItem.cs (已完成)
+- [ ] ShopItem.cs (已完成)
+- [ ] TableItem.cs (已完成)
+- [ ] GroupInfoTable.cs (已完成)
+
+### Code/Game/UIGame/UIMiniGame (小游戏 UI) (部分完成)
+- [x] UIAppraisalView.cs.md - 鉴定小游戏
+- [ ] UICommonMiniGameView.cs
+- [ ] UIGoodsCheckView.cs
+- [ ] UIItemStoryWin.cs
+- [ ] UIQuarantineView.cs
+- [ ] UIRepairView.cs
+- [ ] UISaleEvent.cs
+- [ ] UITurnTableEventView.cs
+- [ ] UITurntableView.cs
+- [ ] UIBombDisposalView.cs
+- [ ] UIAppraisalItem.cs
+
+### Code/Game/UIGame/UILobby (大厅 UI) (部分完成)
+- [x] DailyTaskItem.cs.md - 每日任务项
+- [ ] UILobbyView.cs
+- [ ] UIDailyWin.cs
+- [ ] UIProfitWin.cs
+- [ ] UITaskDetailsWin.cs
+- [ ] UIMarketView.cs
+- [ ] UIAuctionSelectView.cs
+- [ ] UIRankView.cs
+- [ ] UICashGroup.cs
+- [ ] UIMatchView.cs
+- [ ] UIRewardsView.cs
+- [ ] UIUnlockWin.cs
+- [ ] UIWashDishView.cs
+- [ ] UserItem.cs
+- [ ] TechnologyNodeItem.cs
+- [ ] TechnologyNode.cs
+- [ ] UIBlackView.cs
+- [ ] RestaurantTask.cs
+- [ ] UIExpandWin.cs
+- [ ] RankItem.cs
+- [ ] UITopView.cs
+- [ ] AuctionSelectItem.cs
+- [ ] UIRankBtn.cs
+- [ ] UISettingWin.cs
+- [ ] DailyTaskRewards.cs
 
 ---
 
