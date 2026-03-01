@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 05:45  
+> **更新时间**: 2026-03-02 06:00  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 334 |
-| 覆盖率 | ~51.7% |
+| 已创建 .md 文档 | 337 |
+| 覆盖率 | ~52.2% |
 
 ---
 
@@ -261,7 +261,7 @@
 - [ ] UIBombDisposalView.cs
 - [ ] UIAppraisalItem.cs
 
-### Code/Game/UIGame/UILobby (大厅 UI) (100%)
+### Code/Game/UIGame/UILobby (大厅 UI) (95%)
 - [x] DailyTaskItem.cs.md - 每日任务项
 - [x] UILobbyView.cs.md - 大厅主界面
 - [x] UIDailyWin.cs.md - 每日任务奖励窗口
@@ -281,9 +281,9 @@
 - [x] UISettingWin.cs.md - 设置窗口
 - [x] UIRankBtn.cs.md - 排行榜按钮（SDK 集成）
 - [x] AuctionSelectItem.cs.md - 拍卖场选择项组件
-- [ ] UIWashDishView.cs
-- [ ] TechnologyNodeItem.cs
-- [ ] TechnologyNode.cs
+- [x] UIWashDishView.cs.md - 餐厅洗碗界面
+- [x] TechnologyNode.cs.md - 科技树节点组件
+- [x] TechnologyNodeItem.cs.md - 科技树子节点组件
 - [ ] UIBlackView.cs
 - [ ] RestaurantTask.cs
 - [ ] UITopView.cs
