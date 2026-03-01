@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-01 20:35  
+> **更新时间**: 2026-03-01 23:30  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 147 |
-| 覆盖率 | ~23% |
+| 已创建 .md 文档 | 167 |
+| 覆盖率 | ~25.9% |
 
 ---
 
@@ -92,6 +92,20 @@
 - [x] HitBoxComponent.cs.md - HitBox 标记组件
 - [x] HitInfo.cs.md - 击中信息结构
 - [x] HitBoxType.cs.md - HitBox 类型枚举
+
+### Mono/Module/UI/Input (100%)
+- [x] InputAxisBind.cs.md - 虚拟摇杆轴绑定
+- [x] InputKeyBind.cs.md - UI 按键绑定
+
+### Mono/Module/UI (辅助组件) (100%)
+- [x] BgAutoMax.cs.md - 背景自适应组件
+- [x] CircleImage.cs.md - 圆形/扇形 Image 组件
+- [x] CircleRawImage.cs.md - 圆角 RawImage 组件
+- [x] CopyGameObject.cs.md - 游戏对象复制组件
+- [x] EmptyGraphic.cs.md - 空图形组件（透明点击区）
+- [x] PointerClick.cs.md - 点击事件组件
+- [x] ScrollViewEventRaycast.cs.md - 滚动视图事件传递组件
+- [x] UIScriptCreator.cs.md - UI 脚本创建器标记组件
 
 ---
 
@@ -184,12 +198,12 @@
 - [ ] MessagerClip.cs
 - [ ] MessagerBehaviour.cs
 
-#### Mono/Module/Particle (粒子系统)
-- [ ] ParticleSimulationBudgetManager.cs
-- [ ] ParticleSystemController.cs
+#### Mono/Module/Particle (粒子系统) (100%)
+- [x] ParticleSimulationBudgetManager.cs.md - 粒子预算管理
+- [x] ParticleSystemController.cs.md - 粒子系统控制器
 
-#### Mono/Module/Performance (性能管理)
-- [ ] PerformanceManager.cs
+#### Mono/Module/Performance (性能管理) (100%)
+- [x] PerformanceManager.cs.md - 设备性能评估与渲染调整
 
 ---
 
@@ -224,10 +238,10 @@
 #### Code/Module/Config/Blender
 - [ ] ConfigBlender.cs
 
-#### Mono/Module/CodeLoader (代码加载)
-- [ ] CodeLoader.cs
-- [ ] IStaticMethod.cs
-- [ ] MonoStaticMethod.cs
+#### Mono/Module/CodeLoader (代码加载) (100%)
+- [x] CodeLoader.cs.md - 热更新代码加载器
+- [x] IStaticMethod.cs.md - 静态方法接口定义
+- [x] MonoStaticMethod.cs.md - 反射静态方法实现
 
 #### Mono/Module/Skybox
 - [ ] Skybox.cs
