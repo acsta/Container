@@ -3,231 +3,523 @@
 ## 文件基本信息
 
 | 属性 | 值 |
-|------|------|
+|------|-----|
 | **文件名** | ILog.cs |
 | **路径** | Assets/Scripts/Mono/Module/Log/ILog.cs |
 | **所属模块** | 框架层 → Mono/Module/Log |
-| **文件职责** | 定义日志接口，规范日志记录行为 |
+| **文件职责** | 定义日志系统接口，规范日志记录行为，支持不同的日志后端实现 |
 
 ---
 
-## 类/结构体说明
+## 接口说明
 
-### ILog 接口
+### ILog
+
+**定义**:
+```csharp
+public interface ILog
+{
+    void Trace(string message);
+    void Warning(string message);
+    void Info(string message);
+    void Debug(string message);
+    void Error(string message);
+    
+    void Trace(string message, params object[] args);
+    void Warning(string message, params object[] args);
+    void Info(string message, params object[] args);
+    void Debug(string message, params object[] args);
+    void Error(string message, params object[] args);
+}
+```
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 定义日志记录的标准接口，支持不同平台实现 |
-| **泛型参数** | 无 |
-| **继承关系** | 无 |
-| **实现的接口** | 无 |
-
-**设计模式**: 接口模式 + 策略模式
-
-```csharp
-// 实现接口
-public class UnityLogger : ILog
-{
-    public void Debug(object message)
-    {
-        UnityEngine.Debug.Log(message);
-    }
-    
-    // ... 其他方法
-}
-```
+| **职责** | 定义日志记录的标准接口 |
+| **用途** | 所有日志后端实现必须实现此接口 |
+| **设计模式** | 策略模式 |
 
 ---
 
 ## 方法说明
 
-### Debug
+### Trace(string message)
 
-**签名**:
-```csharp
-void Debug(object message)
-```
+**职责**: 记录跟踪日志（最详细级别，通常包含堆栈信息）
 
-**职责**: 记录调试级别日志
-
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `message` | `object` | 日志消息 |
-
-**调用者**: Log.Debug()
+**使用场景**: 深度调试，方法调用跟踪
 
 ---
 
-### Info
+### Debug(string message)
 
-**签名**:
-```csharp
-void Info(object message)
-```
+**职责**: 记录调试日志
 
-**职责**: 记录信息级别日志
+**使用场景**: 开发阶段的调试信息
 
 ---
 
-### Warning
+### Info(string message)
 
-**签名**:
-```csharp
-void Warning(object message)
-```
+**职责**: 记录信息日志
 
-**职责**: 记录警告级别日志
+**使用场景**: 程序正常运行的状态信息
 
 ---
 
-### Error
+### Warning(string message)
 
-**签名**:
-```csharp
-void Error(object message)
-```
+**职责**: 记录警告日志
 
-**职责**: 记录错误级别日志
+**使用场景**: 潜在问题，但不影响程序运行
 
 ---
 
-### Fatal
+### Error(string message)
 
-**签名**:
-```csharp
-void Fatal(object message)
-```
+**职责**: 记录错误日志
 
-**职责**: 记录严重错误级别日志
+**使用场景**: 错误信息，需要立即关注
 
 ---
 
-## 实现类
+### 格式化方法
 
-### UnityLogger
+所有日志级别都提供 `params object[] args` 版本的格式化方法：
+
+```csharp
+void Info(string message, params object[] args);
+```
+
+**使用示例**:
+```csharp
+log.Info("玩家 {0} 进入场景 {1}", playerName, sceneName);
+```
+
+---
+
+## 实现示例
+
+### UnityLogger 实现
 
 ```csharp
 public class UnityLogger : ILog
 {
-    public static ILog Instance = new UnityLogger();
-    
-    public void Debug(object message)
+    public void Trace(string msg)
     {
-        UnityEngine.Debug.Log($"[DEBUG] {message}");
+        UnityEngine.Debug.Log(msg);
     }
-    
-    public void Info(object message)
+
+    public void Debug(string msg)
     {
-        UnityEngine.Debug.Log($"[INFO] {message}");
+        UnityEngine.Debug.Log(msg);
     }
-    
-    public void Warning(object message)
+
+    public void Info(string msg)
     {
-        UnityEngine.Debug.LogWarning($"[WARNING] {message}");
+        UnityEngine.Debug.Log(msg);
     }
-    
-    public void Error(object message)
+
+    public void Warning(string msg)
     {
-        UnityEngine.Debug.LogError($"[ERROR] {message}");
+        UnityEngine.Debug.LogWarning(msg);
     }
-    
-    public void Fatal(object message)
+
+    public void Error(string msg)
     {
-        UnityEngine.Debug.LogException(new Exception(message.ToString()));
+        UnityEngine.Debug.LogError(msg);
+    }
+
+    public void Error(Exception e)
+    {
+        UnityEngine.Debug.LogException(e);
+    }
+
+    // 格式化版本
+    public void Trace(string message, params object[] args)
+    {
+        UnityEngine.Debug.LogFormat(message, args);
+    }
+
+    public void Debug(string message, params object[] args)
+    {
+        UnityEngine.Debug.LogFormat(message, args);
+    }
+
+    public void Info(string message, params object[] args)
+    {
+        UnityEngine.Debug.LogFormat(message, args);
+    }
+
+    public void Warning(string message, params object[] args)
+    {
+        UnityEngine.Debug.LogWarningFormat(message, args);
+    }
+
+    public void Error(string message, params object[] args)
+    {
+        UnityEngine.Debug.LogErrorFormat(message, args);
     }
 }
+```
+
+### 文件日志实现示例
+
+```csharp
+public class FileLogger : ILog
+{
+    private string logPath;
+    private StreamWriter writer;
+
+    public FileLogger(string path)
+    {
+        logPath = path;
+        writer = new StreamWriter(path, true);
+    }
+
+    public void Trace(string message)
+    {
+        WriteLine("TRACE", message);
+    }
+
+    public void Debug(string message)
+    {
+        WriteLine("DEBUG", message);
+    }
+
+    public void Info(string message)
+    {
+        WriteLine("INFO", message);
+    }
+
+    public void Warning(string message)
+    {
+        WriteLine("WARNING", message);
+    }
+
+    public void Error(string message)
+    {
+        WriteLine("ERROR", message);
+    }
+
+    public void Trace(string message, params object[] args)
+    {
+        WriteLine("TRACE", string.Format(message, args));
+    }
+
+    public void Debug(string message, params object[] args)
+    {
+        WriteLine("DEBUG", string.Format(message, args));
+    }
+
+    public void Info(string message, params object[] args)
+    {
+        WriteLine("INFO", string.Format(message, args));
+    }
+
+    public void Warning(string message, params object[] args)
+    {
+        WriteLine("WARNING", string.Format(message, args));
+    }
+
+    public void Error(string message, params object[] args)
+    {
+        WriteLine("ERROR", string.Format(message, args));
+    }
+
+    private void WriteLine(string level, string message)
+    {
+        string line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] {message}";
+        writer.WriteLine(line);
+        writer.Flush();
+    }
+
+    public void Dispose()
+    {
+        writer?.Close();
+        writer?.Dispose();
+    }
+}
+```
+
+### 网络日志实现示例
+
+```csharp
+public class NetworkLogger : ILog
+{
+    private string serverUrl;
+
+    public NetworkLogger(string url)
+    {
+        serverUrl = url;
+    }
+
+    public void Error(string message)
+    {
+        // 错误日志发送到服务器
+        SendToServer("ERROR", message);
+    }
+
+    public void Warning(string message)
+    {
+        SendToServer("WARNING", message);
+    }
+
+    public void Info(string message)
+    {
+        SendToServer("INFO", message);
+    }
+
+    public void Debug(string message)
+    {
+        // 调试日志本地缓存，批量发送
+        BufferLog("DEBUG", message);
+    }
+
+    public void Trace(string message)
+    {
+        BufferLog("TRACE", message);
+    }
+
+    // 格式化版本...
+
+    private void SendToServer(string level, string message)
+    {
+        // HTTP POST 发送到日志服务器
+    }
+
+    private void BufferLog(string level, string message)
+    {
+        // 缓存到本地，定期批量发送
+    }
+}
+```
+
+### 组合日志实现示例
+
+```csharp
+public class CompositeLogger : ILog
+{
+    private List<ILog> loggers = new List<ILog>();
+
+    public void AddLogger(ILog logger)
+    {
+        loggers.Add(logger);
+    }
+
+    public void Trace(string message)
+    {
+        foreach (var logger in loggers)
+        {
+            logger.Trace(message);
+        }
+    }
+
+    public void Debug(string message)
+    {
+        foreach (var logger in loggers)
+        {
+            logger.Debug(message);
+        }
+    }
+
+    public void Info(string message)
+    {
+        foreach (var logger in loggers)
+        {
+            logger.Info(message);
+        }
+    }
+
+    public void Warning(string message)
+    {
+        foreach (var logger in loggers)
+        {
+            logger.Warning(message);
+        }
+    }
+
+    public void Error(string message)
+    {
+        foreach (var logger in loggers)
+        {
+            logger.Error(message);
+        }
+    }
+
+    // 格式化版本...
+}
+
+// 使用
+var composite = new CompositeLogger();
+composite.AddLogger(new UnityLogger());
+composite.AddLogger(new FileLogger("game.log"));
+composite.AddLogger(new NetworkLogger("http://log-server.com"));
+
+Log.ILog = composite;
 ```
 
 ---
 
 ## 使用示例
 
-### 示例 1: 直接使用 ILog
+### 示例 1: 设置日志实现
 
 ```csharp
-// 获取实例
-var logger = UnityLogger.Instance;
-
-logger.Debug("调试信息");
-logger.Info("普通信息");
-logger.Warning("警告");
-logger.Error("错误");
-logger.Fatal("严重错误");
+// 程序启动时设置
+void Start()
+{
+    Log.ILog = new UnityLogger();
+}
 ```
 
-### 示例 2: 通过 Log 工具类
+### 示例 2: 多环境日志配置
 
 ```csharp
-// 推荐方式
-Log.Debug("调试信息");
-Log.Info("普通信息");
+void Start()
+{
+#if UNITY_EDITOR
+    // 开发环境：Unity 控制台 + 文件
+    var composite = new CompositeLogger();
+    composite.AddLogger(new UnityLogger());
+    composite.AddLogger(new FileLogger("debug.log"));
+    Log.ILog = composite;
+#else
+    // 生产环境：文件 + 网络
+    var composite = new CompositeLogger();
+    composite.AddLogger(new FileLogger("game.log"));
+    composite.AddLogger(new NetworkLogger("http://log-server.com"));
+    Log.ILog = composite;
+#endif
+}
 ```
 
 ### 示例 3: 自定义日志实现
 
 ```csharp
-// 文件日志实现
-public class FileLogger : ILog
+public class ColoredLogger : ILog
 {
-    private StreamWriter writer;
-    
-    public FileLogger(string path)
+    public void Trace(string message)
     {
-        writer = new StreamWriter(path, true);
+        Console.ForegroundColor = ConsoleColor.Gray;
+        Console.WriteLine($"[TRACE] {message}");
+        Console.ResetColor();
     }
-    
-    public void Debug(object message)
-    {
-        WriteLine($"[DEBUG] {DateTime.Now}: {message}");
-    }
-    
-    // ... 其他方法
-    
-    private void WriteLine(string line)
-    {
-        writer.WriteLine(line);
-        writer.Flush();
-    }
-}
 
-// 使用
-ILog.Instance = new FileLogger("game.log");
+    public void Debug(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine($"[DEBUG] {message}");
+        Console.ResetColor();
+    }
+
+    public void Info(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine($"[INFO] {message}");
+        Console.ResetColor();
+    }
+
+    public void Warning(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine($"[WARNING] {message}");
+        Console.ResetColor();
+    }
+
+    public void Error(string message)
+    {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine($"[ERROR] {message}");
+        Console.ResetColor();
+    }
+
+    // 格式化版本...
+}
 ```
 
 ---
 
-## 设计要点
+## 阅读指引
 
-### 为什么需要接口？
+### 建议的阅读顺序
 
-1. **平台适配**: 不同平台使用不同日志系统
-   - Unity: UnityEngine.Debug
-   - Server: Console.WriteLine / NLog
-   - Web: console.log
+1. **理解 ILog 作用** - 为什么需要日志接口
+2. **看方法定义** - 了解日志级别
+3. **了解 UnityLogger** - 理解默认实现
+4. **探索其他实现** - 理解接口的灵活性
 
-2. **可测试**: 测试时使用 Mock 实现
+### 最值得学习的技术点
 
-3. **可扩展**: 新增日志实现无需修改 Log 工具类
+1. **策略模式**: 通过接口支持不同的日志后端
+2. **接口分离**: 每个日志级别独立方法
+3. **格式化支持**: `params object[] args` 支持格式化
+4. **可扩展性**: 轻松添加新的日志后端
 
-### Instance 的设计
+---
+
+## 最佳实践
+
+### 1. 选择合适的日志后端
+
+- **开发阶段**: UnityLogger（控制台输出）
+- **测试阶段**: UnityLogger + FileLogger
+- **生产阶段**: FileLogger + NetworkLogger
+
+### 2. 使用组合模式
 
 ```csharp
-public static ILog Instance = new UnityLogger();
+// 同时输出到多个目标
+var composite = new CompositeLogger();
+composite.AddLogger(new UnityLogger());
+composite.AddLogger(new FileLogger("game.log"));
+Log.ILog = composite;
 ```
 
-**用途**:
-- 全局单例访问
-- 可替换实现
-- 便于测试
+### 3. 实现异步日志
+
+```csharp
+public class AsyncLogger : ILog
+{
+    private ConcurrentQueue<string> queue = new ConcurrentQueue<string>();
+    private Thread writerThread;
+
+    public AsyncLogger()
+    {
+        writerThread = new Thread(ProcessQueue);
+        writerThread.IsBackground = true;
+        writerThread.Start();
+    }
+
+    public void Info(string message)
+    {
+        queue.Enqueue($"[INFO] {message}");
+    }
+
+    private void ProcessQueue()
+    {
+        while (true)
+        {
+            if (queue.TryDequeue(out var message))
+            {
+                WriteToFile(message);
+            }
+            else
+            {
+                Thread.Sleep(10);
+            }
+        }
+    }
+}
+```
 
 ---
 
 ## 相关文档
 
-- [Log.cs.md](./Log.cs.md) - 日志工具类
-- [UnityLogger.cs.md](./UnityLogger.cs.md) - Unity 平台实现
+- [Log.cs.md](./Log.cs.md) - 日志系统入口
+- [UnityLogger.cs.md](./UnityLogger.cs.md) - Unity 日志实现
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-01 | OpenClaw AI 助手*

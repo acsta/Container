@@ -6,8 +6,8 @@
 |------|-----|
 | **文件名** | ObjectPool.cs |
 | **路径** | Assets/Scripts/Mono/Core/ObjectPool.cs |
-| **所属模块** | Mono/Core |
-| **文件职责** | 通用对象池实现，管理对象复用，减少 GC 压力 |
+| **所属模块** | 框架层 → Mono/Core |
+| **文件职责** | 通用对象池系统，负责对象的复用、回收和生命周期管理 |
 
 ---
 
@@ -17,40 +17,34 @@
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 全局单例对象池，支持按类型 Fetch/Recycle 对象 |
+| **职责** | 提供基于类型的对象池，减少频繁创建/销毁对象带来的 GC 压力 |
 | **泛型参数** | 无 |
-| **继承关系** | 无 |
-| **实现的接口** | `IDisposable` |
-
-**设计模式**: 单例模式 + 对象池模式
+| **继承关系** | 实现 `IDisposable` |
+| **设计模式** | 单例模式 + 对象池模式 |
 
 ```csharp
-// 获取单例
-var pool = ObjectPool.Instance;
+// 单例实现
+public static ObjectPool Instance = new ObjectPool();
 
-// 从对象池获取对象
-var list = ObjectPool.Instance.Fetch<List<int>>();
-
-// 使用完毕后回收
-list.Clear();
-ObjectPool.Instance.Recycle(list);
+// 私有构造函数，防止外部实例化
+private ObjectPool()
 ```
 
 ---
 
-## 字段与属性
+## 字段与属性（按重要程度排序）
 
 | 名称 | 类型 | 访问级别 | 说明 |
 |------|------|----------|------|
-| `Instance` | `ObjectPool` | `public static` | 全局单例实例 |
-| `pool` | `Dictionary<Type, Queue<object>>` | `private` | 按类型存储对象队列 |
-| `poolCheck` | `HashSet<object>` | `private` | 编辑器模式下检测重复取/回收 |
+| `Instance` | `ObjectPool` | `public static` | 单例实例，全局访问点 |
+| `pool` | `Dictionary<Type, Queue<object>>` | `private readonly` | 按类型分类的对象池字典 |
+| `poolCheck` | `HashSet<object>` | `private` | 编辑器模式下用于检测重复取/回收的对象集合 |
 
 ---
 
-## 方法说明
+## 方法说明（按重要程度排序）
 
-### Fetch<T> ⭐
+### Fetch<T>()
 
 **签名**:
 ```csharp
@@ -62,31 +56,27 @@ public T Fetch<T>() where T : class
 **核心逻辑**:
 ```
 1. 获取类型 TypeInfo<T>.Type
-2. 从 pool 字典查找对应队列
-3. 如果队列不存在或为空，创建新实例
-4. 否则从队列 dequeue 一个对象
-5. 编辑器模式下检查是否重复获取
+2. 尝试从 pool 字典获取对应队列
+3. 如果队列不存在或为空 → 创建新实例 Activator.CreateInstance(type)
+4. 否则从队列出队一个对象
+5. 编辑器模式下检查重复领取（poolCheck）
 6. 返回对象
 ```
 
+**调用者**: 任何需要复用对象的代码
+
 **使用示例**:
 ```csharp
-// 获取 List
-var list = ObjectPool.Instance.Fetch<List<int>>();
-list.Add(1);
-list.Add(2);
+// 获取 TimerAction 实例
+var timerAction = ObjectPool.Instance.Fetch<TimerAction>();
 
-// 获取 Dictionary
-var dict = ObjectPool.Instance.Fetch<Dictionary<string, int>>();
-dict["key"] = 100;
-
-// 获取自定义类型
-var myObj = ObjectPool.Instance.Fetch<MyClass>();
+// 获取任意类实例
+var obj = ObjectPool.Instance.Fetch<MyClass>();
 ```
 
 ---
 
-### Fetch (非泛型)
+### Fetch(Type)
 
 **签名**:
 ```csharp
@@ -95,416 +85,245 @@ public object Fetch(Type type)
 
 **职责**: 从对象池获取指定类型的对象（非泛型版本）
 
-**核心逻辑**:
-```
-1. 从 pool 字典查找对应队列
-2. 如果队列不存在或为空，创建新实例
-3. 否则从队列 dequeue 一个对象
-4. 编辑器模式下检查是否重复获取
-5. 返回对象
-```
+**核心逻辑**: 同 `Fetch<T>()`，但使用运行时类型
 
 **使用示例**:
 ```csharp
-// 运行时动态类型
-Type type = GetRuntimeType();
+// 使用运行时类型获取
+Type type = typeof(MyClass);
 var obj = ObjectPool.Instance.Fetch(type);
 ```
 
 ---
 
-### Recycle ⭐
+### Recycle(object)
 
 **签名**:
 ```csharp
 public void Recycle(object obj)
 ```
 
-**职责**: 回收对象到对象池
+**职责**: 将对象回收到对象池
 
 **核心逻辑**:
 ```
 1. 获取对象类型 obj.GetType()
-2. 从 pool 字典查找对应队列
-3. 如果队列不存在，创建新队列并添加
-4. 将对象 enqueue 到队列
-5. 编辑器模式下检查是否重复回收
+2. 尝试从 pool 字典获取对应队列
+3. 如果队列不存在 → 创建新队列并添加到字典
+4. 将对象入队
+5. 编辑器模式下检查重复回收（poolCheck）
 ```
+
+**调用者**: 任何使用完对象需要回收的代码
 
 **使用示例**:
 ```csharp
-// 使用完毕后回收
-var list = ObjectPool.Instance.Fetch<List<int>>();
-// ... 使用 list ...
-list.Clear(); // 重要：回收前清理内容
-ObjectPool.Instance.Recycle(list);
+// 使用完对象后回收
+ObjectPool.Instance.Recycle(timerAction);
 ```
 
 ---
 
-### Dispose
+### Dispose()
 
 **签名**:
 ```csharp
 public void Dispose()
 ```
 
-**职责**: 清空对象池
+**职责**: 释放对象池，清空所有缓存对象
 
 **核心逻辑**:
 ```
-1. 调用 pool.Clear()
+1. 清空 pool 字典
 ```
 
-**说明**: 通常在应用退出时调用，一般不需要手动调用
+**调用者**: 程序退出或需要重置对象池时
 
 ---
 
-## 流程图
+## 对象池工作流程
 
-### Fetch 流程
+### 对象获取流程
 
 ```mermaid
 sequenceDiagram
     participant Caller as 调用者
-    participant Pool as ObjectPool
-    participant Dict as pool Dictionary
-    participant Queue as Queue<T>
+    participant OP as ObjectPool
+    participant Pool as pool 字典
+    participant Queue as 对象队列
 
-    Caller->>Pool: Fetch<T>()
-    Pool->>Dict: TryGetValue(type)
-    alt 队列不存在
-        Pool->>Pool: Activator.CreateInstance<T>()
-        Pool-->>Caller: 返回新实例
-    else 队列存在
-        Pool->>Queue: Count == 0?
-        alt 队列为空
-            Pool->>Pool: Activator.CreateInstance<T>()
-            Pool-->>Caller: 返回新实例
-        else 队列非空
-            Pool->>Queue: Dequeue()
-            Pool-->>Caller: 返回池化对象
-        end
+    Caller->>OP: Fetch<T>()
+    OP->>Pool: TryGetValue(type)
+    
+    alt 队列存在且有对象
+        Pool-->>OP: 返回队列
+        OP->>Queue: Dequeue()
+        Queue-->>OP: 返回对象
+        OP-->>Caller: 返回复用对象
+    else 队列不存在或为空
+        OP->>OP: Activator.CreateInstance()
+        OP-->>Caller: 返回新对象
     end
 ```
 
-### Recycle 流程
+### 对象回收流程
 
 ```mermaid
 sequenceDiagram
     participant Caller as 调用者
-    participant Pool as ObjectPool
-    participant Dict as pool Dictionary
-    participant Queue as Queue<T>
+    participant OP as ObjectPool
+    participant Pool as pool 字典
+    participant Queue as 对象队列
 
-    Caller->>Pool: Recycle(obj)
-    Pool->>Pool: GetType(obj)
-    Pool->>Dict: TryGetValue(type)
+    Caller->>OP: Recycle(obj)
+    OP->>OP: obj.GetType()
+    OP->>Pool: TryGetValue(type)
+    
     alt 队列不存在
-        Pool->>Pool: 创建新队列
-        Pool->>Dict: Add(type, queue)
+        OP->>OP: new Queue<object>()
+        OP->>Pool: Add(type, queue)
     end
-    Pool->>Queue: Enqueue(obj)
-    Note over Pool: 编辑器模式：检查重复回收
+    
+    OP->>Queue: Enqueue(obj)
 ```
 
 ---
 
-## 与其他模块的交互
+## 编辑器模式检测
 
-```mermaid
-graph TB
-    subgraph Pool["对象池"]
-        OP[ObjectPool]
-    end
-    
-    subgraph Components["池化组件"]
-        LC[ListComponent]
-        DC[DictionaryComponent]
-        HC[HashSetComponent]
-        LLC[LinkedListComponent]
-    end
-    
-    subgraph Custom["自定义池化对象"]
-        DD[DynDictionary]
-        Custom1[其他自定义类]
-    end
-    
-    OP --> LC
-    OP --> DC
-    OP --> HC
-    OP --> LLC
-    OP --> DD
-    OP --> Custom1
-    
-    note right of OP "ObjectPool 是所有<br/>池化对象的中心"
-    
-    style Pool fill:#e1f5ff
-    style Components fill:#fff4e1
-    style Custom fill:#e8f5e9
+在 `UNITY_EDITOR` 定义下，对象池提供额外的检测功能：
+
+### 重复领取检测
+```csharp
+#if UNITY_EDITOR
+if (!poolCheck.Contains(res))
+{
+    Log.Error("对象池重复取" + res);
+}
+poolCheck.Remove(res);
+#endif
 ```
 
-**典型使用者**:
-- `ListComponent<T>` - 池化 List
-- `DictionaryComponent<T,V>` - 池化 Dictionary
-- `HashSetComponent<T>` - 池化 HashSet
-- `LinkedListComponent<T>` - 池化 LinkedList
-- `DynDictionary` - 动态字典
+### 重复回收检测
+```csharp
+#if UNITY_EDITOR
+if (poolCheck.Contains(obj))
+{
+    Log.Error("对象池重复回收" + obj);
+}
+poolCheck.Add(obj);
+#endif
+```
+
+**作用**: 防止同一个对象被多次领取或多次回收，帮助发现潜在的 bug。
 
 ---
 
-## 学习重点与陷阱
+## 阅读指引
 
-### ✅ 学习重点
+### 建议的阅读顺序
 
-1. **必须清理**: 回收前必须调用 `Clear()` 清理内容，避免数据污染
-2. **编辑器检测**: 编辑器模式下会检测重复获取/回收，帮助发现 bug
-3. **类型隔离**: 不同类型的对象存储在不同的队列中
-4. **懒创建**: 队列在首次使用时创建，避免内存浪费
+1. **理解对象池作用** - 为什么需要对象池（减少 GC）
+2. **看字段定义** - 了解 pool 字典的结构
+3. **重点看 Fetch** - 理解对象获取逻辑
+4. **深入 Recycle** - 理解对象回收逻辑
+5. **了解编辑器检测** - 理解 poolCheck 的作用
 
-### ⚠️ 陷阱与注意事项
+### 最值得学习的技术点
 
-| 问题 | 说明 | 解决方案 |
-|------|------|----------|
-| **未清理内容** | 回收前未 Clear，下次获取时数据残留 | 始终在 Recycle 前调用 Clear() |
-| **重复回收** | 同一对象回收两次 | 编辑器模式会报错，注意逻辑 |
-| **引用丢失** | 回收后继续持有引用 | 回收后立即将引用置 null |
-| **线程安全** | 对象池不是线程安全的 | 在主线程使用，或加锁保护 |
-| **大对象池化** | 大对象池化可能不划算 | 仅池化频繁创建的小对象 |
+1. **泛型对象池**: 使用 `Dictionary<Type, Queue<object>>` 按类型分类
+2. **单例模式**: 全局唯一的对象池实例
+3. **惰性创建**: 队列按需创建，不预先分配
+4. **编辑器检测**: 使用 `HashSet` 检测重复操作
+5. **IDisposable**: 提供清理接口
 
 ---
 
-## 最佳实践
+## 使用示例
 
-### 标准使用模式
+### 示例 1: 基本使用
 
 ```csharp
-// ✅ 正确：使用 using 语句自动回收
-using (var list = ListComponent<int>.Create())
-{
-    list.Add(1);
-    list.Add(2);
-    // 使用 list...
-} // 自动调用 Dispose() 回收
+// 获取对象
+var timerAction = ObjectPool.Instance.Fetch<TimerAction>();
+timerAction.TimerClass = TimerClass.OnceTimer;
+timerAction.Type = 1;
 
-// ✅ 正确：手动回收
-var dict = ObjectPool.Instance.Fetch<Dictionary<string, int>>();
-try
-{
-    dict["key"] = 100;
-    // 使用 dict...
-}
-finally
-{
-    dict.Clear();
-    ObjectPool.Instance.Recycle(dict);
-}
+// 使用对象...
+
+// 回收对象
+ObjectPool.Instance.Recycle(timerAction);
 ```
 
-### 创建池化组件
+### 示例 2: 配合 Dispose 模式
 
 ```csharp
-// 使用 Component 包装类（推荐）
-using (var list = ListComponent<int>.Create())
+public class TimerAction : IDisposable
 {
-    list.Add(1);
-    // 自动回收
-}
-
-// 直接使用 ObjectPool
-var list = ObjectPool.Instance.Fetch<List<int>>();
-try
-{
-    // 使用...
-}
-finally
-{
-    list.Clear();
-    ObjectPool.Instance.Recycle(list);
-}
-```
-
-### 池化自定义对象
-
-```csharp
-public class MyData : IDisposable
-{
-    public int Id;
-    public string Name;
-    public List<int> Values;
-    
-    public void Init()
-    {
-        Values = ObjectPool.Instance.Fetch<List<int>>();
-    }
+    public long Id;
+    public object Object;
     
     public void Dispose()
     {
-        // 回收内部对象
-        if (Values != null)
-        {
-            Values.Clear();
-            ObjectPool.Instance.Recycle(Values);
-            Values = null;
-        }
-        Id = 0;
-        Name = null;
+        this.Id = 0;
+        this.Object = null;
+        // 回收到对象池
+        ObjectPool.Instance.Recycle(this);
     }
 }
 
 // 使用
-using (var data = ObjectPool.Instance.Fetch<MyData>())
+var action = ObjectPool.Instance.Fetch<TimerAction>();
+try
 {
-    data.Init();
-    data.Id = 1;
-    data.Name = "Test";
-    data.Values.Add(100);
-    // 使用...
-} // 自动回收
+    // 使用 action...
+}
+finally
+{
+    action.Dispose(); // 自动回收
+}
+```
+
+### 示例 3: 非泛型版本
+
+```csharp
+// 使用运行时类型
+Type type = Type.GetType("MyNamespace.MyClass");
+var obj = ObjectPool.Instance.Fetch(type);
+
+// 使用后回收
+ObjectPool.Instance.Recycle(obj);
 ```
 
 ---
 
-## 完整示例：战斗伤害计算
+## 性能优化建议
 
-```csharp
-public class DamageCalculator
-{
-    // 计算伤害，使用对象池避免 GC
-    public List<int> CalculateDamage(List<int> baseDamages, float multiplier)
-    {
-        // 从对象池获取临时列表
-        var results = ObjectPool.Instance.Fetch<List<int>>();
-        
-        try
-        {
-            foreach (var baseDamage in baseDamages)
-            {
-                int finalDamage = Mathf.FloorToInt(baseDamage * multiplier);
-                results.Add(finalDamage);
-            }
-            
-            // 返回结果（调用者负责回收）
-            return results;
-        }
-        catch
-        {
-            // 异常时也要回收
-            results.Clear();
-            ObjectPool.Instance.Recycle(results);
-            throw;
-        }
-    }
-    
-    // 批量处理，使用 using 自动回收
-    public void ProcessAllDamages(List<List<int>> allDamages)
-    {
-        foreach (var damages in allDamages)
-        {
-            using (var results = ListComponent<int>.Create())
-            {
-                foreach (var damage in damages)
-                {
-                    results.Add(CalculateSingleDamage(damage));
-                }
-                // 使用 results...
-                Log.Info($"Total: {results.Count}");
-            } // 自动回收
-        }
-    }
-    
-    private int CalculateSingleDamage(int baseDamage)
-    {
-        return baseDamage * 2;
-    }
-}
+### 适用场景
+- ✅ 频繁创建/销毁的小型对象
+- ✅ 生命周期短的对象
+- ✅ 固定类型的对象（如 TimerAction、ETTask 等）
 
-// 使用示例
-public class BattleSystem : MonoBehaviour
-{
-    private DamageCalculator calculator = new DamageCalculator();
-    
-    void Update()
-    {
-        var baseDamages = new List<int> { 100, 200, 300 };
-        
-        // 方式 1: 手动回收
-        var results = calculator.CalculateDamage(baseDamages, 1.5f);
-        try
-        {
-            foreach (var damage in results)
-            {
-                ApplyDamage(damage);
-            }
-        }
-        finally
-        {
-            results.Clear();
-            ObjectPool.Instance.Recycle(results);
-        }
-        
-        // 方式 2: 使用 Component 包装
-        using (var temp = ListComponent<int>.Create())
-        {
-            temp.Add(100);
-            temp.Add(200);
-            // 自动回收
-        }
-    }
-    
-    void ApplyDamage(int damage)
-    {
-        // 应用伤害逻辑
-    }
-}
-```
+### 不适用场景
+- ❌ 大型对象（占用内存多）
+- ❌ 生命周期长的对象（回收意义不大）
+- ❌ 类型不确定的对象（无法有效复用）
 
----
-
-## 性能对比
-
-### 不使用对象池
-
-```csharp
-void Update()
-{
-    // 每帧创建新 List，产生 GC
-    var list = new List<int>();
-    list.Add(1);
-    list.Add(2);
-    // ...
-} // list 被 GC 回收，产生垃圾
-```
-
-**GC 压力**: 每帧产生 1 个 List 垃圾
-
-### 使用对象池
-
-```csharp
-void Update()
-{
-    // 从对象池获取，无 GC
-    var list = ObjectPool.Instance.Fetch<List<int>>();
-    list.Add(1);
-    list.Add(2);
-    // ...
-    list.Clear();
-    ObjectPool.Instance.Recycle(list); // 回收到池中
-} // 无 GC
-```
-
-**GC 压力**: 0（首次创建后复用）
+### 最佳实践
+1. **及时回收**: 使用完立即回收，避免内存泄漏
+2. **重置状态**: 回收前重置对象状态，避免状态污染
+3. **配合 using**: 使用 `using` 语句确保回收
+4. **编辑器检测**: 开发阶段利用 poolCheck 发现 bug
 
 ---
 
 ## 相关文档
 
-- [ListComponent.cs.md](./Object/ListComponent.cs.md) - 池化 List
-- [DictionaryComponent.cs.md](./Object/DictionaryComponent.cs.md) - 池化 Dictionary
-- [HashSetComponent.cs.md](./Object/HashSetComponent.cs.md) - 池化 HashSet
-- [LinkedListComponent.cs.md](./Object/LinkedListComponent.cs.md) - 池化 LinkedList
-- [DynDictionary.cs.md](./Object/DynDictionary.cs.md) - 动态字典
+- [TimerAction.cs.md](../Module/Timer/TimerAction.cs.md) - 定时器动作（使用对象池）
+- [IdGenerater.cs.md](./Object/IdGenerater.cs.md) - ID 生成器
+- [ETTask.cs.md](../Module/Async/ETTask.cs.md) - 异步任务（使用对象池）
 
 ---
 
-*文档由 OpenClaw AI 助手自动生成 | 基于静态代码分析*
+*文档生成时间：2026-03-01 | OpenClaw AI 助手*
