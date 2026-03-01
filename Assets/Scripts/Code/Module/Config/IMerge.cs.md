@@ -6,36 +6,28 @@
 |------|-----|
 | **文件名** | IMerge.cs |
 | **路径** | Assets/Scripts/Code/Module/Config/IMerge.cs |
-| **所属模块** | 框架层 → Code/Module/Config |
-| **文件职责** | 定义配置合并接口，支持配置数据的多源合并 |
+| **所属模块** | 框架层 → Config (配置系统) |
+| **文件职责** | 合并接口定义，用于配置数据的热更新合并 |
 
 ---
 
 ## 类/结构体说明
 
-### IMerge 接口
+### IMerge
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 定义配置对象的合并行为，支持配置数据的多源合并 |
+| **职责** | 合并接口，定义配置对象的合并方法，用于热更新时合并新旧配置 |
 | **泛型参数** | 无 |
 | **继承关系** | 无 |
 | **实现的接口** | 无 |
 
-**设计模式**: 策略模式接口
+**设计模式**: 策略模式 - 定义合并策略的接口
 
 ```csharp
-// 配置列表类实现此接口
-[Config]
-public class LevelConfigCategory : ProtoObject, IMerge
+public interface IMerge
 {
-    public List<LevelConfig> LevelList = new List<LevelConfig>();
-    
-    public void Merge(object o)
-    {
-        var other = o as LevelConfigCategory;
-        LevelList.AddRange(other.LevelList);  // 合并配置列表
-    }
+    void Merge(object o);
 }
 ```
 
@@ -43,124 +35,62 @@ public class LevelConfigCategory : ProtoObject, IMerge
 
 ## 方法说明
 
-### Merge
+### Merge(object o)
 
 **签名**:
 ```csharp
 void Merge(object o)
 ```
 
-**职责**: 将另一个同类型配置对象的数据合并到当前对象
+**职责**: 将另一个对象的数据合并到当前对象
 
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `o` | `object` | 要合并的另一个配置对象 |
+**参数说明**:
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `o` | `object` | 要合并的源对象 |
 
-**返回值**: 无
+**核心逻辑**:
+```
+由实现类自行定义合并逻辑，通常包括:
+1. 检查源对象类型
+2. 遍历源对象的字段/属性
+3. 将新数据合并到当前对象
+4. 处理冲突 (如: 新数据覆盖旧数据，或保留旧数据)
+```
 
-**调用者**: `ConfigManager.ReleaseConfig<T>()`（可选调用）
+**调用者**: ConfigManager (热更新配置时)
 
-**被调用者**: 配置类别类的实现
+**被调用者**: 无
 
 ---
 
-## 设计意图
+## 使用示例
 
-### 为什么需要合并？
-
-1. **配置分拆**: 大型配置可以分拆到多个文件
-2. **模块化**: 不同模块可以定义独立的配置
-3. **热更新**: 更新配置时无需替换整个配置文件
-4. **DLC 支持**: DLC 可以追加新配置而不修改基础配置
-
-### 典型使用场景
-
-```
-基础配置 (LevelConfig_Base.bytes)
-├── 关卡 1
-├── 关卡 2
-└── 关卡 3
-
-DLC 配置 (LevelConfig_DLC.bytes)
-├── 关卡 4
-├── 关卡 5
-└── 关卡 6
-
-合并后
-├── 关卡 1
-├── 关卡 2
-├── 关卡 3
-├── 关卡 4
-├── 关卡 5
-└── 关卡 6
-```
-
----
-
-## 实现示例
-
-### 示例 1: 配置列表合并
+### 示例 1: 实现 IMerge 接口
 
 ```csharp
 [Config]
-public class ItemConfigCategory : ProtoObject, IMerge
+public class ItemConfigCategory : ProtoObject, IMerge<ItemConfigCategory>
 {
-    public List<ItemConfig> ItemList = new List<ItemConfig>();
+    public Dictionary<int, ItemConfig> Dict { get; set; }
     
+    // 实现 IMerge 接口
     public void Merge(object o)
     {
-        var other = o as ItemConfigCategory;
-        if (other != null)
+        if (o is ItemConfigCategory source)
         {
-            ItemList.AddRange(other.ItemList);
-        }
-    }
-}
-```
-
-### 示例 2: 配置字典合并
-
-```csharp
-[Config]
-public class SkillConfigCategory : ProtoObject, IMerge
-{
-    public Dictionary<int, SkillConfig> SkillDict = new Dictionary<int, SkillConfig>();
-    
-    public void Merge(object o)
-    {
-        var other = o as SkillConfigCategory;
-        if (other != null)
-        {
-            foreach (var kvp in other.SkillDict)
+            // 合并字典数据
+            if (source.Dict != null)
             {
-                // 如果 ID 冲突，后加载的覆盖先加载的
-                SkillDict[kvp.Key] = kvp.Value;
-            }
-        }
-    }
-}
-```
-
-### 示例 3: 条件合并
-
-```csharp
-[Config]
-public class EnemyConfigCategory : ProtoObject, IMerge
-{
-    public List<EnemyConfig> EnemyList = new List<EnemyConfig>();
-    
-    public void Merge(object o)
-    {
-        var other = o as EnemyConfigCategory;
-        if (other != null)
-        {
-            // 只添加不存在的敌人（避免覆盖）
-            foreach (var enemy in other.EnemyList)
-            {
-                if (!EnemyList.Any(e => e.Id == enemy.Id))
+                if (this.Dict == null)
                 {
-                    EnemyList.Add(enemy);
+                    this.Dict = new Dictionary<int, ItemConfig>();
+                }
+                
+                foreach (var kvp in source.Dict)
+                {
+                    // 新数据覆盖旧数据
+                    this.Dict[kvp.Key] = kvp.Value;
                 }
             }
         }
@@ -168,104 +98,175 @@ public class EnemyConfigCategory : ProtoObject, IMerge
 }
 ```
 
----
-
-## ConfigManager 中的使用
-
-### ReleaseConfig 方法
+### 示例 2: 泛型版本 (推荐)
 
 ```csharp
-public void ReleaseConfig<T>() where T : ProtoObject, IMerge
+// 使用泛型版本更安全
+public interface IMerge<T>
 {
-    Type configType = TypeInfo<T>.Type;
-    AllConfig.Remove(configType);
+    void Merge(T o);
+}
+
+[Config]
+public class ItemConfigCategory : ProtoObject, IMerge<ItemConfigCategory>
+{
+    public Dictionary<int, ItemConfig> Dict { get; set; }
+    
+    public void Merge(ItemConfigCategory source)
+    {
+        if (source.Dict != null)
+        {
+            if (this.Dict == null)
+            {
+                this.Dict = new Dictionary<int, ItemConfig>();
+            }
+            
+            foreach (var kvp in source.Dict)
+            {
+                this.Dict[kvp.Key] = kvp.Value;
+            }
+        }
+    }
 }
 ```
 
-**说明**: 虽然 `ReleaseConfig` 没有直接调用 `Merge`，但 `IMerge` 约束确保只有支持合并的配置才能被释放（暗示可能重新加载合并）。
-
-### 潜在使用场景
+### 示例 3: 配置热更新
 
 ```csharp
-// 重新加载配置并合并
-var oldConfig = ConfigManager.Instance.GetConfig<ItemConfigCategory>();
-var newConfig = await ConfigManager.Instance.LoadOneConfig<ItemConfigCategory>();
-
-if (oldConfig != null && newConfig is IMerge mergeable)
+// ConfigManager 热更新流程 (伪代码)
+public async ETTask HotfixConfigAsync()
 {
-    mergeable.Merge(oldConfig);  // 合并旧配置
+    // 加载新配置
+    var newConfig = await LoadConfig<ItemConfigCategory>();
+    
+    // 获取旧配置
+    var oldConfig = ConfigManager.Instance.Get<ItemConfigCategory>();
+    
+    // 合并配置
+    if (oldConfig is IMerge<ItemConfigCategory> mergeable)
+    {
+        mergeable.Merge(newConfig);
+    }
+    
+    // 通知配置已更新
+    Messager.Instance.Broadcast(0, MessageId.ConfigUpdated, typeof(ItemConfigCategory));
 }
-```
-
----
-
-## 使用示例
-
-### 示例 1: 基础配置 + DLC 配置
-
-```csharp
-// 加载基础配置
-await ConfigManager.Instance.LoadAsync();
-var itemConfig = ConfigManager.Instance.GetConfig<ItemConfigCategory>();
-
-// 加载 DLC 配置（追加）
-var dlcConfig = await ConfigManager.Instance.LoadOneConfig<ItemConfigCategory>("ItemConfig_DLC");
-if (dlcConfig != null && itemConfig is IMerge mergeable)
-{
-    mergeable.Merge(dlcConfig);
-}
-
-// 现在 itemConfig 包含基础 + DLC 的所有物品
-```
-
-### 示例 2: 配置热更新
-
-```csharp
-// 下载更新的配置文件
-byte[] updatedBytes = await DownloadConfig("EnemyConfig");
-
-// 反序列化新配置
-var newConfig = ProtobufHelper.FromBytes<EnemyConfigCategory>(updatedBytes);
-
-// 获取现有配置
-var existingConfig = ConfigManager.Instance.GetConfig<EnemyConfigCategory>();
-
-// 合并（新配置优先）
-if (existingConfig != null)
-{
-    newConfig.Merge(existingConfig);
-}
-
-// 替换配置
-ConfigManager.Instance.AllConfig[typeof(EnemyConfigCategory)] = newConfig;
 ```
 
 ---
 
-## 设计要点
+## 合并策略
 
-### Merge vs 直接替换
+### 常见合并策略
 
-| 方式 | 优点 | 缺点 | 适用场景 |
-|------|------|------|----------|
-| **Merge** | 保留原有数据，支持增量更新 | 需要实现合并逻辑 | DLC、热更新、配置分拆 |
-| **替换** | 简单直接，无合并开销 | 丢失原有数据 | 完整配置更新 |
+| 策略 | 说明 | 适用场景 |
+|------|------|----------|
+| **覆盖** | 新数据完全覆盖旧数据 | 简单配置、不关心历史数据 |
+| **追加** | 新数据追加到旧数据 | 列表型配置、累积数据 |
+| **智能合并** | 根据 ID 合并，新数据覆盖同 ID 旧数据 | 字典型配置 (最常用) |
+| **保留旧数据** | 仅当旧数据为空时使用新数据 | 用户自定义配置 |
 
-### 实现建议
+### 智能合并示例
 
-1. **明确合并策略**: 是追加、覆盖还是条件合并？
-2. **处理 ID 冲突**: 决定哪个配置优先
-3. **性能考虑**: 大量数据合并时注意性能
-4. **类型安全**: 确保传入的 `object` 是正确类型
+```csharp
+public void Merge(ItemConfigCategory source)
+{
+    if (source.Dict == null) return;
+    
+    if (this.Dict == null)
+    {
+        this.Dict = new Dictionary<int, ItemConfig>();
+    }
+    
+    foreach (var kvp in source.Dict)
+    {
+        if (this.Dict.ContainsKey(kvp.Key))
+        {
+            // 已存在：更新字段
+            var existing = this.Dict[kvp.Key];
+            var newItem = kvp.Value;
+            
+            // 只更新非空字段
+            if (!string.IsNullOrEmpty(newItem.Name))
+            {
+                existing.Name = newItem.Name;
+            }
+            if (newItem.Type > 0)
+            {
+                existing.Type = newItem.Type;
+            }
+        }
+        else
+        {
+            // 不存在：直接添加
+            this.Dict[kvp.Key] = kvp.Value;
+        }
+    }
+}
+```
+
+---
+
+## 与其他模块的交互
+
+```mermaid
+graph TD
+    subgraph IMerge["IMerge 接口"]
+        IM[IMerge]
+    end
+    
+    subgraph Config["配置系统"]
+        CM[ConfigManager]
+        CL[ConfigLoader]
+    end
+    
+    subgraph Configs["配置类"]
+        IC[ItemConfigCategory]
+        TC[TaskConfigCategory]
+    end
+    
+    IM -.-> IC
+    IM -.-> TC
+    CM --> IM
+    CL --> CM
+    
+    note right of IM "IMerge 用于配置热更新时<br/>合并新旧配置数据"
+    
+    style IMerge fill:#e1f5ff
+    style Config fill:#fff4e1
+    style Configs fill:#e8f5e9
+```
+
+**依赖关系**:
+- **依赖**: 无
+- **被依赖**: `ConfigManager` (配置管理), 配置类 (实现合并逻辑)
+
+---
+
+## 阅读指引
+
+### 建议的阅读顺序
+
+1. **理解接口作用** - IMerge 用于配置热更新合并
+2. **看方法签名** - 理解 Merge 方法的参数和职责
+3. **了解实现方式** - 查看配置类如何实现 IMerge
+4. **查看合并策略** - 了解不同的合并策略
+
+### 最值得学习的技术点
+
+1. **接口设计**: 简单的接口定义复杂的合并逻辑
+2. **热更新支持**: 通过合并实现配置热更新
+3. **策略模式**: 每个配置类自行定义合并策略
 
 ---
 
 ## 相关文档
 
-- [ConfigManager.cs.md](./ConfigManager.cs.md) - 配置管理器（使用 IMerge 约束）
-- [ProtoObject.cs.md](./ProtoObject.cs.md) - 配置对象基类
-- [ProtobufHelper.cs.md](./ProtobufHelper.cs.md) - Protobuf 序列化工具
+- [ProtoObject.cs.md](./ProtoObject.cs.md) - Protobuf 对象基类
+- [ConfigManager.cs.md](./ConfigManager.cs.md) - 配置管理器
+- [ConfigLoader.cs.md](./ConfigLoader.cs.md) - 配置加载器
+- [ConfigAttribute.cs.md](./ConfigAttribute.cs.md) - 配置类标记特性
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

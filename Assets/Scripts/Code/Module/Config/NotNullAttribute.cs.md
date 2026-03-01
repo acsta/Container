@@ -6,8 +6,8 @@
 |------|-----|
 | **文件名** | NotNullAttribute.cs |
 | **路径** | Assets/Scripts/Code/Module/Config/NotNullAttribute.cs |
-| **所属模块** | 框架层 → Code/Module/Config |
-| **文件职责** | 定义非空标记特性，用于标识字段不应为空 |
+| **所属模块** | 框架层 → Config (配置系统) |
+| **文件职责** | 非空标记特性，用于标识配置字段不能为空 |
 
 ---
 
@@ -17,238 +17,181 @@
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 标记字段或属性不应为 null，用于代码分析和验证 |
+| **职责** | 标记特性，用于标识字段或属性不能为空，可用于配置验证 |
 | **泛型参数** | 无 |
-| **继承关系** | 继承 `System.Attribute` |
+| **继承关系** | `System.Attribute` |
 | **实现的接口** | 无 |
 
-**设计模式**: 标记特性（Marker Attribute）
+**设计模式**: 特性模式 (Attribute Pattern) - 使用元数据标记非空约束
 
 ```csharp
-// 使用方式
-public class PlayerConfig : ProtoObject
+public class NotNullAttribute : Attribute
 {
-    [NotNull]
-    public string Name;  // 标记为不能为空
-    
-    [NotNull]
-    public List<SkillConfig> Skills;  // 集合不能为 null（但可以为空）
 }
 ```
 
 ---
 
-## 特性定义
+## 字段与属性
 
-### 继承自 System.Attribute
-
-```csharp
-public class NotNullAttribute: Attribute
-```
-
-**说明**: 直接继承 .NET 标准 `Attribute` 类，是最简单的特性定义方式。
+该类无额外字段，仅作为标记特性使用。
 
 ---
 
-## 使用场景
+## 特性使用说明
 
-### 1. 代码分析工具
+### AttributeUsage (隐式)
 
-```csharp
-// 静态分析工具可以检查 [NotNull] 标记的字段
-public class QuestConfig : ProtoObject
-{
-    [NotNull]
-    public string Title;  // 分析工具会警告 null 赋值
-    
-    public void Init()
-    {
-        Title = null;  // ⚠️ 警告：NotNull 字段不应为 null
-    }
-}
-```
-
-### 2. 反序列化验证
-
-```csharp
-// 反序列化后可以验证 [NotNull] 字段
-public override void EndInit()
-{
-    base.EndInit();
-    
-    // 检查所有 [NotNull] 字段
-    var fields = GetType().GetFields()
-        .Where(f => f.GetCustomAttribute<NotNullAttribute>() != null);
-    
-    foreach (var field in fields)
-    {
-        if (field.GetValue(this) == null)
-        {
-            Debug.LogError($"{field.Name} 不应为 null!");
-        }
-    }
-}
-```
-
-### 3. Odin Inspector 集成
-
-```csharp
-// Odin Inspector 可以识别 [NotNull] 并显示验证
-public class EditorConfig : MonoBehaviour
-{
-    [NotNull]  // Odin 会在 Inspector 中标记 null 值
-    public Texture2D Icon;
-    
-    [NotNull]  // 右键菜单快速赋值
-    [ContextMenu("Assign Default")]
-    void AssignDefault()
-    {
-        Icon = Resources.Load<Texture2D>("DefaultIcon");
-    }
-}
-```
-
----
-
-## 与其他特性的关系
-
-### 与 JetBrains 的 [NotNull] 对比
-
-```csharp
-// JetBrains.Annotations.NotNull
-using JetBrains.Annotations;
-
-public class Config1 : ProtoObject
-{
-    [NotNull]  // JetBrains 版本，支持 ReSharper/Rider
-    public string Name;
-}
-
-// 本项目 TaoTie.NotNull
-using TaoTie;
-
-public class Config2 : ProtoObject
-{
-    [NotNull]  // 本项目的版本，功能相同
-    public string Name;
-}
-```
-
-**说明**: 两个 `NotNull` 功能相同，可以互换使用。本项目定义自己的版本以避免外部依赖。
-
-### 与 Unity 的 [SerializeField] 对比
-
-```csharp
-public class UnityConfig : MonoBehaviour
-{
-    [SerializeField]  // Unity 序列化
-    [NotNull]         // 非空验证
-    private string playerName;
-}
-```
+该类未显式指定 `AttributeUsage`，因此使用默认值：
+- 可应用于任何目标 (类、方法、属性、字段等)
+- 不支持多次应用
+- 不支持继承
 
 ---
 
 ## 使用示例
 
-### 示例 1: 配置类字段标记
+### 示例 1: 标记配置字段
 
 ```csharp
-[Config]
-public class HeroConfig : ProtoObject
+public class ItemConfig : ProtoObject
 {
-    [NotNull]
-    public string HeroName;  // 英雄名称不能为空
+    public int Id { get; set; }
     
-    [NotNull]
-    public List<int> SkillIds;  // 技能列表不能为 null
+    [NotNull]  // 标记 Name 不能为空
+    public string Name { get; set; }
     
-    public string Description;  // 描述可以为空
+    [NotNull]  // 标记 Description 不能为空
+    public string Description { get; set; }
+    
+    public int Type { get; set; }  // 可为空
 }
 ```
 
-### 示例 2: 构造函数初始化
+### 示例 2: 配置验证
 
 ```csharp
-public class PlayerData : ProtoObject
+// 配置加载时验证 (伪代码)
+public void ValidateConfig(object config)
 {
-    [NotNull]
-    public string PlayerId;
+    var properties = config.GetType().GetProperties();
     
-    [NotNull]
-    public List<ItemData> Inventory;
-    
-    public PlayerData()
+    foreach (var prop in properties)
     {
-        PlayerId = Guid.NewGuid().ToString();  // 立即赋值
-        Inventory = new List<ItemData>();       // 初始化为空列表
-    }
-}
-```
-
-### 示例 3: 反序列化后验证
-
-```csharp
-public class QuestConfig : ProtoObject
-{
-    [NotNull]
-    public string QuestName;
-    
-    public override void EndInit()
-    {
-        base.EndInit();
-        
-        if (QuestName == null)
+        var notNullAttr = prop.GetCustomAttribute<NotNullAttribute>();
+        if (notNullAttr != null)
         {
-            Debug.LogError($"[NotNull] 验证失败：QuestName 为 null");
-            QuestName = "未命名任务";  // 设置默认值
+            var value = prop.GetValue(config);
+            if (value == null)
+            {
+                throw new Exception($"配置字段 {prop.Name} 不能为空");
+            }
         }
     }
 }
 ```
 
+### 示例 3: 与 Odin Inspector 集成
+
+```csharp
+// 如果使用 Odin Inspector，可结合使用
+public class ItemConfig : ProtoObject
+{
+    [NotNull]
+    [LabelText("物品名称")]
+    public string Name { get; set; }
+    
+    [NotNull]
+    [Multiline(3)]
+    [LabelText("物品描述")]
+    public string Description { get; set; }
+}
+```
+
 ---
 
-## 设计要点
+## 与其他模块的交互
 
-### 为什么需要 NotNull？
+```mermaid
+graph TD
+    subgraph Attribute["特性系统"]
+        NA[NotNullAttribute]
+        A[Attribute]
+    end
+    
+    subgraph Config["配置系统"]
+        CM[ConfigManager]
+        CV[ConfigValidator]
+    end
+    
+    subgraph Configs["配置类"]
+        IC[ItemConfig]
+        TC[TaskConfig]
+    end
+    
+    NA --|> A
+    CV --> NA
+    IC --> NA
+    TC --> NA
+    
+    note right of NA "NotNullAttribute 用于标记<br/>不能为空的配置字段"
+    
+    style Attribute fill:#e1f5ff
+    style Config fill:#fff4e1
+    style Configs fill:#e8f5e9
+```
 
-1. **代码清晰**: 明确表达字段的设计意图
-2. **减少 Bug**: 避免 null 引用异常
-3. **工具支持**: IDE 和静态分析工具可以提供警告
-4. **文档作用**: 代码即文档，其他开发者知道哪些字段不能为空
+**依赖关系**:
+- **依赖**: `System.Attribute` (基础特性类)
+- **被依赖**: 配置验证器 (如实现)
 
-### 最佳实践
+---
 
-1. **集合字段**: 始终标记为 `[NotNull]`，初始化为空集合而非 null
-   ```csharp
-   [NotNull]
-   public List<int> Ids = new List<int>();  // ✅ 好
-   public List<int> Ids = null;              // ❌ 坏
-   ```
+## 配置验证规范
 
-2. **字符串字段**: 根据业务逻辑决定是否允许 null
-   ```csharp
-   [NotNull]
-   public string Id;          // ID 通常不应为空
-   public string Description; // 描述可以为空
-   ```
+### 验证时机
 
-3. **引用类型**: 关键引用应标记为 `[NotNull]`
-   ```csharp
-   [NotNull]
-   public Transform SpawnPoint;  // 出生点必须有
-   public Transform Effect;      // 特效可以有可以无
-   ```
+| 时机 | 说明 |
+|------|------|
+| **配置加载时** | 加载配置后立即验证 |
+| **配置热更新时** | 热更新配置后验证 |
+| **编辑器模式** | 在 Unity 编辑器中实时验证 |
+
+### 验证规则
+
+```csharp
+// 验证规则
+1. 标记 [NotNull] 的字段不能为 null
+2. 对于字符串类型，空字符串 "" 通常也视为无效
+3. 对于引用类型，null 视为无效
+4. 对于值类型，[NotNull] 无意义 (值类型永不为 null)
+```
+
+---
+
+## 阅读指引
+
+### 建议的阅读顺序
+
+1. **理解特性作用** - NotNullAttribute 用于标记非空约束
+2. **看继承关系** - 继承自 System.Attribute
+3. **了解使用方式** - 在字段或属性上添加 [NotNull] 标记
+4. **查看验证流程** - 了解如何基于特性进行验证
+
+### 最值得学习的技术点
+
+1. **特性标记**: 使用 Attribute 实现元数据标记
+2. **数据验证**: 基于特性进行配置数据验证
+3. **约定约束**: 通过标记表达字段约束
 
 ---
 
 ## 相关文档
 
-- [ConfigAttribute.cs.md](./ConfigAttribute.cs.md) - 配置标记特性
-- [ProtoObject.cs.md](./ProtoObject.cs.md) - 配置对象基类（可在 EndInit 中验证）
-- [OdinDropdownHelper.cs.md](./OdinDropdownHelper.cs.md) - Odin Inspector 工具（可使用 [NotNull]）
+- [ConfigAttribute.cs.md](./ConfigAttribute.cs.md) - 配置类标记特性
+- [ConfigManager.cs.md](./ConfigManager.cs.md) - 配置管理器
+- [ProtoObject.cs.md](./ProtoObject.cs.md) - Protobuf 对象基类
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

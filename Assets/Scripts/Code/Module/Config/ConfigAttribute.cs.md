@@ -6,8 +6,8 @@
 |------|-----|
 | **文件名** | ConfigAttribute.cs |
 | **路径** | Assets/Scripts/Code/Module/Config/ConfigAttribute.cs |
-| **所属模块** | 框架层 → Code/Module/Config |
-| **文件职责** | 定义配置类标记特性，用于标识哪些类是配置类型 |
+| **所属模块** | 框架层 → Config (配置系统) |
+| **文件职责** | 配置类标记特性，用于标识可自动加载的配置类 |
 
 ---
 
@@ -17,26 +17,29 @@
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 标记一个类为配置类型，供 ConfigManager 扫描和加载 |
+| **职责** | 标记特性，用于标识配置类，使 ConfigManager 能够自动扫描和加载 |
 | **泛型参数** | 无 |
-| **继承关系** | 继承 `BaseAttribute` |
+| **继承关系** | `BaseAttribute` |
 | **实现的接口** | 无 |
 
-**设计模式**: 标记特性（Marker Attribute）
+**设计模式**: 特性模式 (Attribute Pattern) - 使用元数据标记配置类
 
 ```csharp
-// 使用方式
-[Config]
-public class LevelConfig : ProtoObject
+[AttributeUsage(AttributeTargets.Class)]
+public class ConfigAttribute : BaseAttribute
 {
-    public int Id;
-    public string Name;
 }
 ```
 
 ---
 
-## 特性定义
+## 字段与属性
+
+该类无额外字段，仅作为标记特性使用。
+
+---
+
+## 特性使用说明
 
 ### AttributeUsage
 
@@ -44,132 +47,147 @@ public class LevelConfig : ProtoObject
 [AttributeUsage(AttributeTargets.Class)]
 ```
 
-**说明**: 此特性只能应用于类（Class），不能应用于方法、字段等。
-
----
-
-## 继承关系
-
-```
-System.Attribute
-    ↓
-TaoTie.BaseAttribute
-    ↓
-TaoTie.ConfigAttribute
-```
-
-**BaseAttribute**: ET 框架的基础特性类，提供特性系统的统一基类。
-
----
-
-## 工作原理
-
-### ConfigManager 扫描流程
-
-```mermaid
-flowchart TD
-    A[ConfigManager.LoadAsync] --> B[AttributeManager.GetTypes]
-    B --> C[扫描所有程序集]
-    C --> D[查找标记 [Config] 的类]
-    D --> E[返回配置类型列表]
-    E --> F[遍历加载每个配置]
-```
-
-### 代码示例
-
-```csharp
-// ConfigManager.LoadAsync() 内部
-List<Type> types = AttributeManager.Instance.GetTypes(TypeInfo<ConfigAttribute>.Type);
-// 返回所有标记了 [Config] 的类型
-
-foreach (Type type in types)
-{
-    this.LoadOneInThread(type, configBytes);
-}
-```
+| 参数 | 值 | 说明 |
+|------|-----|------|
+| `AttributeTargets` | `Class` | 仅可应用于类 |
 
 ---
 
 ## 使用示例
 
-### 示例 1: 定义配置类
+### 示例 1: 标记配置类
 
 ```csharp
-[Config]  // 标记为配置类
-public class LevelConfig : ProtoObject
+// 使用 ConfigAttribute 标记配置类
+[Config]
+public class ItemConfigCategory : ProtoObject, IMerge<ItemConfigCategory>
 {
-    public int Id;
-    public string Name;
-    public int Difficulty;
+    // 配置数据
+}
+
+// 或者使用完整类名
+[ConfigAttribute]
+public class TaskConfigCategory : ProtoObject, IMerge<TaskConfigCategory>
+{
+    // 配置数据
 }
 ```
 
-### 示例 2: 定义配置列表类
+### 示例 2: ConfigManager 自动扫描
 
 ```csharp
-[Config]  // 配置管理器会加载这个类
-public class LevelConfigCategory : ProtoObject, IMerge
+// ConfigManager 会扫描所有标记了 [Config] 的类
+// 并自动加载对应的配置文件
+
+// 扫描过程 (伪代码):
+var configTypes = Assembly.GetTypes()
+    .Where(t => t.GetCustomAttribute<ConfigAttribute>() != null);
+
+foreach (var type in configTypes)
 {
-    public List<LevelConfig> LevelList = new List<LevelConfig>();
-    
-    // 支持合并多个配置源
-    public void Merge(object o)
-    {
-        var other = o as LevelConfigCategory;
-        LevelList.AddRange(other.LevelList);
-    }
-}
-```
-
-### 示例 3: 加载配置
-
-```csharp
-// 游戏启动时加载所有配置
-await ConfigManager.Instance.LoadAsync();
-
-// 访问配置
-var levelConfig = ConfigManager.Instance.GetConfig<LevelConfigCategory>();
-foreach (var level in levelConfig.LevelList)
-{
-    Debug.Log($"关卡：{level.Name}");
+    // 加载配置
+    var config = await LoadConfig(type);
 }
 ```
 
 ---
 
-## 设计要点
+## 与其他模块的交互
 
-### 为什么使用特性标记？
+```mermaid
+graph TD
+    subgraph Attribute["特性系统"]
+        CA[ConfigAttribute]
+        BA[BaseAttribute]
+    end
+    
+    subgraph Config["配置系统"]
+        CM[ConfigManager]
+        AM[AttributeManager]
+    end
+    
+    subgraph Configs["配置类"]
+        IC[ItemConfigCategory]
+        TC[TaskConfigCategory]
+    end
+    
+    CA --|> BA
+    CM --> AM
+    AM --> CA
+    IC --> CA
+    TC --> CA
+    
+    note right of CA "ConfigAttribute 用于标记<br/>可自动加载的配置类"
+    
+    style Attribute fill:#e1f5ff
+    style Config fill:#fff4e1
+    style Configs fill:#e8f5e9
+```
 
-1. **自动发现**: 无需手动注册配置类
-2. **解耦**: 配置类定义与加载逻辑分离
-3. **可扩展**: 新增配置类无需修改加载代码
-4. **类型安全**: 通过 Type 系统保证类型正确
+**依赖关系**:
+- **依赖**: `BaseAttribute` (基础特性类)
+- **被依赖**: `ConfigManager`, `AttributeManager` (扫描和加载)
 
-### 与其他特性的关系
+---
+
+## 配置类规范
+
+### 标准配置类结构
 
 ```csharp
-// 常见组合
-[Config]                          // 标记为配置类
-public class ItemConfig : ProtoObject
+[Config]  // 必须标记
+public class XXXConfigCategory : ProtoObject, IMerge<XXXConfigCategory>
 {
-    [HideInInspector]             // Unity Inspector 隐藏
-    public int InternalId;
+    // 配置数据字段
+    public Dictionary<int, XXXConfig> Dict { get; set; }
     
-    [Range(0, 100)]               // Odin/Unity 属性
-    public int Rarity;
+    // IMerge 实现
+    public void Merge(XXXConfigCategory source)
+    {
+        // 合并逻辑
+    }
 }
 ```
+
+### 配置项结构
+
+```csharp
+[Config]
+public class ItemConfig : ProtoObject
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public int Type { get; set; }
+    // ... 其他字段
+}
+```
+
+---
+
+## 阅读指引
+
+### 建议的阅读顺序
+
+1. **理解特性作用** - ConfigAttribute 用于标记配置类
+2. **看继承关系** - 继承自 BaseAttribute
+3. **了解使用方式** - 在配置类上添加 [Config] 标记
+4. **查看扫描流程** - 了解 ConfigManager 如何扫描和加载
+
+### 最值得学习的技术点
+
+1. **特性标记**: 使用 Attribute 实现元数据标记
+2. **自动扫描**: 通过反射扫描标记的类
+3. **约定优于配置**: 标记后自动加载，无需手动注册
 
 ---
 
 ## 相关文档
 
-- [ConfigManager.cs.md](./ConfigManager.cs.md) - 配置管理器（扫描 [Config] 特性）
-- [AttributeManager.cs.md](../../Mono/Module/Assembly/AttributeManager.cs.md) - 特性管理器
 - [BaseAttribute.cs.md](../../Mono/Module/Assembly/BaseAttribute.cs.md) - 基础特性类
-- [ProtoObject.cs.md](./ProtoObject.cs.md) - 配置对象基类
+- [AttributeManager.cs.md](../../Mono/Module/Assembly/AttributeManager.cs.md) - 属性扫描管理器
+- [ConfigManager.cs.md](./ConfigManager.cs.md) - 配置管理器
+- [ProtoObject.cs.md](./ProtoObject.cs.md) - Protobuf 对象基类
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*
