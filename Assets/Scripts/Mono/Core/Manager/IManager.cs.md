@@ -6,21 +6,19 @@
 |------|-----|
 | **文件名** | IManager.cs |
 | **路径** | Assets/Scripts/Mono/Core/Manager/IManager.cs |
-| **所属模块** | 框架层 → Mono/Core/Manager |
-| **文件职责** | 定义 Manager 的标准接口，规范所有 Manager 的生命周期行为 |
+| **所属模块** | Mono 层 → Core/Manager |
+| **文件职责** | 定义管理器接口体系 |
 
 ---
 
-## 类/结构体说明
+## 接口说明
 
 ### IManagerDestroy
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 定义 Manager 的销毁方法，用于资源清理 |
-| **泛型参数** | 无 |
-| **继承关系** | 无 |
-| **实现的接口** | 无 |
+| **职责** | 管理器销毁接口，所有管理器必须实现 |
+| **继承关系** | 基础接口 |
 
 ```csharp
 public interface IManagerDestroy
@@ -35,10 +33,8 @@ public interface IManagerDestroy
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 标准 Manager 接口，无参数初始化 |
-| **泛型参数** | 无 |
-| **继承关系** | 继承自 IManagerDestroy |
-| **实现的接口** | IManagerDestroy |
+| **职责** | 无参数管理器接口 |
+| **继承关系** | 继承 IManagerDestroy |
 
 ```csharp
 public interface IManager : IManagerDestroy
@@ -47,16 +43,16 @@ public interface IManager : IManagerDestroy
 }
 ```
 
+**用途**: 用于不需要初始化参数的管理器
+
 ---
 
-### IManager<P1>
+### IManager\<P1\>
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 带单个参数的 Manager 接口 |
-| **泛型参数** | P1 - 第一个初始化参数 |
-| **继承关系** | 继承自 IManagerDestroy |
-| **实现的接口** | IManagerDestroy |
+| **职责** | 单参数管理器接口 |
+| **继承关系** | 继承 IManagerDestroy |
 
 ```csharp
 public interface IManager<P1> : IManagerDestroy
@@ -65,204 +61,144 @@ public interface IManager<P1> : IManagerDestroy
 }
 ```
 
+**用途**: 用于需要一个初始化参数的管理器
+
 ---
 
-### IManager<P1,P2>
+### IManager\<P1, P2\>
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 带两个参数的 Manager 接口 |
-| **泛型参数** | P1, P2 - 初始化参数 |
-| **继承关系** | 继承自 IManagerDestroy |
-| **实现的接口** | IManagerDestroy |
+| **职责** | 双参数管理器接口 |
+| **继承关系** | 继承 IManagerDestroy |
 
 ```csharp
-public interface IManager<P1,P2> : IManagerDestroy
+public interface IManager<P1, P2> : IManagerDestroy
 {
     public void Init(P1 sceneGroups, P2 p2);
 }
 ```
 
-**注意**: 第一个参数命名为 `sceneGroups`，暗示这个接口可能最初为 SceneManager 设计
+**用途**: 用于需要两个初始化参数的管理器
 
 ---
 
-### IManager<P1,P2,P3>
+### IManager\<P1, P2, P3\>
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 带三个参数的 Manager 接口 |
-| **泛型参数** | P1, P2, P3 - 初始化参数 |
-| **继承关系** | 继承自 IManagerDestroy |
-| **实现的接口** | IManagerDestroy |
+| **职责** | 三参数管理器接口 |
+| **继承关系** | 继承 IManagerDestroy |
 
 ```csharp
-public interface IManager<P1,P2,P3> : IManagerDestroy
+public interface IManager<P1, P2, P3> : IManagerDestroy
 {
     public void Init(P1 p1, P2 p2, P3 p3);
 }
 ```
 
----
-
-## 字段与属性
-
-本文件只包含接口定义，无字段或属性。
-
----
-
-## 方法说明
-
-### IManagerDestroy.Destroy()
-
-**签名**:
-```csharp
-public void Destroy();
-```
-
-**职责**: 清理 Manager 占用的资源
-
-**实现示例**:
-```csharp
-public class UIManager : IManager
-{
-    public void Init()
-    {
-        // 初始化 UI 系统
-    }
-    
-    public void Destroy()
-    {
-        // 关闭所有窗口
-        // 清理事件监听
-        // 释放资源
-    }
-}
-```
-
----
-
-### IManager.Init()
-
-**签名**:
-```csharp
-public void Init();
-```
-
-**职责**: 初始化 Manager
-
-**调用时机**: ManagerProvider.RegisterManager 时自动调用
-
----
-
-### IManager<P>.Init(P p1)
-
-**签名**:
-```csharp
-public void Init(P1 p1);
-```
-
-**职责**: 带参数初始化 Manager
-
-**典型用途**: 需要外部依赖或配置时使用
+**用途**: 用于需要三个初始化参数的管理器
 
 ---
 
 ## 设计模式
 
-### 接口分离原则
+### 接口泛型化
 
-通过多个接口定义不同的初始化方式：
+通过泛型参数支持不同数量的初始化参数：
 
 ```
-IManagerDestroy (基础销毁接口)
-    ↑
-IManager (无参初始化)
-IManager<P1> (单参初始化)
-IManager<P1,P2> (双参初始化)
-IManager<P1,P2,P3> (三参初始化)
+IManagerDestroy (基础)
+    ├── IManager (0 参数)
+    ├── IManager<P1> (1 参数)
+    ├── IManager<P1, P2> (2 参数)
+    └── IManager<P1, P2, P3> (3 参数)
 ```
 
-### 泛型接口
+### 统一销毁接口
 
-使用泛型支持灵活的参数类型：
+所有管理器都实现 `IManagerDestroy`，确保统一的销毁流程。
+
+---
+
+## 使用场景
+
+### 场景 1: 简单管理器
 
 ```csharp
-// SceneManager 需要 SceneGroup 参数
-public class SceneManager : IManager<SceneGroup>
+public class AudioManager : IManager
 {
-    public void Init(SceneGroup sceneGroup) { }
+    public void Init()
+    {
+        // 初始化音频系统
+    }
+    
+    public void Destroy()
+    {
+        // 清理音频资源
+    }
 }
+```
 
-// ConfigManager 无需参数
-public class ConfigManager : IManager
+### 场景 2: 带参数管理器
+
+```csharp
+public class ConfigManager : IManager<string>
 {
-    public void Init() { }
+    public void Init(string configPath)
+    {
+        // 从指定路径加载配置
+    }
+    
+    public void Destroy()
+    {
+        // 清理配置
+    }
+}
+```
+
+### 场景 3: 多参数管理器
+
+```csharp
+public class SceneManager : IManager<string, int, bool>
+{
+    public void Init(string sceneName, int sceneId, bool isAsync)
+    {
+        // 初始化场景
+    }
+    
+    public void Destroy()
+    {
+        // 清理场景
+    }
 }
 ```
 
 ---
 
-## 与 ManagerProvider 的协作
-
-### 注册流程
+## 与 ManagerProvider 的配合
 
 ```csharp
-// ManagerProvider 根据接口类型调用不同的 Init
-public static T RegisterManager<T,P1>(P1 p1, string name = "") 
-    where T : class, IManager<P1>
-{
-    res = Activator.CreateInstance(type) as T;
-    (res as T).Init(p1);  // ← 调用带参数的 Init
-    // ...
-}
+// 注册管理器
+var manager = ManagerProvider.RegisterManager<AudioManager>();
+
+// 注册带参数管理器
+var configManager = ManagerProvider.RegisterManager<ConfigManager, string>("/configs");
+
+// 获取管理器
+var audioManager = ManagerProvider.GetManager<AudioManager>();
+
+// 移除管理器
+ManagerProvider.RemoveManager<AudioManager>();
 ```
-
-### 销毁流程
-
-```csharp
-public static void RemoveManager<T>(string name = "")
-{
-    // ...
-    (res as IManagerDestroy)?.Destroy();  // ← 调用 Destroy
-}
-```
-
----
-
-## 阅读指引
-
-### 建议的阅读顺序
-
-1. **先看 IManagerDestroy** - 最基础的接口
-2. **再看 IManager** - 标准无参版本
-3. **最后看泛型版本** - 理解参数传递
-
-### 最值得学习的技术点
-
-1. **接口继承**: IManager 继承 IManagerDestroy，确保所有 Manager 都可销毁
-2. **泛型接口**: 支持不同类型和数量的初始化参数
-3. **约束设计**: ManagerProvider 通过泛型约束确保类型安全
-
----
-
-## 实现该接口的 Manager 示例
-
-| Manager | 接口 | 说明 |
-|---------|------|------|
-| `UIManager` | `IManager` | 无需外部参数 |
-| `ConfigManager` | `IManager` | 无需外部参数 |
-| `SceneManager` | `IManager<SceneGroup>` | 需要 SceneGroup |
-| `EntityManager` | `IManager<Scene>` | 需要 Scene |
 
 ---
 
 ## 相关文档
 
-- [ManagerProvider.cs.md](./ManagerProvider.cs.md) - Manager 注册和管理
-- [Entry.cs.md](../../Code/Entry.cs.md) - Manager 注册示例
-- [PROJECT_DOCUMENTATION.md](../../../../PROJECT_DOCUMENTATION.md) - 项目架构说明
+- [ManagerProvider.cs.md](./ManagerProvider.cs.md) - 管理器提供者
+- [ObjectPool.cs.md](../ObjectPool.cs.md) - 对象池
 
 ---
 
-*文档生成时间：2026-02-27 | OpenClaw AI 助手*
+*文档生成时间：2026-03-01 | OpenClaw AI 助手*

@@ -7,38 +7,30 @@
 | **文件名** | CameraManager.cs |
 | **路径** | Assets/Scripts/Code/Module/Camera/CameraManager.cs |
 | **所属模块** | 框架层 → Code/Module/Camera |
-| **文件职责** | 相机管理系统，提供相机切换、屏幕震动等功能 |
+| **文件职责** | 相机管理器，提供主相机控制和屏幕震动效果 |
 
 ---
 
-## 类/结构体说明
+## 类说明
 
 ### CameraManager
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 管理所有相机，支持多渲染管线、屏幕震动 |
-| **泛型参数** | 无 |
-| **继承关系** | 无继承（partial 类） |
-| **实现的接口** | `IManager` |
+| **职责** | 管理游戏主相机，提供相机震动等效果 |
+| **设计模式** | 单例模式 (通过 IManager) |
+| **继承关系** | partial class, 实现 IManager |
 
-**文件结构**:
-- `CameraManager.cs` - 核心逻辑、屏幕震动
-- `CameraManager.URP.cs` - URP 渲染管线支持
-- `CameraManager.TaoTieRP.cs` - 自研渲染管线支持
-
----
-
-## 字段与属性
-
-| 名称 | 类型 | 访问级别 | 说明 |
-|------|------|----------|------|
-| `Instance` | `CameraManager` | `public static` | 单例实例 |
-| `isShake` | `bool` | `private` | 是否正在震动 |
+```csharp
+public partial class CameraManager : IManager
+{
+    public static CameraManager Instance { get; private set; }
+}
+```
 
 ---
 
-## 方法说明（按重要程度排序）
+## IManager 接口实现
 
 ### Init()
 
@@ -51,10 +43,8 @@ public void Init()
 
 **核心逻辑**:
 ```
-1. 设置单例 Instance = this
+1. 设置 Instance 单例引用
 ```
-
-**调用者**: ManagerProvider.RegisterManager<CameraManager>()
 
 ---
 
@@ -69,168 +59,228 @@ public void Destroy()
 
 **核心逻辑**:
 ```
-1. 设置 Instance = null
+1. 清空 Instance 引用
 ```
-
-**调用者**: ManagerProvider.RemoveManager<CameraManager>()
 
 ---
 
-### Shake(float force, int during, float hz)
+## 方法说明
+
+### Shake()
 
 **签名**:
 ```csharp
 public async ETTask Shake(float force = 1, int during = 1000, float hz = 50)
 ```
 
-**职责**: 屏幕震动效果
+**职责**: 执行相机震动效果
 
 **参数**:
-- `force`: 震动强度（默认 1）
-- `during`: 震动持续时间（毫秒，默认 1000）
-- `hz`: 震动频率（默认 50）
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `force` | float | 1 | 震动强度（振幅） |
+| `during` | int | 1000 | 震动持续时间（毫秒） |
+| `hz` | float | 50 | 震动频率（Hz） |
 
-**返回**: `ETTask` - 异步任务
+**返回**: ETTask（异步任务）
 
 **核心逻辑**:
 ```
-1. 检查是否正在震动（isShake）
+1. 检查是否正在震动（isShake 标志）
 2. 检查主相机是否存在
-3. 记录开始时间和初始位置
-4. 设置 isShake = true
-5. 循环震动：
+3. 记录起始时间和起始位置
+4. 进入震动循环：
    - 等待 1ms
-   - 计算正弦波偏移：force * sin(deltaTime * hz) / addon
-   - 设置相机位置
-   - 检查是否超时
-6. 恢复初始位置
-7. 设置 isShake = false
+   - 计算经过时间
+   - 使用正弦函数计算偏移量
+   - 应用偏移量到相机位置
+   - 达到持续时间后恢复原位
+5. 清除震动标志
 ```
 
-**调用者**: 游戏事件（碰撞、爆炸等）
+**震动公式**:
+```csharp
+offset = force * Vector3.up * Mathf.Sin(deltaTime * hz) / addon;
+// addon 用于衰减振幅
+addon = Mathf.Max(1, deltaTime * 100f / during);
+```
 
 **使用示例**:
 ```csharp
-// 轻微震动（碰撞）
-await CameraManager.Instance.Shake(force: 0.5f, during: 500);
+// 默认震动
+await CameraManager.Instance.Shake();
 
-// 中等震动（爆炸）
-await CameraManager.Instance.Shake(force: 1.0f, during: 1000);
+// 强烈震动（爆炸效果）
+await CameraManager.Instance.Shake(force: 3, during: 500);
 
-// 强烈震动（大招）
-await CameraManager.Instance.Shake(force: 2.0f, during: 2000, hz: 100);
+// 轻微震动（受击效果）
+await CameraManager.Instance.Shake(force: 0.5, during: 200, hz: 30);
 ```
 
 ---
 
-## 屏幕震动算法
+### MainCamera()
 
-### 正弦波震动
-
+**签名**:
 ```csharp
-// 震动公式
-offset = force * Vector3.up * Mathf.Sin(deltaTime * hz) / addon
-
-// 参数说明:
-// force: 震动强度（振幅）
-// hz: 震动频率（赫兹）
-// deltaTime: 经过的时间
-// addon: 衰减因子（随时间增大，震动减弱）
+public Camera MainCamera()
 ```
 
-### 衰减因子
+**职责**: 获取主相机
 
+**返回**: 主相机实例
+
+**说明**: 此方法在 URP 和 TaoTieRP 分部类中实现
+
+**使用示例**:
 ```csharp
-// 衰减计算
-addon = Mathf.Max(1, deltaTime * 100f / during)
-
-// 说明:
-// 震动开始时 addon = 1（最大强度）
-// 震动结束时 addon = 100（最小强度）
-// 震动逐渐减弱，更自然
+var mainCam = CameraManager.Instance.MainCamera();
+Vector3 camPos = mainCam.transform.position;
 ```
 
 ---
 
-## 阅读指引
+## 字段说明
 
-### 建议的阅读顺序
+### isShake
 
-1. **理解相机管理器作用** - 为什么需要 CameraManager
-2. **看 Shake 方法** - 理解屏幕震动
-3. **了解震动算法** - 理解正弦波 + 衰减
+```csharp
+private bool isShake;
+```
 
-### 最值得学习的技术点
-
-1. **异步震动**: ETTask 实现异步震动效果
-2. **正弦波**: 使用 sin 函数实现周期性震动
-3. **衰减效果**: addon 因子实现震动减弱
-4. **防重复**: isShake 标志防止重复震动
+**说明**: 震动状态标志，防止重复震动
 
 ---
 
-## 使用示例
+## 使用场景
 
-### 示例 1: 基础震动
-
-```csharp
-// 玩家受到伤害
-void OnPlayerHit()
-{
-    // 轻微震动
-    CameraManager.Instance.Shake(force: 0.5f, during: 300).Coroutine();
-}
-```
-
-### 示例 2: 爆炸震动
+### 场景 1: 爆炸效果
 
 ```csharp
-// 爆炸效果
+// 爆炸发生时
 void OnExplosion()
 {
     // 强烈震动
-    CameraManager.Instance.Shake(
-        force: 2.0f,
-        during: 1500,
-        hz: 80
-    ).Coroutine();
+    _ = CameraManager.Instance.Shake(force: 2, during: 800, hz: 60);
+    
+    // 播放爆炸动画
+    PlayExplosionAnim();
 }
 ```
 
-### 示例 3: 连击震动
+### 场景 2: 角色受击
 
 ```csharp
-// 连击效果
-void OnCombo(int count)
+// 角色受到伤害时
+void OnDamage()
 {
-    // 每次连击轻微震动
-    for (int i = 0; i < count; i++)
-    {
-        TimerManager.Instance.NewOnceTimer(
-            TimerManager.Instance.GetTimeNow() + i * 200,
-            TimerType.Shake,
-            null
-        );
-    }
+    // 轻微震动
+    _ = CameraManager.Instance.Shake(force: 0.3, during: 300);
+    
+    // 播放受击动画
+    PlayHitAnim();
 }
+```
 
-[Timer(TimerType.Shake)]
-public class ShakeTimer : ATimer
+### 场景 3: UI 反馈
+
+```csharp
+// 重要 UI 事件
+void OnRareItemDrop()
 {
-    public override void Handle(object obj)
-    {
-        CameraManager.Instance.Shake(force: 0.3f, during: 200).Coroutine();
-    }
+    // 配合特效震动
+    _ = CameraManager.Instance.Shake(force: 1, during: 500, hz: 40);
+    ShowRareAnim();
 }
+```
+
+### 场景 4: 技能释放
+
+```csharp
+// 强力技能释放
+async Task CastUltimateSkill()
+{
+    // 震屏反馈
+    await CameraManager.Instance.Shake(force: 1.5, during: 600);
+    
+    // 释放技能
+    ReleaseSkill();
+}
+```
+
+---
+
+## 震动效果参数建议
+
+| 场景 | force | during (ms) | hz | 效果 |
+|------|-------|-------------|-----|------|
+| 轻微受击 | 0.2-0.5 | 200-300 | 30-40 | 轻微波动 |
+| 普通攻击 | 0.5-1.0 | 300-500 | 40-50 | 明显震动 |
+| 爆炸效果 | 1.5-3.0 | 500-800 | 50-60 | 强烈震动 |
+| 地震效果 | 1.0-2.0 | 1000-2000 | 20-30 | 持续晃动 |
+| UI 反馈 | 0.3-0.8 | 200-400 | 40-50 | 短暂提示 |
+
+---
+
+## 分部类结构
+
+```
+CameraManager (partial)
+    ├── CameraManager.cs (主文件)
+    │   ├── Init/Destroy
+    │   ├── Shake()
+    │   └── Instance 单例
+    │
+    ├── CameraManager.URP.cs (URP 渲染管线)
+    │   ├── SetCameraStackAtLoadingStart()
+    │   ├── SetCameraStackAtLoadingDone()
+    │   └── MainCamera() - URP 实现
+    │
+    └── CameraManager.TaoTieRP.cs (TaoTie 渲染管线)
+        └── (注释掉的 URP 代码，待实现)
+```
+
+---
+
+## 注意事项
+
+### 1. 异步调用
+
+Shake() 是异步方法，使用 await 或 _ 忽略返回值：
+
+```csharp
+// ✅ 正确
+await CameraManager.Instance.Shake();
+_ = CameraManager.Instance.Shake();
+
+// ❌ 警告：未等待异步任务
+CameraManager.Instance.Shake();
+```
+
+### 2. 防止重复震动
+
+isShake 标志防止同时执行多个震动：
+
+```csharp
+if (isShake) return;  // 正在震动时忽略新请求
+```
+
+### 3. 主相机检查
+
+震动前检查主相机是否存在：
+
+```csharp
+if (MainCamera() == null) return;
 ```
 
 ---
 
 ## 相关文档
 
-- [SceneManager.cs.md](../Scene/SceneManager.cs.md) - 场景管理
-- [TimerManager.cs.md](../../Mono/Module/Timer/TimerManager.cs.md) - 定时器管理
+- [CameraManager.URP.cs.md](./CameraManager.URP.cs.md) - URP 相机实现
+- [CameraManager.TaoTieRP.cs.md](./CameraManager.TaoTieRP.cs.md) - TaoTieRP 相机实现
+- [IManager.cs.md](../../../Mono/Core/Manager/IManager.cs.md) - 管理器接口
 
 ---
 
-*文档生成时间：2026-02-27 | OpenClaw AI 助手*
+*文档生成时间：2026-03-01 | OpenClaw AI 助手*
