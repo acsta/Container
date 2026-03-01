@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 05:00  
+> **更新时间**: 2026-03-02 05:30  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 316 |
-| 覆盖率 | ~48.9% |
+| 已创建 .md 文档 | 328 |
+| 覆盖率 | ~50.8% |
 
 ---
 
@@ -263,30 +263,30 @@
 
 ### Code/Game/UIGame/UILobby (大厅 UI) (部分完成)
 - [x] DailyTaskItem.cs.md - 每日任务项
-- [ ] UILobbyView.cs
-- [ ] UIDailyWin.cs
-- [ ] UIProfitWin.cs
-- [ ] UITaskDetailsWin.cs
-- [ ] UIMarketView.cs
-- [ ] UIAuctionSelectView.cs
-- [ ] UIRankView.cs
-- [ ] UICashGroup.cs
-- [ ] UIMatchView.cs
+- [x] UILobbyView.cs.md - 大厅主界面
+- [x] UIDailyWin.cs.md - 每日任务奖励窗口
+- [x] UIProfitWin.cs.md - 餐厅收益窗口
+- [x] UITaskDetailsWin.cs.md - 任务详情窗口
+- [x] UIMarketView.cs.md - 市场界面
+- [x] UIAuctionSelectView.cs.md - 拍卖选择界面
+- [x] UIRankView.cs.md - 排行榜界面
+- [x] UICashGroup.cs.md - 金币显示组件
+- [x] UIMatchView.cs.md - 匹配界面
+- [x] DailyTaskRewards.cs.md - 每日任务阶段奖励组件
+- [x] UserItem.cs.md - 玩家头像项组件
+- [x] RankItem.cs.md - 排行榜项组件
 - [ ] UIRewardsView.cs
 - [ ] UIUnlockWin.cs
 - [ ] UIWashDishView.cs
-- [ ] UserItem.cs
 - [ ] TechnologyNodeItem.cs
 - [ ] TechnologyNode.cs
 - [ ] UIBlackView.cs
 - [ ] RestaurantTask.cs
 - [ ] UIExpandWin.cs
-- [ ] RankItem.cs
 - [ ] UITopView.cs
 - [ ] AuctionSelectItem.cs
 - [ ] UIRankBtn.cs
 - [ ] UISettingWin.cs
-- [ ] DailyTaskRewards.cs
 
 ---
 
