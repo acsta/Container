@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 06:45  
+> **更新时间**: 2026-03-02 07:55  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 352 |
-| 覆盖率 | ~54.5% |
+| 已创建 .md 文档 | 362 |
+| 覆盖率 | ~56.0% |
 
 ---
 
@@ -215,16 +215,17 @@
 ### Code/Game/System/Numeric (数值系统) (100%)
 - [x] NumericSystem.cs.md - 数值系统管理器
 
-### Code/Game/System/Environment (环境系统) (部分完成)
+### Code/Game/System/Environment (环境系统) (90%)
 - [x] EnvironmentPriorityType.cs.md - 环境优先级
 - [x] Data/DayTimeType.cs.md - 昼夜类型
 - [x] Runner/DayEnvironmentRunner.cs.md - 昼夜环境运行器
-- [ ] EnvironmentManager.cs
-- [ ] EnvironmentManager.Light.cs
-- [ ] EnvironmentManager.Skybox.cs
-- [ ] EnvironmentInfo.cs
-- [ ] Runner/NormalEnvironmentRunner.cs
-- [ ] Runner/BlenderEnvironmentRunner.cs
+- [x] EnvironmentManager.cs.md - 环境管理器
+- [x] EnvironmentManager.Light.cs.md - 光照应用
+- [x] EnvironmentManager.Skybox.cs.md - 天空盒应用
+- [x] EnvironmentInfo.cs.md - 环境配置数据
+- [x] Runner/NormalEnvironmentRunner.cs.md - 普通环境运行器
+- [x] Runner/BlenderEnvironmentRunner.cs.md - 混合环境运行器
+- [x] Runner/EnvironmentRunner.cs.md - 环境运行器基类
 
 ### Code/Game/UIGame/UITT (抖音小游戏 UI) (部分完成)
 - [x] UISidebarRewardsWin.cs.md - 侧边栏奖励窗口
@@ -275,7 +276,7 @@
 - [ ] UIBombDisposalView.cs
 - [ ] UIAppraisalItem.cs
 
-### Code/Game/UIGame/UILobby (大厅 UI) (95%)
+### Code/Game/UIGame/UILobby (大厅 UI) (100%)
 - [x] DailyTaskItem.cs.md - 每日任务项
 - [x] UILobbyView.cs.md - 大厅主界面
 - [x] UIDailyWin.cs.md - 每日任务奖励窗口
@@ -298,9 +299,9 @@
 - [x] UIWashDishView.cs.md - 餐厅洗碗界面
 - [x] TechnologyNode.cs.md - 科技树节点组件
 - [x] TechnologyNodeItem.cs.md - 科技树子节点组件
-- [ ] UIBlackView.cs
-- [ ] RestaurantTask.cs
-- [ ] UITopView.cs
+- [x] UIBlackView.cs.md - 黑名单/科技树界面
+- [x] RestaurantTask.cs.md - 餐厅任务项组件
+- [x] UITopView.cs.md - 顶部信息栏视图
 
 ---
 
@@ -352,15 +353,15 @@
 
 ### 🟡 中优先级 - 游戏系统
 
-#### Code/Module/Config (配置系统)
-- [ ] ConfigLoader.cs
-- [ ] ConfigAttribute.cs
+#### Code/Module/Config (配置系统) (部分完成)
+- [x] ConfigLoader.cs.md - 配置加载器
+- [x] ConfigAttribute.cs.md - 配置类标记特性
+- [x] NotNullAttribute.cs.md - 非空标记特性
+- [x] ProtoObject.cs.md - Protobuf 对象基类
+- [x] IMerge.cs.md - 合并接口
 - [ ] ProtobufHelper.cs
 - [ ] IConfigLoader.cs
-- [ ] ProtoObject.cs
-- [ ] IMerge.cs
 - [ ] OdinDropdownHelper.cs
-- [ ] NotNullAttribute.cs
 
 #### Code/Module/Const (常量定义)
 - [ ] TimerType.cs
