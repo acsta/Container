@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 00:30  
+> **更新时间**: 2026-03-02 01:15  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 177 |
-| 覆盖率 | ~27.4% |
+| 已创建 .md 文档 | 187 |
+| 覆盖率 | ~29.0% |
 
 ---
 
@@ -106,6 +106,18 @@
 - [x] PointerClick.cs.md - 点击事件组件
 - [x] ScrollViewEventRaycast.cs.md - 滚动视图事件传递组件
 - [x] UIScriptCreator.cs.md - UI 脚本创建器标记组件
+
+### Code/Game/UIGame/UICreate (角色创建 UI) (100%)
+- [x] UICreateView.cs.md - 角色创建主界面
+- [x] UIBagWin.cs.md - 背包窗口
+- [x] UIShopWin.cs.md - 商店窗口
+- [x] UIEquipWin.cs.md - 装备详情窗口
+- [x] UIBuyWin.cs.md - 购买窗口
+- [x] CreateItem.cs.md - 装备槽位项
+- [x] ClothItem.cs.md - 装备物品项
+- [x] ShopItem.cs.md - 商店商品项
+- [x] TableItem.cs.md - 背包列表项
+- [x] GroupInfoTable.cs.md - 套装信息表
 
 ### Mono/Module/YooAssets (资源管理) (100%)
 - [x] PackageManager.cs.md - 资源包管理器核心
