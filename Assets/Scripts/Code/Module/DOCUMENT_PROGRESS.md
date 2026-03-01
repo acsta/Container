@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-01 23:30  
+> **更新时间**: 2026-03-02 00:30  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 167 |
-| 覆盖率 | ~25.9% |
+| 已创建 .md 文档 | 177 |
+| 覆盖率 | ~27.4% |
 
 ---
 
@@ -107,6 +107,27 @@
 - [x] ScrollViewEventRaycast.cs.md - 滚动视图事件传递组件
 - [x] UIScriptCreator.cs.md - UI 脚本创建器标记组件
 
+### Mono/Module/YooAssets (资源管理) (100%)
+- [x] PackageManager.cs.md - 资源包管理器核心
+- [x] PackageConfig.cs.md - 资源包配置
+- [x] BuildInPackageConfig.cs.md - 内置包配置
+- [x] CDNConfig.cs.md - CDN 配置
+- [x] RemoteServices.cs.md - 远程服务
+- [x] StreamingAssetsHelper.cs.md - 构建助手
+- [x] BundleDecryption.cs.md - 资源解密
+
+### Code/Module/Config/Value (配置值类型) (部分完成)
+- [x] BaseValue.cs.md - 值基类
+- [x] FormulaValue.cs.md - 公式值
+- [x] SingleValue.cs.md - 固定值
+- [ ] ZeroValue.cs
+- [ ] Range01Value.cs
+- [ ] OperatorValue.cs
+- [ ] LogicMode.cs
+- [ ] RandomAuctionTime.cs
+- [ ] MinAuctionTime.cs
+- [ ] TimeSinceLastBid.cs
+
 ---
 
 ## 📋 待处理文件（按优先级）
@@ -144,7 +165,7 @@
 #### Mono/Module/I18N (国际化)
 - [ ] I18NText.cs
 - [ ] I18NBridge.cs
-- [ ] TextMeshFontAssetManager.cs
+- [x] TextMeshFontAssetManager.cs.md - 文本网格字体资产管理
 
 #### Mono/Module/Entity (实体系统)
 - [ ] EntityComponent.cs
@@ -166,9 +187,16 @@
 - [ ] PlatformUtil.cs
 
 #### Mono/Module/YooAssets (资源管理)
-- [ ] PackageManager.cs
-- [ ] PackageConfig.cs
-- [ ] StreamingAssetsHelper.cs
+- (已完成 100%)
+
+#### Code/Module/Config/Value (配置值类型)
+- [ ] ZeroValue.cs
+- [ ] Range01Value.cs
+- [ ] OperatorValue.cs
+- [ ] LogicMode.cs
+- [ ] RandomAuctionTime.cs
+- [ ] MinAuctionTime.cs
+- [ ] TimeSinceLastBid.cs
 
 ---
 
