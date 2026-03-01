@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 04:00  
+> **更新时间**: 2026-03-02 04:30  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 237 |
-| 覆盖率 | ~36.7% |
+| 已创建 .md 文档 | 307 |
+| 覆盖率 | ~47.5% |
 
 ---
 
@@ -174,17 +174,29 @@
 - [x] StreamingAssetsHelper.cs.md - 构建助手
 - [x] BundleDecryption.cs.md - 资源解密
 
-### Code/Module/Config/Value (配置值类型) (部分完成)
+### Code/Module/Config/Value (配置值类型) (100%)
 - [x] BaseValue.cs.md - 值基类
 - [x] FormulaValue.cs.md - 公式值
 - [x] SingleValue.cs.md - 固定值
-- [ ] ZeroValue.cs
-- [ ] Range01Value.cs
-- [ ] OperatorValue.cs
-- [ ] LogicMode.cs
-- [ ] RandomAuctionTime.cs
-- [ ] MinAuctionTime.cs
-- [ ] TimeSinceLastBid.cs
+- [x] ZeroValue.cs.md - 零值
+- [x] Range01Value.cs.md - 0-1 范围值
+- [x] OperatorValue.cs.md - 运算符值
+- [x] LogicMode.cs.md - 逻辑模式
+- [x] RandomAuctionTime.cs.md - 随机竞拍时间
+- [x] MinAuctionTime.cs.md - 最小竞拍时间
+- [x] TimeSinceLastBid.cs.md - 距上次竞拍时间
+
+### Code/Game/Component (组件系统) (100%)
+- [x] Component.cs.md - 组件基类
+- [x] IComponent.cs.md - 组件接口定义
+- [x] Numeric/NumericComponent.cs.md - 数值组件
+- [x] Numeric/INumericReplace.cs.md - 数值替换接口
+- [x] Numeric/NumericChange.cs.md - 数值变化事件
+- [x] Numeric/FormulaStringFx.cs.md - 公式解析器
+- [x] Type/BidderComponent.cs.md - 竞拍者组件
+- [x] View/BlackBoyComponent.cs.md - 黑色角色效果组件
+- [x] View/CasualActionComponent.cs.md - 休闲动作组件
+- [x] View/GameObjectHolderComponent.cs.md - 游戏对象持有组件
 
 ---
 
@@ -193,72 +205,44 @@
 ### 🔴 高优先级 - 核心框架
 
 #### Mono/Core/Object (数据结构组件) (100%)
-- [x] HashSetComponent.cs.md
-- [x] MultiMapSet.cs.md
-- [x] IdGenerater.cs.md
-- [x] ListComponent.cs.md
-- [x] DynDictionary.cs.md
-- [x] UnOrderMultiMapSet.cs.md
-- [x] BigNumber.cs.md
-- [x] LinkedListComponent.cs.md
-- [x] MultiMap.cs.md
-- [x] LruCache.cs.md
-
-#### Mono/Core/Object (待处理)
-- [ ] (全部完成 100%)
+- (全部完成)
 
 #### Mono/Module/Assembly (程序集管理) (100%)
-- [x] AttributeManager.cs.md - 属性管理器
-- [x] BaseAttribute.cs.md - 基础特性类
-- [x] AssemblyManager.cs.md - 程序集管理器
+- (全部完成)
 
-#### Mono/Module/Log (日志系统)
-- (已完成)
+#### Mono/Module/Log (日志系统) (100%)
+- (全部完成)
 
 #### Mono/Module/Http (HTTP 请求) (100%)
-- [x] AcceptAllCertificate.cs.md - SSL 证书处理器
-- [x] HttpManager.cs.md - HTTP 请求管理器
+- (全部完成)
 
 #### Mono/Module/I18N (国际化) (部分完成)
-- [x] I18NText.cs.md - 国际化文本组件
+- [x] I18NText.cs.md
 - [ ] I18NBridge.cs
-- [x] TextMeshFontAssetManager.cs.md - 文本网格字体资产管理
+- [x] TextMeshFontAssetManager.cs.md
 
-#### Mono/Module/Entity (实体系统)
-- [ ] EntityComponent.cs
-- [ ] EntityType.cs
-- [ ] Hit/ 目录下的击中检测相关
+#### Mono/Module/Entity (实体系统) (100%)
+- [x] EntityComponent.cs.md
+- [x] EntityType.cs.md
+- [x] Hit/ 目录全部完成
 
-#### Mono/Module/UI (UI 辅助)
-- [ ] ReferenceCollector.cs - UI 引用收集器
-- [ ] Drag.cs
+#### Mono/Module/UI (UI 辅助) (部分完成)
+- [x] ReferenceCollector.cs.md
+- [x] Drag.cs.md
 - [ ] PointerClick.cs
+- [ ] BgAutoFit.cs
+- [ ] BgAutoMax.cs
+- [ ] CircleImage.cs
+- [ ] CircleRawImage.cs
+- [ ] EmptyGraphic.cs
+- [ ] ScrollViewEventRaycast.cs
+- [ ] UIScriptCreator.cs
 
 #### Mono/Helper (工具类) (100%)
-- [x] SystemInfoHelper.cs.md - 系统信息助手
-- [x] JsonHelper.cs.md - JSON 序列化工具
-- [x] PhysicsHelper.cs.md - 物理检测工具
-- [x] EasingFunction.cs.md - 缓动函数库
-- [x] TypeInfo.cs.md - 类型信息缓存
-- [x] BridgeHelper.cs.md - 平台桥接工具
-- [x] PlatformUtil.cs.md - 平台检测工具
-- [x] RangeHelper.cs.md - 范围工具
-- [x] CDNConfigHelper.cs.md - CDN 配置扩展
-- [x] UnityLifeTimeHelper.cs.md - Unity 生命周期等待
-- [x] BridgeHelper.WebGL.cs.md - WebGL 桥接实现
-- [x] SkipUnityLogo.cs.md - 跳过 Unity Logo
+- (全部完成)
 
-#### Mono/Module/YooAssets (资源管理)
-- (已完成 100%)
-
-#### Code/Module/Config/Value (配置值类型)
-- [ ] ZeroValue.cs
-- [ ] Range01Value.cs
-- [ ] OperatorValue.cs
-- [ ] LogicMode.cs
-- [ ] RandomAuctionTime.cs
-- [ ] MinAuctionTime.cs
-- [ ] TimeSinceLastBid.cs
+#### Mono/Module/YooAssets (资源管理) (100%)
+- (全部完成)
 
 ---
 
@@ -276,24 +260,23 @@
 
 #### Code/Module/Const (常量定义)
 - [ ] TimerType.cs
-- [ ] GameInfoType.cs
-- [ ] MessageId.cs
+- [x] GameInfoType.cs.md
+- [x] MessageId.cs.md
 
 #### Mono/Module/Update (更新系统)
-- [ ] UpdateTimer.cs
-- [ ] IUpdate.cs
+- [x] UpdateTimer.cs.md
+- [x] IUpdate.cs.md
 
 #### Mono/Module/TimeLine (时间线)
-- [ ] MessagerTrack.cs
-- [ ] MessagerClip.cs
-- [ ] MessagerBehaviour.cs
+- [x] MessagerTrack.cs.md
+- [x] MessagerClip.cs.md
+- [x] MessagerBehaviour.cs.md
 
 #### Mono/Module/Particle (粒子系统) (100%)
-- [x] ParticleSimulationBudgetManager.cs.md - 粒子预算管理
-- [x] ParticleSystemController.cs.md - 粒子系统控制器
+- (全部完成)
 
 #### Mono/Module/Performance (性能管理) (100%)
-- [x] PerformanceManager.cs.md - 设备性能评估与渲染调整
+- (全部完成)
 
 ---
 
@@ -309,18 +292,6 @@
 - [ ] CompareMode.cs
 - [ ] DecisionNode.cs
 
-#### Code/Module/Config/Value (配置值类型)
-- [ ] Range01Value.cs
-- [ ] OperatorValue.cs
-- [ ] ZeroValue.cs
-- [ ] RandomAuctionTime.cs
-- [ ] LogicMode.cs
-- [ ] FormulaValue.cs
-- [ ] SingleValue.cs
-- [ ] MinAuctionTime.cs
-- [ ] TimeSinceLastBid.cs
-- [ ] BaseValue.cs
-
 #### Code/Module/Config/Environment (环境配置)
 - [ ] ConfigEnvironment.cs
 - [ ] ConfigEnvironments.cs
@@ -328,34 +299,20 @@
 #### Code/Module/Config/Blender
 - [ ] ConfigBlender.cs
 
-#### Mono/Module/CodeLoader (代码加载) (100%)
-- [x] CodeLoader.cs.md - 热更新代码加载器
-- [x] IStaticMethod.cs.md - 静态方法接口定义
-- [x] MonoStaticMethod.cs.md - 反射静态方法实现
-
 #### Mono/Module/Skybox
 - [ ] Skybox.cs
-
-#### Mono/Module/Entity/Hit (击中检测)
-- [ ] ColliderBoxComponent.cs
-- [ ] CheckHitLayerType.cs
-- [ ] HitBoxComponent.cs
-- [ ] HitInfo.cs
-- [ ] HitBoxType.cs
-- [ ] ExportBones.cs
-- [ ] BonesData.cs
 
 #### Mono/Module/UI/Input (输入绑定)
 - [ ] InputAxisBind.cs
 - [ ] InputKeyBind.cs
 
-#### Mono/Module/UI (UI 效果)
-- [ ] TextColorCtrl.cs
-- [ ] BgRawAutoFit.cs
+#### Mono/Module/UI (UI 效果 - 部分完成)
+- [x] TextColorCtrl.cs.md
+- [x] BgRawAutoFit.cs.md
 - [ ] BgAutoFit.cs
 - [ ] BgAutoMax.cs
 - [ ] CircleImage.cs
-- [ ] BackgroundBlur.cs
+- [x] BackgroundBlur.cs.md
 - [ ] EmptyGraphic.cs
 - [ ] CircleRawImage.cs
 - [ ] ScrollViewEventRaycast.cs
@@ -364,22 +321,9 @@
 #### Mono/Module/Const (其他常量)
 - [ ] GameSetting.cs
 
-#### Mono/Module/YooAssets (其他)
-- [ ] BuildInPackageConfig.cs
-- [ ] RemoteServices.cs
-- [ ] CDNConfig.cs
-- [ ] BundleDecryption.cs
-
-#### Mono/Helper (其他)
-- [ ] BridgeHelper.WebGL.cs
-- [ ] UnityLifeTimeHelper.cs
-- [ ] RangeHelper.cs
-- [ ] CDNConfigHelper.cs
-- [ ] SkipUnityLogo.cs
-
 #### Mono/其他
 - [ ] Define.cs
-- [ ] Init.cs
+- [x] Init.cs.md
 - [ ] SetUIData.cs
 - [ ] WebGLPlatform.cs
 
@@ -389,24 +333,25 @@
 
 ### 建议处理顺序
 
-1. **核心框架层** (优先完成)
-   - Mono/Core 对象系统（数据结构基础）
-   - Mono/Module/Timer 定时器系统
-   - Mono/Module/Log 日志系统
-   - Mono/Helper/SystemInfoHelper.cs
+1. **剩余核心框架** (优先完成)
+   - Mono/Module/I18N/I18NBridge.cs
+   - Mono/Module/Skybox/Skybox.cs
+   - Mono/Define.cs
+   - Mono/WebGLPlatform.cs
+   - Mono/SetUIData.cs
 
 2. **UI 辅助系统**
-   - ReferenceCollector.cs
-   - UI 输入绑定相关
+   - Mono/Module/UI 剩余文件 (BgAutoFit, CircleImage, EmptyGraphic 等)
+   - Mono/Module/UI/Input 输入绑定
 
 3. **配置系统**
-   - ConfigLoader.cs
-   - 配置基础类
+   - ConfigLoader.cs 及配置基础类
+   - AI 决策树配置
 
-4. **游戏系统**
-   - 实体系统
-   - AI 决策树
-   - 其他游戏逻辑
+4. **游戏 UI 系统**
+   - UILobby 大厅 UI
+   - UIAuction 拍卖 UI
+   - UIMiniGame 小游戏 UI
 
 ---
 
