@@ -3,11 +3,11 @@
 ## 文件基本信息
 
 | 属性 | 值 |
-|------|------|
+|------|-----|
 | **文件名** | Define.cs |
 | **路径** | Assets/Scripts/Mono/Define.cs |
-| **所属模块** | 框架层 → Mono |
-| **文件职责** | 定义全局常量、配置和平台宏，提供项目级别的统一配置入口 |
+| **所属模块** | Mono 层 → 核心常量定义 |
+| **文件职责** | 定义全局常量、配置开关、设计分辨率、网络状态等核心配置 |
 
 ---
 
@@ -17,45 +17,54 @@
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 静态类，存储项目全局常量、配置开关和平台相关定义 |
+| **职责** | 全局静态配置类，提供项目级别的常量定义和运行时配置 |
 | **泛型参数** | 无 |
-| **继承关系** | 无 |
+| **继承关系** | 无继承 |
 | **实现的接口** | 无 |
 
-**设计模式**: 常量模式 + 配置中心
+**设计模式**: 静态工具类
 
 ```csharp
-// 使用示例
-if (Define.Debug)
-{
-    Log.Debug("调试信息");
-}
-
-int configType = Define.ConfigType;  // 0=Json, 1=Bytes
+// 使用方式
+if (Define.Debug) { /* 调试模式逻辑 */ }
+float designWidth = Define.DesignScreenWidth;
 ```
 
 ---
 
-## 常量与字段详解
+## 字段与属性（按重要程度排序）
 
-### 加密与资源
-
-| 常量 | 类型 | 值 | 说明 |
-|------|------|-----|------|
-| `KEY` | `byte` | 64 | 加密密钥 |
-| `BuildOutputDir` | `string` | "./Temp/Bin/Debug" | 构建输出目录 |
-| `DefaultName` | `string` | "DefaultPackage" | 默认资源包名称 |
+| 名称 | 类型 | 访问级别 | 说明 |
+|------|------|----------|------|
+| `KEY` | `const byte` | `public` | 加密密钥常量，值为 64 |
+| `BuildOutputDir` | `const string` | `public` | 构建输出目录路径 `"./Temp/Bin/Debug"` |
+| `DefaultName` | `const string` | `public` | 默认资源包名称 `"DefaultPackage"` |
+| `IsSH` | `static bool` | `public` | 是否为 SH 版本标识 |
+| `HotfixLoadDir` | `const string` | `public` | 热更新代码加载目录 `"Code/Hotfix/"` |
+| `AOTLoadDir` | `const string` | `public` | AOT 代码加载目录（根据平台动态定义） |
+| `HotfixDir` | `const string` | `public` | 热更新资源完整路径 |
+| `AOTDir` | `const string` | `public` | AOT 资源完整路径 |
+| `Debug` | `static readonly bool` | `public` | 调试模式标志（编辑器下为 true，否则根据 isDebugBuild） |
+| `DesignScreenWidth` | `static readonly float` | `public` | 设计分辨率宽度（768 或 1366，根据屏幕方向） |
+| `DesignScreenHeight` | `static readonly float` | `public` | 设计分辨率高度（1366 或 768，根据屏幕方向） |
+| `LogLevel` | `static int` | `public` | 日志级别（调试模式为 1，否则为 5） |
+| `ForceUpdate` | `static bool` | `public` | 是否强制更新（受 FORCE_UPDATE 宏控制） |
+| `Networked` | `static bool` | `public` | 网络是否可达（编辑器下为 false，否则检查 internetReachability） |
+| `Process` | `static int` | `public` | 进程标识，默认为 1 |
+| `ConfigType` | `static int` | `public` | 配置类型：0=Json，1=Bytes |
+| `RenameList` | `static readonly string[]` | `public` | 重命名列表（如 iOS） |
+| `EnterWay` | `static int` | `public` | 进入方式：0=无，1=侧边栏，2=桌面 |
+| `FeedType` | `static int` | `public` | 用户类型：0=无，1=复访用户，2=获客用户 |
+| `MinRepeatedTimerInterval` | `const int` | `public` | 最小重复定时器间隔（毫秒） |
+| `UILayer` | `static readonly int` | `public` | UI 层掩码 |
+| `AllLayer` | `static readonly int` | `public` | 所有层掩码（UI、Default、Entity、Water、HitBox 等） |
 
 ---
 
-### 热更新路径
+## 平台相关常量
 
-| 常量 | 类型 | 说明 |
-|------|------|------|
-| `HotfixLoadDir` | `string` | "Code/Hotfix/" - 热更代码加载目录 |
-| `AOTLoadDir` | `string` | 平台相关的 AOT 代码目录 |
+### AOTLoadDir 平台定义
 
-**平台宏定义**:
 ```csharp
 #if UNITY_ANDROID
     public const string AOTLoadDir = "Code/AOTAndroid/";
@@ -68,20 +77,38 @@ int configType = Define.ConfigType;  // 0=Json, 1=Bytes
 #endif
 ```
 
+**说明**: 根据不同构建平台动态定义 AOT 代码目录，实现平台适配。
+
 ---
 
-### 资源包路径
+## 设计分辨率计算
+
+### 屏幕方向自适应
 
 ```csharp
-public const string HotfixDir = "Assets/AssetsPackage/" + HotfixLoadDir;
-public const string AOTDir = "Assets/AssetsPackage/" + AOTLoadDir;
+private const int dWidth = 768;
+private const int dHeight = 1366;
+
+public static readonly float DesignScreenWidth =
+    SystemInfoHelper.screenWidth > SystemInfoHelper.screenHeight 
+    ? Mathf.Max(dWidth, dHeight) 
+    : Mathf.Min(dWidth, dHeight);
+
+public static readonly float DesignScreenHeight =
+    SystemInfoHelper.screenWidth > SystemInfoHelper.screenHeight 
+    ? Mathf.Min(dWidth, dHeight) 
+    : Mathf.Max(dWidth, dHeight);
 ```
 
-**说明**: 完整的资源包路径（用于编辑器）
+**逻辑**:
+- 横屏时：宽度 = 1366，高度 = 768
+- 竖屏时：宽度 = 768，高度 = 1366
 
 ---
 
-### 调试模式
+## 调试与发布配置
+
+### Debug 标志
 
 ```csharp
 #if UNITY_EDITOR
@@ -91,59 +118,27 @@ public const string AOTDir = "Assets/AssetsPackage/" + AOTLoadDir;
 #endif
 ```
 
-**说明**: 
-- 编辑器模式：始终为 `true`
-- 构建模式：取决于是否为 Debug 构建
-
----
-
-### 设计分辨率
-
-```csharp
-private const int dWidth = 768;
-private const int dHeight = 1366;
-
-public static readonly float DesignScreenWidth = ...;
-public static readonly float DesignScreenHeight = ...;
-```
-
-**说明**: 根据屏幕方向动态计算设计分辨率
-
-**逻辑**:
-- 横屏：宽 = max(768, 1366), 高 = min(768, 1366)
-- 竖屏：宽 = min(768, 1366), 高 = max(768, 1366)
-
----
-
-### 日志级别
-
-```csharp
-public static int LogLevel = Debug ? 1 : 5;
-```
-
 **说明**:
-- Debug 模式：LogLevel = 1（显示所有日志）
-- Release 模式：LogLevel = 5（仅显示严重错误）
+- 编辑器模式下始终为 `true`
+- 真机模式下根据是否为 Debug Build 决定
 
----
-
-### 强更开关
+### ForceUpdate 强制更新
 
 ```csharp
 #if FORCE_UPDATE
-    public static bool ForceUpdate = true;   // 强更
+    public static bool ForceUpdate = true;  // 无网络或更新失败只能退出或重试
 #else
-    public static bool ForceUpdate = false;  // 非强更
+    public static bool ForceUpdate = false; // 无网络或更新失败可跳过或重试
 #endif
 ```
 
-**说明**:
-- `ForceUpdate = true`: 无网络或更新失败时只能退出或重试
-- `ForceUpdate = false`: 可以跳过更新
+**说明**: 通过编译宏控制默认更新策略。
 
 ---
 
-### 网络状态
+## 网络状态检测
+
+### Networked 属性
 
 ```csharp
 public static bool Networked =
@@ -155,156 +150,85 @@ public static bool Networked =
 ```
 
 **说明**:
-- 编辑器模式：始终为 `false`（模拟无网络）
-- 真机：根据实际网络可达性判断
-
----
-
-### 配置类型
-
-```csharp
-/// <summary>
-/// 0:Json 1:Bytes
-/// </summary>
-public static int ConfigType = 1;
-```
-
-**说明**:
-- `0`: 使用 JSON 格式配置（便于调试）
-- `1`: 使用二进制格式配置（发布版本）
-
----
-
-### 其他配置
-
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `RenameList` | `string[]` | 重命名列表（如 "iOS"） |
-| `EnterWay` | `int` | 进入方式（0 无/1 侧边栏/2 桌面） |
-| `FeedType` | `int` | Feed 类型（0 无/1 复访/2 获客） |
-| `MinRepeatedTimerInterval` | `int` | 最小重复定时器间隔（100ms） |
-
----
-
-### 图层掩码
-
-```csharp
-public static readonly int UILayer = LayerMask.GetMask("UI");
-public static readonly int AllLayer = LayerMask.GetMask("UI", "Default", "Entity", "Water", "HitBox", "HitScene", "Ignore Raycast", "TransparentFX");
-```
-
-**说明**:
-- `UILayer`: UI 图层掩码
-- `AllLayer`: 所有图层的掩码（用于射线检测等）
+- 编辑器下默认为 `false`（避免误判）
+- 真机下检查 `internetReachability` 判断网络可达性
 
 ---
 
 ## 使用示例
 
-### 示例 1: 调试日志
+### 示例 1: 检查调试模式
 
 ```csharp
 if (Define.Debug)
 {
-    Log.Debug("这是调试信息");
+    Log.Debug("调试模式日志");
+    LogLevel = 1; // 输出详细日志
 }
+```
 
-// 根据 LogLevel 过滤日志
-if (Define.LogLevel <= 3)
+### 示例 2: 获取设计分辨率
+
+```csharp
+float uiScaleFactor = Screen.width / Define.DesignScreenWidth;
+canvasScaler.referenceResolution = new Vector2(Define.DesignScreenWidth, Define.DesignScreenHeight);
+```
+
+### 示例 3: 检查网络状态
+
+```csharp
+if (Define.Networked)
 {
-    Log.Info("信息级别日志");
+    // 发起网络请求
+    await HttpManager.Instance.HttpGetResult<Data>(url);
 }
-```
-
-### 示例 2: 平台判断
-
-```csharp
-#if UNITY_ANDROID
-    // Android 特定逻辑
-#elif UNITY_IOS
-    // iOS 特定逻辑
-#endif
-
-// 或使用路径判断
-string aotPath = Define.AOTDir;
-```
-
-### 示例 3: 设计分辨率
-
-```csharp
-// UI 适配时使用
-float uiScale = Screen.width / Define.DesignScreenWidth;
-canvas.scaleFactor = uiScale;
-```
-
-### 示例 4: 网络检查
-
-```csharp
-if (!Define.Networked)
+else
 {
-    ShowNetworkError();
-    if (Define.ForceUpdate)
-    {
-        // 强更模式下只能重试或退出
-        ShowRetryOrExit();
-    }
-    else
-    {
-        // 非强更模式可以跳过
-        SkipUpdate();
-    }
+    // 显示离线提示
+    UIMsgBoxWin.Show("网络连接不可用");
 }
 ```
 
----
-
-## 设计要点
-
-### 为什么使用静态类？
-
-1. **全局访问**: 任何地方都可以直接使用 `Define.XXX`
-2. **性能**: 静态字段访问最快
-3. **集中管理**: 所有配置在一处，便于维护
-4. **类型安全**: 相比字符串常量更安全
-
-### 条件编译的意义
+### 示例 4: 使用层掩码
 
 ```csharp
-#if UNITY_EDITOR
-    // 编辑器专用代码
-#else
-    // 构建版本代码
-#endif
+// 只检测 UI 层射线
+if (Physics2D.OverlapPoint(point, Define.UILayer))
+{
+    // UI 交互逻辑
+}
+
+// 检测所有层
+if (Physics2D.OverlapPoint(point, Define.AllLayer))
+{
+    // 全层检测逻辑
+}
 ```
 
-**优势**:
-- 编辑器调试方便
-- 构建版本精简
-- 平台差异化处理
-
-### 配置开关的设计
+### 示例 5: 配置类型选择
 
 ```csharp
-#if FORCE_UPDATE
-    ForceUpdate = true;
-#else
-    ForceUpdate = false;
-#endif
+if (Define.ConfigType == 0)
+{
+    // 使用 Json 配置
+    ConfigLoader.LoadJson();
+}
+else
+{
+    // 使用 Bytes 配置（二进制）
+    ConfigLoader.LoadBytes();
+}
 ```
-
-**用途**:
-- 通过编译符号控制行为
-- 无需修改代码即可切换策略
-- 便于 CI/CD 自动化
 
 ---
 
 ## 相关文档
 
-- [SystemInfoHelper.cs.md](../Helper/SystemInfoHelper.cs.md) - 系统信息助手（用于屏幕尺寸）
-- [AssemblyManager.cs.md](./Assembly/AssemblyManager.cs.md) - 程序集管理器
-- [Unity LayerMask 文档](https://docs.unity3d.com/ScriptReference/LayerMask.html)
+- [SystemInfoHelper.cs.md](./Helper/SystemInfoHelper.cs.md) - 系统信息助手（用于屏幕尺寸获取）
+- [Log.cs.md](./Module/Log/Log.cs.md) - 日志系统（使用 LogLevel）
+- [HttpManager.cs.md](./Module/Http/HttpManager.cs.md) - HTTP 管理器（使用 Networked）
+- [PackageManager.cs.md](./Module/YooAssets/PackageManager.cs.md) - 资源包管理（使用 DefaultName）
 
 ---
 
-*文档生成时间：2026-02-28 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

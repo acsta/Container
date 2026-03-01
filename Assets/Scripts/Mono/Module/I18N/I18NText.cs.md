@@ -6,37 +6,44 @@
 |------|-----|
 | **文件名** | I18NText.cs |
 | **路径** | Assets/Scripts/Mono/Module/I18N/I18NText.cs |
-| **所属模块** | 框架层 → Mono/Module/I18N |
-| **命名空间** | `TaoTie` |
-| **文件职责** | 提供自动国际化文本组件，支持语言切换时自动更新 |
+| **所属模块** | Mono 层 → I18N 国际化 |
+| **文件职责** | Unity UI 组件，自动根据国际化键更新文本内容，支持语言切换自动刷新 |
 
 ---
 
-## 类说明
+## 类/结构体说明
 
 ### I18NText
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | MonoBehaviour 组件，自动从 I18NBridge 获取翻译文本并应用到 Text/TMP_Text 组件 |
-| **继承关系** | `MonoBehaviour` |
-| **依赖组件** | `Text` 或 `TMPro.TMP_Text` |
+| **职责** | 挂载到 GameObject 上，自动获取并显示多语言文本，监听语言切换事件自动更新 |
+| **泛型参数** | 无 |
+| **继承关系** | 继承自 `MonoBehaviour` |
+| **实现的接口** | 无 |
 
 **设计模式**: 观察者模式（监听语言切换事件）
 
+```csharp
+// 使用方式（Inspector 中设置 key）
+// 1. 在 GameObject 上添加 I18NText 组件
+// 2. 在 Inspector 中设置 Key 字段
+// 3. 运行时自动显示对应语言的文本
+```
+
 ---
 
-## 字段与属性
+## 字段与属性（按重要程度排序）
 
 | 名称 | 类型 | 访问级别 | 说明 |
 |------|------|----------|------|
-| `key` | `string` | `public` | 国际化文本的键（在翻译表中的标识） |
+| `key` | `string` | `public` | 国际化键（在 Inspector 中设置，如 "common.confirm"） |
 | `m_Text` | `Text` | `private` | Unity UI Text 组件引用 |
-| `m_MeshText` | `TMPro.TMP_Text` | `private` | TextMeshPro 文本组件引用 |
+| `m_MeshText` | `TMPro.TMP_Text` | `private` | TextMesh Pro 文本组件引用 |
 
 ---
 
-## 方法说明
+## Unity 生命周期方法
 
 ### Awake()
 
@@ -45,7 +52,15 @@
 void Awake()
 ```
 
-**职责**: 初始化，获取 Text/TMP_Text 组件引用
+**职责**: 初始化组件，获取文本组件引用
+
+**核心逻辑**:
+```
+1. 获取 GameObject 上的 Text 组件
+2. 获取 GameObject 上的 TMPro.TMP_Text 组件
+```
+
+**说明**: 支持 Unity UI Text 和 TextMesh Pro 两种文本组件。
 
 ---
 
@@ -53,16 +68,18 @@ void Awake()
 
 **签名**:
 ```csharp
-void OnEnable()
+private void OnEnable()
 ```
 
-**职责**: 启用时应用翻译并订阅语言切换事件
+**职责**: 组件启用时更新文本并订阅语言切换事件
 
 **核心逻辑**:
 ```
-1. 调用 OnSwitchLanguage() 应用当前语言翻译
-2. 订阅 I18NBridge.OnLanguageChangeEvt 事件
+1. 调用 OnSwitchLanguage() 立即更新一次文本
+2. 订阅 I18NBridge.Instance.OnLanguageChangeEvt 事件
 ```
+
+**调用者**: Unity 引擎（组件启用时自动调用）
 
 ---
 
@@ -70,15 +87,17 @@ void OnEnable()
 
 **签名**:
 ```csharp
-void OnDisable()
+private void OnDisable()
 ```
 
-**职责**: 禁用时取消订阅语言切换事件
+**职责**: 组件禁用时取消订阅语言切换事件
 
 **核心逻辑**:
 ```
-1. 取消订阅 I18NBridge.OnLanguageChangeEvt 事件
+1. 取消订阅 I18NBridge.Instance.OnLanguageChangeEvt 事件
 ```
+
+**说明**: 避免内存泄漏，确保事件正确清理。
 
 ---
 
@@ -86,136 +105,245 @@ void OnDisable()
 
 **签名**:
 ```csharp
-void OnSwitchLanguage()
+private void OnSwitchLanguage()
 ```
 
-**职责**: 应用当前语言的翻译
+**职责**: 根据 key 获取多语言文本并更新显示
 
 **核心逻辑**:
 ```
-1. 从 I18NBridge 获取翻译文本
-2. 应用到 Text 或 TMP_Text 组件
+1. 如果 m_Text 不为空：m_Text.text = I18NBridge.Instance.GetText(key)
+2. 如果 m_MeshText 不为空：m_MeshText.text = I18NBridge.Instance.GetText(key)
 ```
 
-**调用者**: OnEnable(), I18NBridge.OnLanguageChangeEvt 事件
+**调用者**: OnEnable(), I18NBridge.OnLanguageChangeEvt
 
 ---
 
-## 核心流程
+## 组件使用流程
 
-### 语言切换流程
+### Inspector 配置
+
+```
+GameObject: ConfirmButton
+├── RectTransform
+├── Image (Button 背景)
+├── Text (子对象)
+│   └── I18NText 组件
+│       └── Key: "common.confirm"
+```
+
+### 运行时行为
 
 ```mermaid
 sequenceDiagram
-    participant User as 用户
-    participant I18N as I18NBridge
-    participant I18NT as I18NText
-    participant Text as UI Text
+    participant Unity as Unity 引擎
+    participant IT as I18NText
+    participant IB as I18NBridge
+    participant Text as Text 组件
 
-    User->>I18N: 切换语言
-    I18N->>I18N: 更新当前语言
-    I18N->>I18N: 触发 OnLanguageChangeEvt
+    Unity->>IT: Awake()
+    IT->>IT: 获取 Text/TMP_Text 引用
     
-    loop 所有 I18NText 组件
-        I18N->>I18NT: OnSwitchLanguage()
-        I18NT->>I18N: GetText(key)
-        I18N-->>I18NT: 翻译文本
-        I18NT->>Text: text = 翻译文本
-    end
+    Unity->>IT: OnEnable()
+    IT->>IT: OnSwitchLanguage()
+    IT->>IB: GetText(key)
+    IB-->>IT: 返回翻译文本
+    IT->>Text: text = 翻译文本
+    IT->>IB: 订阅 OnLanguageChangeEvt
+    
+    Note over Unity,Text: 用户切换语言
+    
+    Unity->>IB: 触发 OnLanguageChangeEvt
+    IB->>IT: 调用事件回调
+    IT->>IT: OnSwitchLanguage()
+    IT->>IB: GetText(key)
+    IB-->>IT: 返回新语言文本
+    IT->>Text: text = 新文本
 ```
 
 ---
 
 ## 使用示例
 
-### 示例 1: Unity 编辑器配置
-
-1. 在 GameObject 上添加 `I18NText` 组件
-2. 添加 `Text` 或 `TextMeshProUGUI` 组件
-3. 在 Inspector 中设置 `key` 字段（如："menu.start"）
+### 示例 1: 基础使用（Unity UI Text）
 
 ```
-GameObject
-├─ I18NText (Component)
-│   └─ key: "menu.start"
-└─ Text (Component)
-    └─ text: "Start" (初始值)
+1. 在 Hierarchy 中创建 UI 文本对象
+2. 添加 Text 组件（或已有）
+3. 添加 I18NText 组件
+4. 在 Inspector 中设置 Key 字段
+
+Key: "ui.title.home"
 ```
 
-### 示例 2: 代码动态设置
+**效果**: 运行时自动显示对应语言的文本，切换语言时自动更新。
+
+### 示例 2: TextMesh Pro 支持
+
+```
+1. 创建 TextMeshPro - Text 对象
+2. 添加 I18NText 组件
+3. 设置 Key 字段
+
+Key: "common.confirm"
+```
+
+**说明**: I18NText 同时支持 Unity UI Text 和 TextMesh Pro TMP_Text。
+
+### 示例 3: 动态设置 Key
 
 ```csharp
-// 获取组件
-var i18nText = gameObject.GetComponent<I18NText>();
+// 在代码中动态设置 key
+I18NText i18nText = GetComponent<I18NText>();
+i18nText.key = "item.weapon.sword";
 
-// 设置翻译键
-i18nText.key = "settings.volume";
-
-// 手动刷新（可选）
-// 组件会在 OnEnable 时自动刷新
+// 立即刷新文本
+// 需要手动调用（因为 key 是 public 字段）
+// 可以通过反射或添加公共方法来刷新
 ```
 
-### 示例 3: 翻译表配置
+### 示例 4: 批量设置
 
 ```csharp
-// 在 I18NBridge 中配置翻译
-var translations = new Dictionary<string, Dictionary<string, string>>
+// 为所有 I18NText 组件设置 key
+I18NText[] allI18NTexts = FindObjectsOfType<I18NText>();
+
+Dictionary<string, string> keyMap = new Dictionary<string, string>
 {
-    ["zh-CN"] = new Dictionary<string, string>
-    {
-        ["menu.start"] = "开始游戏",
-        ["settings.volume"] = "音量"
-    },
-    ["en-US"] = new Dictionary<string, string>
-    {
-        ["menu.start"] = "Start Game",
-        ["settings.volume"] = "Volume"
-    }
+    { "ConfirmButton", "common.confirm" },
+    { "CancelButton", "common.cancel" },
+    { "TitleText", "ui.title.home" }
 };
 
-I18NBridge.Instance.LoadTranslations(translations);
+foreach (I18NText i18n in allI18NTexts)
+{
+    if (keyMap.TryGetValue(i18n.gameObject.name, out string key))
+    {
+        i18n.key = key;
+    }
+}
 ```
 
-### 示例 4: 切换语言
+---
+
+## 支持的语言切换
+
+### 切换流程
 
 ```csharp
-// 切换到英文
-I18NBridge.Instance.SetLanguage("en-US");
+// 1. 加载新的语言包
+await LoadLanguagePack(LanguageType.en_US);
 
-// 所有 I18NText 组件会自动更新文本
+// 2. 触发语言切换事件
+I18NBridge.Instance.OnLanguageChangeEvt?.Invoke();
+
+// 3. 所有 I18NText 组件自动更新文本
+// （通过事件回调 OnSwitchLanguage()）
+```
+
+### 内存管理
+
+```csharp
+// OnDisable 时正确取消订阅
+private void OnDisable()
+{
+    I18NBridge.Instance.OnLanguageChangeEvt -= OnSwitchLanguage;
+}
+```
+
+**说明**: 避免组件销毁后仍然接收事件导致内存泄漏或空引用异常。
+
+---
+
+## 扩展建议
+
+### 添加默认文本
+
+```csharp
+public class I18NText : MonoBehaviour
+{
+    public string key;
+    public string defaultText = ""; // 默认文本（找不到 key 时显示）
+    
+    private void OnSwitchLanguage()
+    {
+        string text = I18NBridge.Instance.GetText(key);
+        if (string.IsNullOrEmpty(text))
+        {
+            text = defaultText;
+        }
+        
+        if (m_Text != null) m_Text.text = text;
+        if (m_MeshText != null) m_MeshText.text = text;
+    }
+}
+```
+
+### 添加富文本支持
+
+```csharp
+public class I18NText : MonoBehaviour
+{
+    public string key;
+    public bool supportRichText = true;
+    
+    private void OnSwitchLanguage()
+    {
+        string text = I18NBridge.Instance.GetText(key);
+        
+        if (m_Text != null)
+        {
+            m_Text.supportRichText = supportRichText;
+            m_Text.text = text;
+        }
+        if (m_MeshText != null)
+        {
+            m_MeshText.text = text;
+        }
+    }
+}
 ```
 
 ---
 
-## 支持的语言
+## 常见问题
 
-通过 I18NBridge 配置，支持任意语言：
+### Q: 文本不更新？
 
-| 语言代码 | 语言 |
-|----------|------|
-| zh-CN | 简体中文 |
-| zh-TW | 繁体中文 |
-| en-US | 英语 |
-| ja-JP | 日语 |
-| ko-KR | 韩语 |
-| ... | 其他语言 |
+**检查项**:
+1. key 字段是否正确设置
+2. I18NBridge.Instance.GetValueByKey 是否已设置
+3. 语言包是否正确加载
+4. 组件是否已启用（OnEnable 被调用）
 
----
+### Q: 切换语言后部分文本未更新？
 
-## 注意事项
+**检查项**:
+1. 组件是否正确订阅事件（OnEnable 被调用）
+2. 是否有组件在 OnDisable 时未取消订阅
+3. I18NBridge.Instance.OnLanguageChangeEvt 是否正确触发
 
-| 问题 | 说明 | 解决方案 |
-|------|------|----------|
-| **组件未更新** | GameObject 未激活 | 确保 GameObject 激活以触发 OnEnable |
-| **文本为空** | 翻译键不存在 | 检查 key 是否正确，翻译表是否加载 |
-| **字体缺失** | 某些语言字符无法显示 | 使用支持多语言的字体（如 Noto Sans） |
+### Q: 支持动态文本吗？
+
+**方案**: I18NText 仅支持静态 key，动态文本需要在代码中处理：
+
+```csharp
+// 语言包： "ui.player.level": "等级：{0}"
+string levelText = string.Format(
+    I18NBridge.Instance.GetText("ui.player.level"),
+    player.Level
+);
+textComponent.text = levelText;
+```
 
 ---
 
 ## 相关文档
 
-- [I18NBridge.cs.md](./I18NBridge.cs.md) - 国际化桥接（翻译管理）
-- [TextMeshFontAssetManager.cs.md](./TextMeshFontAssetManager.cs.md) - 字体资产管理
+- [I18NBridge.cs.md](./I18NBridge.cs.md) - 国际化桥接（提供文本获取接口）
+- [TextMeshFontAssetManager.cs.md](./TextMeshFontAssetManager.cs.md) - TextMesh 字体资产管理
+- [UIManager.cs.md](../../Code/Module/UI/UIManager.cs.md) - UI 管理器
 
 ---
 

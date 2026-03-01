@@ -3,15 +3,15 @@
 ## 文件基本信息
 
 | 属性 | 值 |
-|------|------|
+|------|-----|
 | **文件名** | IStaticMethod.cs |
 | **路径** | Assets/Scripts/Mono/Module/CodeLoader/IStaticMethod.cs |
-| **所属模块** | 框架层 → Mono/Module/CodeLoader |
-| **文件职责** | 定义静态方法调用的接口，支持反射调用热更新代码 |
+| **所属模块** | Mono 层 → CodeLoader 代码加载 |
+| **文件职责** | 定义静态方法调用的接口，用于通过反射调用热更新程序集中的静态方法 |
 
 ---
 
-## 类/结构体说明
+## 接口说明
 
 ### IStaticAction
 
@@ -19,20 +19,17 @@
 |------|------|
 | **职责** | 无参数无返回值的静态方法接口 |
 | **泛型参数** | 无 |
-| **继承关系** | 无 |
-| **实现的接口** | 无 |
+| **继承关系** | 无继承 |
 
-**设计模式**: 命令模式
-
+**方法**:
 ```csharp
-// 接口定义
 public interface IStaticAction
 {
     public void Run();
 }
 ```
 
-**用途**: 调用热更新代码中的静态无参方法（如 Entry.Start）
+**用途**: 用于调用热更新程序集中的静态无参无返回值方法，如 `Entry.Start()`。
 
 ---
 
@@ -42,138 +39,86 @@ public interface IStaticAction
 |------|------|
 | **职责** | 无参数有返回值的静态方法接口 |
 | **泛型参数** | `T` - 返回值类型 |
-| **继承关系** | 无 |
-| **实现的接口** | 无 |
+| **继承关系** | 无继承 |
 
+**方法**:
 ```csharp
-// 接口定义
 public interface IStaticFunc<T>
 {
     public T Run();
 }
 ```
 
-**用途**: 调用热更新代码中的静态无参方法并获取返回值
+**用途**: 用于调用热更新程序集中的静态无参有返回值方法。
 
 ---
 
-## 接口方法说明
+## 设计目的
 
-### IStaticAction.Run
+### 解耦反射调用
 
-**签名**:
+通过接口抽象，将反射创建和调用分离：
+
 ```csharp
-public void Run()
+// 创建阶段（使用反射）
+IStaticAction start = new MonoStaticAction(assembly, "TaoTie.Entry", "Start");
+
+// 调用阶段（无需反射）
+start.Run();
 ```
 
-**职责**: 执行静态方法
-
-**调用者**: CodeLoader.Start()
-
-**用途**: 启动热更新代码入口
-
----
-
-### IStaticFunc<T>.Run
-
-**签名**:
-```csharp
-public T Run()
-```
-
-**职责**: 执行静态方法并返回结果
-
-**返回值**: `T` - 方法返回值
-
-**用途**: 调用热更新代码中的静态工厂方法、查询方法等
+**优势**:
+- 反射只在创建时发生一次
+- 后续调用直接使用委托，性能更高
+- 接口统一，便于扩展
 
 ---
 
 ## 使用示例
 
-### 示例 1: 调用 Entry.Start
+### 示例 1: 调用 Entry.Start()
 
 ```csharp
-// CodeLoader 中调用热更新入口
-IStaticAction start = new MonoStaticAction(assembly, "TaoTie.Entry", "Start");
-start.Run();
+// CodeLoader.Start() 中
+if (assembly != null)
+{
+    // 创建静态方法调用包装
+    IStaticAction start = new MonoStaticAction(
+        assembly,           // 程序集
+        "TaoTie.Entry",     // 类型全名
+        "Start"             // 方法名
+    );
+    
+    // 调用方法
+    start.Run();
+}
 ```
 
-### 示例 2: 调用静态工厂方法
+### 示例 2: 调用有返回值的静态方法
 
 ```csharp
-// 假设热更新代码中有：public static Player Create()
-IStaticFunc<Player> factory = new MonoStaticFunc<Player>(assembly, "TaoTie.Player", "Create");
-Player player = factory.Run();
+// 假设热更新程序集中有：
+// public static int GetVersion() { return 100; }
+
+IStaticFunc<int> getVersion = new MonoStaticFunc<int>(
+    assembly,
+    "TaoTie.VersionInfo",
+    "GetVersion"
+);
+
+int version = getVersion.Run();  // 返回 100
 ```
 
-### 示例 3: 调用静态查询方法
+### 示例 3: 扩展自定义接口
 
 ```csharp
-// 假设热更新代码中有：public static int GetVersion()
-IStaticFunc<int> getVersion = new MonoStaticFunc<int>(assembly, "TaoTie.Version", "GetVersion");
-int version = getVersion.Run();
-```
-
----
-
-## 设计要点
-
-### 为什么需要这些接口？
-
-**问题**: 热更新代码在运行时加载，无法在编译时确定类型，无法直接调用方法。
-
-**解决方案**:
-1. 定义统一接口（IStaticAction / IStaticFunc<T>）
-2. 通过反射创建实现类（MonoStaticAction / MonoStaticFunc<T>）
-3. 通过接口调用，解耦调用方和具体实现
-
-### 接口 vs 直接反射
-
-```csharp
-// ❌ 直接反射（每次调用都要查找）
-var method = assembly.GetType("TaoTie.Entry").GetMethod("Start");
-method.Invoke(null, null);
-
-// ✅ 使用接口（预先绑定，调用快速）
-IStaticAction start = new MonoStaticAction(assembly, "TaoTie.Entry", "Start");
-start.Run(); // 直接调用委托
-```
-
-**优势**:
-- 性能更好：反射只执行一次，后续直接调用委托
-- 类型安全：泛型接口确保返回值类型正确
-- 代码清晰：接口定义明确，易于理解
-
----
-
-## 扩展性
-
-### 添加带参数的接口
-
-```csharp
-// 带一个参数的接口
+// 定义带参数的接口
 public interface IStaticAction<T1>
 {
     public void Run(T1 arg1);
 }
 
-// 带两个参数的接口
-public interface IStaticAction<T1, T2>
-{
-    public void Run(T1 arg1, T2 arg2);
-}
-
-// 带参数和返回值的接口
-public interface IStaticFunc<T1, TResult>
-{
-    public TResult Run(T1 arg1);
-}
-```
-
-### 实现示例
-
-```csharp
+// 实现
 public class MonoStaticAction<T1> : IStaticAction<T1>
 {
     private Action<T1> method;
@@ -181,7 +126,11 @@ public class MonoStaticAction<T1> : IStaticAction<T1>
     public MonoStaticAction(Assembly assembly, string typeName, string methodName)
     {
         var methodInfo = assembly.GetType(typeName).GetMethod(methodName);
-        this.method = (Action<T1>)Delegate.CreateDelegate(typeof(Action<T1>), null, methodInfo);
+        this.method = (Action<T1>)Delegate.CreateDelegate(
+            typeof(Action<T1>), 
+            null, 
+            methodInfo
+        );
     }
     
     public void Run(T1 arg1)
@@ -189,16 +138,86 @@ public class MonoStaticAction<T1> : IStaticAction<T1>
         this.method(arg1);
     }
 }
+
+// 使用
+IStaticAction<string> log = new MonoStaticAction<string>(
+    assembly,
+    "TaoTie.Log",
+    "Info"
+);
+log.Run("Hello World");
 ```
+
+---
+
+## 与 MonoStaticMethod 的关系
+
+```mermaid
+classDiagram
+    class IStaticAction {
+        <<interface>>
+        +Run() void
+    }
+    
+    class IStaticFunc~T~ {
+        <<interface>>
+        +Run() T
+    }
+    
+    class MonoStaticAction {
+        -method: Action
+        +Run() void
+    }
+    
+    class MonoStaticFunc~T~ {
+        -method: Func~T~
+        +Run() T
+    }
+    
+    IStaticAction <|.. MonoStaticAction
+    IStaticFunc <|.. MonoStaticFunc
+```
+
+**说明**:
+- `IStaticAction` / `IStaticFunc<T>` 是接口定义
+- `MonoStaticAction` / `MonoStaticFunc<T>` 是具体实现
+- 通过反射创建实现类实例，后续调用无需反射
+
+---
+
+## 性能优势
+
+### 反射 vs 委托
+
+```csharp
+// 方式 1: 每次调用都反射（慢）
+void CallStart(Assembly assembly)
+{
+    for (int i = 0; i < 1000; i++)
+    {
+        var method = assembly.GetType("TaoTie.Entry").GetMethod("Start");
+        method.Invoke(null, null);  // 每次都反射
+    }
+}
+
+// 方式 2: 反射一次，委托调用多次（快）
+IStaticAction start = new MonoStaticAction(assembly, "TaoTie.Entry", "Start");
+for (int i = 0; i < 1000; i++)
+{
+    start.Run();  // 直接委托调用
+}
+```
+
+**性能差异**: 委托调用比反射调用快约 10-100 倍。
 
 ---
 
 ## 相关文档
 
-- [CodeLoader.cs.md](./CodeLoader.cs.md) - 代码加载器（使用这些接口）
-- [MonoStaticMethod.cs.md](./MonoStaticMethod.cs.md) - 接口实现类
+- [MonoStaticMethod.cs.md](./MonoStaticMethod.cs.md) - Mono 反射实现
+- [CodeLoader.cs.md](./CodeLoader.cs.md) - 代码加载器（使用 IStaticAction）
 - [AssemblyManager.cs.md](../Assembly/AssemblyManager.cs.md) - 程序集管理器
 
 ---
 
-*文档生成时间：2026-03-01 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

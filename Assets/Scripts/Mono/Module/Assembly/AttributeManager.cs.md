@@ -6,37 +6,45 @@
 |------|-----|
 | **文件名** | AttributeManager.cs |
 | **路径** | Assets/Scripts/Mono/Module/Assembly/AttributeManager.cs |
-| **所属模块** | 框架层 → Mono/Module/Assembly |
-| **命名空间** | `TaoTie` |
-| **文件职责** | 管理带有特定 Attribute 标记的类型，支持反射扫描和查询 |
+| **所属模块** | Mono 层 → Assembly 程序集管理 |
+| **文件职责** | 扫描并索引所有带有 BaseAttribute 标记的类型，提供按属性类型查询类型的功能 |
 
 ---
 
-## 类说明
+## 类/结构体说明
 
 ### AttributeManager
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 扫描所有程序集，收集带有 `BaseAttribute` 标记的类型，提供按 Attribute 类型查询的功能 |
-| **单例** | `static AttributeManager Instance` |
+| **职责** | 扫描程序集中所有带有 BaseAttribute 标记的类型，建立属性类型到目标类型的映射关系 |
+| **泛型参数** | 无 |
+| **继承关系** | 无继承 |
 | **实现的接口** | `IManager` |
 
-**设计模式**: 单例模式 + 注册表模式
+**设计模式**: 单例模式 + 管理器模式 + 反射扫描
+
+```csharp
+// 单例实现
+public static AttributeManager Instance { get; private set; }
+
+// 通过 ManagerProvider 注册
+ManagerProvider.RegisterManager<AttributeManager>();
+```
 
 ---
 
-## 字段与属性
+## 字段与属性（按重要程度排序）
 
 | 名称 | 类型 | 访问级别 | 说明 |
 |------|------|----------|------|
-| `Instance` | `AttributeManager` | `public static` | 全局单例 |
-| `types` | `UnOrderMultiMap<Type, Type>` | `private readonly` | Attribute 类型 → 被标记类型的映射 |
-| `Empty` | `List<Type>` | `private readonly` | 空列表缓存，避免 null 返回 |
+| `Instance` | `AttributeManager` | `public static` | 单例实例，全局访问点 |
+| `types` | `UnOrderMultiMap<Type, Type>` | `private readonly` | 属性类型到目标类型的多重映射 |
+| `Empty` | `List<Type>` | `private readonly` | 空列表（用于无匹配时返回，避免 null 检查） |
 
 ---
 
-## 方法说明
+## 方法说明（按重要程度排序）
 
 ### Init()
 
@@ -45,20 +53,24 @@
 public void Init()
 ```
 
-**职责**: 初始化属性管理器，扫描所有程序集
+**职责**: 初始化属性管理器，扫描所有程序集并建立属性 - 类型映射
 
 **核心逻辑**:
 ```
 1. 设置单例 Instance = this
 2. 清空 types 映射
-3. 从 AssemblyManager 获取所有类型
-4. 遍历所有类型：
-   - 跳过抽象类
-   - 获取类型上的所有 BaseAttribute 派生特性
-   - 将特性类型 → 被标记类型 加入映射
+3. 创建临时 HashSet temp（用于去重）
+4. 从 AssemblyManager 获取所有类型
+5. 遍历所有类型：
+   - 跳过抽象类型 type.IsAbstract
+   - 获取类型上所有 BaseAttribute 标记
+   - 对每个属性类型，将目标类型添加到 types 映射
+   - 使用 temp 避免同一属性类型重复添加
 ```
 
 **调用者**: ManagerProvider.RegisterManager<AttributeManager>()
+
+**依赖**: AssemblyManager.Instance.GetTypes()
 
 ---
 
@@ -69,13 +81,15 @@ public void Init()
 public void Destroy()
 ```
 
-**职责**: 销毁属性管理器
+**职责**: 销毁属性管理器，清理映射
 
 **核心逻辑**:
 ```
 1. 设置 Instance = null
 2. 清空 types 映射
 ```
+
+**调用者**: ManagerProvider.RemoveManager<AttributeManager>()
 
 ---
 
@@ -86,24 +100,29 @@ public void Destroy()
 public List<Type> GetTypes(Type systemAttributeType)
 ```
 
-**职责**: 获取带有指定 Attribute 标记的所有类型
+**职责**: 根据属性类型获取所有标记了该属性的类型列表
 
-**参数**: `systemAttributeType` - Attribute 类型
+**参数**:
+- `systemAttributeType`: 要查询的属性类型（如 ConfigAttribute）
 
-**返回值**: 类型列表，如果未找到返回空列表
+**返回值**: `List<Type>` - 所有标记了该属性的类型列表，无匹配时返回空列表
+
+**调用者**: 配置加载器、系统初始化代码
 
 **使用示例**:
 ```csharp
-// 获取所有带有 ConfigAttribute 标记的类型
-var configTypes = AttributeManager.Instance.GetTypes(typeof(ConfigAttribute));
-
-// 获取所有带有 TimerAttribute 标记的类型
-var timerTypes = AttributeManager.Instance.GetTypes(typeof(TimerAttribute));
+// 获取所有带有 ConfigAttribute 标记的配置类
+List<Type> configTypes = AttributeManager.Instance.GetTypes(typeof(ConfigAttribute));
+foreach (Type configType in configTypes)
+{
+    // 加载配置
+    LoadConfig(configType);
+}
 ```
 
 ---
 
-## 核心流程
+## 属性扫描流程
 
 ### 初始化扫描流程
 
@@ -111,125 +130,181 @@ var timerTypes = AttributeManager.Instance.GetTypes(typeof(TimerAttribute));
 sequenceDiagram
     participant AM as AttributeManager
     participant ASM as AssemblyManager
-    participant Type as 类型
-    participant Attr as Attribute
+    participant Types as 所有类型
+    participant Map types 映射
 
     AM->>ASM: GetTypes()
-    ASM-->>AM: 所有类型字典
+    ASM-->>AM: 返回所有类型字典
     
-    loop 遍历所有类型
-        AM->>Type: 检查是否抽象类
-        alt 非抽象类
-            AM->>Type: GetCustomAttributes(BaseAttribute)
-            loop 遍历特性
-                AM->>Attr: 获取特性类型
-                AM->>AM: types.Add(Attr 类型，Type)
+    loop 遍历每个类型
+        AM->>AM: 检查 type.IsAbstract
+        alt 是抽象类型
+            AM->>AM: 跳过
+        else 非抽象类型
+            AM->>AM: type.GetCustomAttributes(BaseAttribute)
+            loop 遍历每个属性
+                AM->>AM: 检查 temp 是否已包含
+                alt 未包含
+                    AM->>Map: types.Add(属性类型，目标类型)
+                    AM->>AM: temp.Add(属性类型)
+                end
             end
         end
     end
 ```
 
+### 查询流程
+
+```mermaid
+sequenceDiagram
+    participant Caller as 调用者
+    participant AM as AttributeManager
+    participant Map types 映射
+
+    Caller->>AM: GetTypes(ConfigAttribute)
+    AM->>Map: TryGetValue(ConfigAttribute)
+    alt 找到匹配
+        Map-->>AM: 返回类型列表
+        AM-->>Caller: 返回类型列表
+    else 无匹配
+        AM-->>Caller: 返回 Empty 空列表
+    end
+```
+
+---
+
+## 数据结构说明
+
+### types UnOrderMultiMap
+
+```csharp
+private readonly UnOrderMultiMap<Type, Type> types;
+```
+
+**结构**:
+```
+{
+    typeof(ConfigAttribute): [typeof(PlayerConfig), typeof(ItemConfig), ...],
+    typeof(SystemAttribute): [typeof(PlayerSystem), typeof(ItemSystem), ...],
+    typeof(ObjectAttribute): [typeof(Player), typeof(Item), ...],
+    ...
+}
+```
+
+**用途**: 支持一个属性类型对应多个目标类型，用于 ECS 架构中的系统注册、配置注册等场景。
+
+### Empty 空列表
+
+```csharp
+private readonly List<Type> Empty = new List<Type>();
+```
+
+**用途**: 避免返回 null，调用方无需进行 null 检查，直接遍历即可。
+
 ---
 
 ## 使用示例
 
-### 示例 1: 获取配置类型
+### 示例 1: 加载所有配置类
 
 ```csharp
-// 定义配置特性
-public class ConfigAttribute : BaseAttribute
-{
-}
+// 定义配置属性
+[AttributeUsage(AttributeTargets.Class)]
+public class ConfigAttribute : BaseAttribute { }
 
 // 标记配置类
 [Config]
-public class ItemConfig : IConfig
-{
-}
+public class PlayerConfig : AConfigCategory<PlayerConfig, Player> { }
 
 [Config]
-public class SkillConfig : IConfig
-{
-}
+public class ItemConfig : AConfigCategory<ItemConfig, Item> { }
 
-// 获取所有配置类型
-var configTypes = AttributeManager.Instance.GetTypes(typeof(ConfigAttribute));
-foreach (var type in configTypes)
+// 初始化时加载所有配置
+List<Type> configTypes = AttributeManager.Instance.GetTypes(typeof(ConfigAttribute));
+foreach (Type configType in configTypes)
 {
-    Log.Info($"配置类：{type.Name}");
-}
-```
-
-### 示例 2: 获取定时器类型
-
-```csharp
-// 定义定时器特性
-[AttributeUsage(AttributeTargets.Class)]
-public class TimerAttribute : BaseAttribute
-{
-    public int Type;
-}
-
-// 标记定时器类
-[Timer(Type = 1001)]
-public class MyTimer : ITimer
-{
-    public void Handle(object obj) { }
-}
-
-// 获取所有定时器类型
-var timerTypes = AttributeManager.Instance.GetTypes(typeof(TimerAttribute));
-foreach (var type in timerTypes)
-{
-    var attr = type.GetCustomAttribute<TimerAttribute>();
-    Log.Info($"定时器类型：{attr.Type} - {type.Name}");
+    // 通过反射创建配置实例并加载
+    object config = Activator.CreateInstance(configType);
+    LoadConfig(config);
 }
 ```
 
-### 示例 3: 实体组件注册
+### 示例 2: 注册所有系统类
 
 ```csharp
-// 定义组件特性
+// 定义系统属性
 [AttributeUsage(AttributeTargets.Class)]
-public class ComponentAttribute : BaseAttribute
+public class ObjectSystemAttribute : BaseAttribute { }
+
+// 标记系统类
+[ObjectSystem]
+public class PlayerSystem : ASystem<Player, PlayerComponent> { }
+
+[ObjectSystem]
+public class ItemSystem : ASystem<Item, ItemComponent> { }
+
+// 初始化时注册所有系统
+List<Type> systemTypes = AttributeManager.Instance.GetTypes(typeof(ObjectSystemAttribute));
+foreach (Type systemType in systemTypes)
 {
+    // 注册系统到系统管理器
+    SystemManager.Register(systemType);
 }
+```
 
-// 标记组件类
-[Component]
-public class MovementComponent : IComponent { }
+### 示例 3: 查找实体类型
 
-[Component]
-public class RenderComponent : IComponent { }
+```csharp
+// 定义实体属性
+[AttributeUsage(AttributeTargets.Class)]
+public class EntityAttribute : BaseAttribute { }
 
-// 获取所有组件类型并注册
-var componentTypes = AttributeManager.Instance.GetTypes(typeof(ComponentAttribute));
-foreach (var type in componentTypes)
+// 获取所有实体类型
+List<Type> entityTypes = AttributeManager.Instance.GetTypes(typeof(EntityAttribute));
+
+// 创建实体工厂映射
+foreach (Type entityType in entityTypes)
 {
-    var component = Activator.CreateInstance(type) as IComponent;
-    entityManager.RegisterComponent(component);
+    EntityFactory.Register(entityType);
 }
 ```
 
 ---
 
-## 应用场景
+## 与 AssemblyManager 的关系
 
-| 场景 | 说明 |
-|------|------|
-| **配置系统** | 扫描所有配置类，自动加载 |
-| **定时器系统** | 扫描所有定时器类，注册到 TimerManager |
-| **实体组件** | 扫描所有组件类，自动注册 |
-| **消息处理器** | 扫描所有消息处理类，注册到 Messager |
-| **AI 决策** | 扫描所有决策节点类，构建决策树 |
+```mermaid
+graph TD
+    subgraph AssemblyManager
+        AM[allTypes Dictionary]
+    end
+    
+    subgraph AttributeManager
+        AttrM[types UnOrderMultiMap]
+    end
+    
+    AM -->|GetTypes| AttrM
+    AttrM -->|扫描属性 | AM
+    
+    style AM fill:#e1f5ff
+    style AttrM fill:#fff4e1
+```
+
+**说明**:
+- AssemblyManager 负责加载程序集并索引所有类型
+- AttributeManager 依赖 AssemblyManager 获取所有类型
+- AttributeManager 扫描这些类型的属性标记并建立映射
+- 两者配合实现基于属性的类型发现和注册机制
 
 ---
 
 ## 相关文档
 
-- [AssemblyManager.cs.md](./AssemblyManager.cs.md) - 程序集管理器
-- [BaseAttribute.cs.md](./BaseAttribute.cs.md) - 基础特性类
-- [ManagerProvider.cs.md](../../Core/Manager/ManagerProvider.cs.md) - 管理器注册
+- [IManager.cs.md](../../Core/Manager/IManager.cs.md) - 管理器接口定义
+- [ManagerProvider.cs.md](../../Core/Manager/ManagerProvider.cs.md) - 管理器注册容器
+- [AssemblyManager.cs.md](./AssemblyManager.cs.md) - 程序集管理器（提供类型来源）
+- [BaseAttribute.cs.md](./BaseAttribute.cs.md) - 基础属性定义
+- [UnOrderMultiMap.cs.md](../../Core/Object/UnOrderMultiMap.cs.md) - 无序多重映射数据结构
 
 ---
 

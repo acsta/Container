@@ -3,11 +3,11 @@
 ## 文件基本信息
 
 | 属性 | 值 |
-|------|------|
+|------|-----|
 | **文件名** | CodeLoader.cs |
 | **路径** | Assets/Scripts/Mono/Module/CodeLoader/CodeLoader.cs |
-| **所属模块** | 框架层 → Mono/Module/CodeLoader |
-| **文件职责** | 热更新代码加载器，支持 AOT 元数据补充、多种代码加载模式 |
+| **所属模块** | Mono 层 → CodeLoader 代码加载 |
+| **文件职责** | 负责热更新代码的加载、AOT 元数据补充、程序集加载和热重载功能 |
 
 ---
 
@@ -17,369 +17,421 @@
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 负责热更新 DLL 的加载、AOT 元数据补充、程序集管理 |
+| **职责** | 管理热更新 DLL 的加载，支持多种代码模式（BuildIn/Wolong/LoadDll/LoadFromUrl），处理 AOT 泛型元数据补充 |
 | **泛型参数** | 无 |
-| **继承关系** | 无 |
+| **继承关系** | 无继承 |
 | **实现的接口** | 无 |
 
 **设计模式**: 单例模式 + 策略模式（多种加载模式）
 
 ```csharp
-// 获取实例
-var codeLoader = CodeLoader.Instance;
+// 单例实现
+public static CodeLoader Instance = new CodeLoader();
 
-// 设置加载模式
-codeLoader.CodeMode = CodeMode.LoadDll;
-
-// 启动加载
-await codeLoader.Start();
+// 使用方式
+await CodeLoader.Instance.Start();
 ```
 
 ---
 
-## 字段与属性
+## 字段与属性（按重要程度排序）
 
-### Instance
-
-| 属性 | 值 |
-|------|------|
-| **类型** | `CodeLoader` |
-| **访问级别** | `public static` |
-| **说明** | 单例实例，全局访问点 |
-
----
-
-### Update / LateUpdate / FixedUpdate
-
-| 属性 | 值 |
-|------|------|
-| **类型** | `Action` |
-| **访问级别** | `public` |
-| **说明** | 生命周期回调委托，由热更新代码设置 |
-
-**用途**: 热更新代码注册自己的 Update 循环
+| 名称 | 类型 | 访问级别 | 说明 |
+|------|------|----------|------|
+| `Instance` | `CodeLoader` | `public static` | 单例实例，全局访问点 |
+| `Update` | `Action` | `public` | Update 回调（热更新代码调用） |
+| `LateUpdate` | `Action` | `public` | LateUpdate 回调 |
+| `FixedUpdate` | `Action` | `public` | FixedUpdate 回调 |
+| `OnApplicationQuit` | `Action` | `public` | 应用退出回调 |
+| `OnApplicationFocus` | `Action<bool>` | `public` | 应用焦点变化回调 |
+| `loadAOT` | `bool` | `private` | AOT 元数据是否已加载 |
+| `assemblyVer` | `int` | `private` | 当前程序集版本号 |
+| `assembly` | `Assembly` | `private` | 加载的热更新程序集 |
+| `CodeMode` | `CodeMode` | `public` | 代码加载模式 |
+| `isReStart` | `bool` | `public` | 是否热重载标志 |
 
 ---
 
-### OnApplicationQuit / OnApplicationFocus
+## 代码加载模式
 
-| 属性 | 值 |
-|------|------|
-| **类型** | `Action` / `Action<bool>` |
-| **访问级别** | `public` |
-| **说明** | 应用生命周期事件回调 |
+### CodeMode 枚举
 
----
+```csharp
+public enum CodeMode
+{
+    BuildIn,        // 内置模式：使用打包时打入 AOT 的代码
+    Wolong,         // 卧龙模式：使用 HybridCLR 热更新
+    LoadDll,        // 加载 DLL 模式：从资源包加载热更新 DLL
+    LoadFromUrl     // 从 URL 加载：调试用，从 HTTP 加载 DLL
+}
+```
 
-### CodeMode
+### 模式选择逻辑
 
-| 属性 | 值 |
-|------|------|
-| **类型** | `CodeMode` |
-| **访问级别** | `public` |
-| **说明** | 代码加载模式（BuildIn/Wolong/LoadDll/LoadFromUrl） |
-
-**用途**: 决定使用哪种方式加载热更新代码
-
----
-
-### assembly
-
-| 属性 | 值 |
-|------|------|
-| **类型** | `Assembly` |
-| **访问级别** | `private` |
-| **说明** | 已加载的热更新程序集 |
+```csharp
+// 调试模式下可通过 PlayerPrefs 强制使用 LoadFromUrl
+if ((Define.Debug || Debug.isDebugBuild) && 
+    UnityEngine.PlayerPrefs.GetInt("DEBUG_LoadFromUrl", 0) == 1)
+{
+    CodeMode = CodeMode.LoadFromUrl;
+}
+```
 
 ---
 
-### AllAotDllList / SystemAotDllList / UserAotDllList
+## 方法说明（按重要程度排序）
 
-| 属性 | 值 |
-|------|------|
-| **类型** | `List<string>` / `string[]` |
-| **访问级别** | `public static` |
-| **说明** | AOT DLL 列表，用于元数据补充 |
-
-**系统 AOT DLL**:
-- `mscorlib.dll`
-- `System.dll`
-- `System.Core.dll`
-- `UnityEngine.CoreModule.dll`
-
-**用户 AOT DLL**:
-- `Unity.ThirdParty.dll`
-- `Unity.Mono.dll`
-
----
-
-## 方法说明
-
-### LoadMetadataForAOTAssembly
+### LoadMetadataForAOTAssembly()
 
 **签名**:
 ```csharp
 public async ETTask LoadMetadataForAOTAssembly(EPlayMode mode)
 ```
 
-**职责**: 为 AOT 程序集加载原始 metadata，使 AOT 泛型函数可以自动替换为解释模式执行
+**职责**: 为 AOT 程序集补充泛型元数据（HybridCLR 特性）
+
+**参数**:
+- `mode`: YooAsset 播放模式
 
 **核心逻辑**:
 ```
 1. 检查是否已加载（loadAOT 标志）
-2. 检查 CodeMode 是否支持（Wolong 或 LoadFromUrl）
-3. 遍历所有 AOT DLL 列表
-4. 加载 DLL 字节（编辑器模式从 AssetDatabase，其他模式从 YooAsset）
-5. 调用 RuntimeApi.LoadMetadataForAOTAssembly 补充元数据
+2. 检查代码模式（仅 Wolong 和 LoadFromUrl 需要）
+3. 遍历所有 AOT DLL 列表（System + User）
+4. 加载 DLL 字节码
+5. 调用 RuntimeApi.LoadMetadataForAOTAssembly()
 6. 设置 loadAOT = true
 ```
 
-**参数**:
-| 参数名 | 类型 | 说明 |
-|--------|------|------|
-| `mode` | `EPlayMode` | 游戏运行模式 |
+**AOT DLL 列表**:
+```csharp
+public static string[] SystemAotDllList =
+{
+    "mscorlib.dll",
+    "System.dll",
+    "System.Core.dll",
+    "UnityEngine.CoreModule.dll"
+};
 
-**调用者**: Start()
+public static string[] UserAotDllList =
+{
+    "Unity.ThirdParty.dll",
+    "Unity.Mono.dll"
+};
+```
 
-**用途**: HybridCLR 热更新必需步骤，补充 AOT 程序集的泛型元数据
+**说明**: HybridCLR 需要为 AOT 程序集补充元数据，以便热更新代码可以调用 AOT 程序集中的泛型方法。
 
 ---
 
-### Start
+### Start()
 
 **签名**:
 ```csharp
 public async ETTask Start()
 ```
 
-**职责**: 启动代码加载流程，根据 CodeMode 加载热更新 DLL
+**职责**: 启动代码加载流程，根据 CodeMode 加载对应的程序集
 
 **核心逻辑**:
 ```
-1. 检查调试模式（DEBUG_LoadFromUrl）
-2. 根据 CodeMode 选择加载策略：
-   - BuildIn: 从已加载的程序集中查找 Unity.Code
-   - Wolong/LoadDll: 从 YooAsset 加载 DLL 和 PDB
-   - LoadFromUrl: 从 HTTP URL 下载 DLL
-3. 加载 AOT 元数据
-4. 加载程序集（Assembly.Load）
-5. 注册到 AssemblyManager
-6. 调用 Entry.Start 启动热更新代码
+1. 检查调试模式，可能强制使用 LoadFromUrl
+2. 根据 CodeMode 分支处理：
+   
+   BuildIn 模式:
+   - 从 AppDomain.CurrentDomain.GetAssemblies() 查找 Unity.Code 程序集
+   - 直接使用该程序集
+   
+   Wolong/LoadDll 模式:
+   - 检查 DLL 版本是否变化
+   - 可能需要加载 AOT 元数据
+   - 从资源包加载 DLL 和 PDB
+   - Assembly.Load(assBytes, pdbBytes)
+   
+   LoadFromUrl 模式:
+   - 从调试 URL 下载 DLL
+   - 加载 AOT 元数据
+   - Assembly.Load(www.downloadHandler.data)
+   
+3. 如果 assembly 加载成功：
+   - 记录版本号
+   - 注册程序集到 AssemblyManager
+   - 调用 Entry.Start() 启动游戏
+4. 如果失败：记录错误日志
 ```
 
-**调用者**: Init.cs 或游戏入口
+**调用者**: 游戏启动流程
 
 ---
 
-### GetBytes
+### GetBytes()
 
 **签名**:
 ```csharp
 private async ETTask<(byte[], byte[])> GetBytes()
 ```
 
-**职责**: 从 YooAsset 或编辑器资源目录加载 DLL 和 PDB 字节
+**职责**: 从资源包获取热更新 DLL 和 PDB 字节码
 
-**返回值**: `(byte[] assBytes, byte[] pdbBytes)` - DLL 和 PDB 字节数组
+**返回值**: `(byte[] assBytes, byte[] pdbBytes)` - DLL 和 PDB 的字节数组
 
 **核心逻辑**:
 ```
-1. 获取当前包版本
-2. 非编辑器模式：从 YooAsset 加载 Code{version}.dll.bytes 和 .pdb.bytes
-3. 编辑器模式：从 AssetDatabase 加载
-4. 返回字节数组元组
+1. 获取当前资源包版本号
+2. 根据 PlayMode 分支：
+   
+   非编辑器模拟模式:
+   - 从 YooAsset 加载 Code{version}.dll.bytes
+   - 调试模式下同时加载 Code{version}.pdb.bytes
+   
+   编辑器模拟模式:
+   - 从 AssetDatabase 直接加载文件
+   
+3. 返回 (dllBytes, pdbBytes)
 ```
-
-**调用者**: Start()
 
 ---
 
-### ReStart
+### ReStart()
 
 **签名**:
 ```csharp
 public void ReStart()
 ```
 
-**职责**: 标记需要重启热更新代码
+**职责**: 标记需要热重载
 
 **核心逻辑**:
 ```
 1. 设置 isReStart = true
 ```
 
-**调用者**: 热更新触发逻辑
-
-**用途**: 代码热更新后，通知系统重新初始化
+**说明**: 外部调用此方法标记热重载请求，实际重载逻辑在外部流程中处理（移除旧程序集 → 重新加载新程序集 → 重新调用 Start()）。
 
 ---
 
-## 代码加载模式
+## 代码加载流程
+
+### BuildIn 模式流程
 
 ```mermaid
-graph TD
-    A[CodeLoader.Start] --> B{CodeMode?}
-    B -->|BuildIn| C[从已加载程序集查找]
-    B -->|Wolong| D[从 YooAsset 加载]
-    B -->|LoadDll| D
-    B -->|LoadFromUrl| E[从 HTTP URL 下载]
+sequenceDiagram
+    participant CL as CodeLoader
+    participant AD as AppDomain
+    participant AM as AssemblyManager
+    participant Entry as Entry
+
+    CL->>AD: GetAssemblies()
+    loop 遍历程序集
+        AD-->>CL: 返回程序集列表
+        CL->>CL: 查找 Unity.Code
+    end
     
-    C --> F[Assembly.Load]
-    D --> G[加载 AOT 元数据]
-    G --> F
-    E --> G
-    
-    F --> H[注册到 AssemblyManager]
-    H --> I[调用 Entry.Start]
+    alt 找到 AOT DLL
+        CL->>AM: AddAssembly(CurrentAssembly)
+        CL->>AM: AddHotfixAssembly(assembly)
+        CL->>Entry: Start()
+        Entry-->>CL: 游戏启动
+    else 未找到
+        CL->>CL: Log.Error
+    end
 ```
 
-### CodeMode 枚举说明
+### Wolong/LoadDll 模式流程
 
-| 模式 | 说明 | 使用场景 |
-|------|------|----------|
-| **BuildIn** | 使用内置 AOT 程序集 | 开发调试、无热更新需求 |
-| **Wolong** | 卧隆平台热更新模式 | 卧隆平台发布 |
-| **LoadDll** | 从 YooAsset 加载 DLL | 标准热更新流程 |
-| **LoadFromUrl** | 从 HTTP URL 下载 | 开发调试、灰度测试 |
+```mermaid
+sequenceDiagram
+    participant CL as CodeLoader
+    participant PM as PackageManager
+    participant YA as YooAsset
+    participant AM as AssemblyManager
+    participant Entry as Entry
+
+    CL->>PM: GetPackageMaxVersion()
+    PM-->>CL: 返回版本号
+    
+    alt 版本变化
+        CL->>CL: assembly = null
+    end
+    
+    alt assembly == null
+        CL->>CL: LoadMetadataForAOTAssembly()
+        CL->>PM: LoadAssetAsync(Code{version}.dll.bytes)
+        PM->>YA: 加载资源
+        YA-->>PM: 返回 TextAsset
+        PM-->>CL: 返回 dllBytes
+        
+        CL->>CL: Assembly.Load(assBytes, pdbBytes)
+        CL->>AM: AddAssembly(CurrentAssembly)
+        CL->>AM: AddHotfixAssembly(assembly)
+        CL->>Entry: Start()
+    end
+```
+
+### LoadFromUrl 模式流程
+
+```mermaid
+sequenceDiagram
+    participant CL as CodeLoader
+    participant HTTP as HTTP 服务器
+    participant AM as AssemblyManager
+    participant Entry as Entry
+
+    CL->>CL: 获取调试 URL
+    CL->>HTTP: UnityWebRequest.Get(url)
+    HTTP-->>CL: 返回 DLL 数据
+    
+    CL->>CL: LoadMetadataForAOTAssembly()
+    CL->>CL: Assembly.Load(www.downloadHandler.data)
+    CL->>AM: AddAssembly(CurrentAssembly)
+    CL->>AM: AddHotfixAssembly(assembly)
+    CL->>Entry: Start()
+```
+
+---
+
+## 热重载机制
+
+### 热重载流程
+
+```mermaid
+sequenceDiagram
+    participant Dev as 开发者
+    participant CL as CodeLoader
+    participant AM as AssemblyManager
+    participant Entry as Entry
+
+    Dev->>CL: 修改热更新代码
+    Dev->>CL: 编译生成新 DLL
+    
+    Dev->>CL: ReStart()
+    CL->>CL: isReStart = true
+    
+    Note over CL: 外部热重载流程
+    
+    CL->>AM: RemoveHotfixAssembly()
+    AM->>AM: 移除旧程序集及类型
+    
+    CL->>CL: GetBytes() (重新加载新 DLL)
+    CL->>CL: Assembly.Load(newBytes, newPdbBytes)
+    CL->>AM: AddHotfixAssembly(newAssembly)
+    CL->>Entry: Start()
+    
+    Entry->>Entry: 重新初始化游戏
+```
+
+### 编辑器热重载设置
+
+```csharp
+// 在 Unity 编辑器中启用热重载调试
+// 设置 PlayerPrefs
+PlayerPrefs.SetInt("DEBUG_LoadFromUrl", 1);
+PlayerPrefs.SetString("DEBUG_LoadFromUrlPath", "http://localhost:8080/cdn/");
+```
 
 ---
 
 ## 使用示例
 
-### 示例 1: 标准热更新启动
+### 示例 1: 标准启动流程
 
 ```csharp
-// 在 Init.cs 或游戏入口
-public async ETTask Start()
+// 游戏入口
+async ETTask StartGame()
 {
-    // 设置加载模式
-    CodeLoader.Instance.CodeMode = CodeMode.LoadDll;
+    // 初始化资源管理器
+    await PackageManager.Instance.Initialize();
     
     // 启动代码加载
     await CodeLoader.Instance.Start();
     
-    // 热更新代码已加载，Entry.Start 已调用
+    // CodeLoader 会调用 Entry.Start() 启动游戏
 }
 ```
 
-### 示例 2: 调试模式从 URL 加载
+### 示例 2: 使用 LoadFromUrl 调试
 
 ```csharp
-// 设置调试参数
-PlayerPrefs.SetInt("DEBUG_LoadFromUrl", 1);
-PlayerPrefs.SetString("DEBUG_LoadFromUrlPath", "http://127.0.0.1:8081/cdn/");
-
-// CodeLoader 会自动检测并使用 LoadFromUrl 模式
-await CodeLoader.Instance.Start();
-```
-
-### 示例 3: 卧隆平台热更新
-
-```csharp
-// 设置卧隆模式
-CodeLoader.Instance.CodeMode = CodeMode.Wolong;
-
-// 启动（会自动加载 AOT 元数据）
-await CodeLoader.Instance.Start();
-```
-
-### 示例 4: 热更新代码重启
-
-```csharp
-// 下载新代码后
-if (newVersion > currentVersion)
+// 编辑器下设置调试参数
+#if UNITY_EDITOR
+[MenuItem("Tools/Set LoadFromUrl")]
+static void SetLoadFromUrl()
 {
-    // 标记重启
-    CodeLoader.Instance.ReStart();
-    
-    // 在 Update 中检测 isReStart 并重新加载
+    UnityEngine.PlayerPrefs.SetInt("DEBUG_LoadFromUrl", 1);
+    UnityEngine.PlayerPrefs.SetString("DEBUG_LoadFromUrlPath", 
+        "http://127.0.0.1:8081/cdn/");
+    UnityEngine.PlayerPrefs.Save();
+    Log.Info("已设置 LoadFromUrl 模式");
+}
+
+[MenuItem("Tools/Clear LoadFromUrl")]
+static void ClearLoadFromUrl()
+{
+    UnityEngine.PlayerPrefs.SetInt("DEBUG_LoadFromUrl", 0);
+    UnityEngine.PlayerPrefs.Save();
+    Log.Info("已清除 LoadFromUrl 设置");
+}
+#endif
+```
+
+### 示例 3: 监听生命周期回调
+
+```csharp
+// 在热更新代码中注册生命周期回调
+void RegisterCallbacks()
+{
+    CodeLoader.Instance.Update += OnUpdate;
+    CodeLoader.Instance.LateUpdate += OnLateUpdate;
+    CodeLoader.Instance.FixedUpdate += OnFixedUpdate;
+    CodeLoader.Instance.OnApplicationQuit += OnQuit;
+    CodeLoader.Instance.OnApplicationFocus += OnFocus;
+}
+
+void OnUpdate()
+{
+    // 每帧更新逻辑
+}
+
+void OnQuit()
+{
+    // 保存数据等清理工作
 }
 ```
 
 ---
 
-## AOT 元数据补充流程
+## AOT 泛型支持
 
-```mermaid
-sequenceDiagram
-    participant CL as CodeLoader
-    participant YA as YooAsset
-    participant HC as HybridCLR
-    participant AM as AssemblyManager
-    
-    Note over CL: Start() 调用
-    CL->>CL: 检查 CodeMode
-    CL->>CL: LoadMetadataForAOTAssembly()
-    
-    loop 遍历 AOT DLL 列表
-        CL->>YA: 加载 {dll}.bytes
-        YA-->>CL: 返回字节数组
-        CL->>HC: RuntimeApi.LoadMetadataForAOTAssembly()
-        Note over HC: 补充泛型元数据
-    end
-    
-    CL->>CL: 加载热更新 DLL
-    CL->>AM: AddHotfixAssembly()
-    CL->>CL: 调用 Entry.Start()
-```
+### 为什么需要 LoadMetadataForAOTAssembly
 
----
+**问题**: 在 IL2CPP 构建中，AOT 程序集的泛型方法只有被 AOT 代码使用时才会生成原生实现。热更新代码（热更 DLL）中使用 AOT 泛型方法会导致运行时错误。
 
-## 设计要点
+**解决方案**: HybridCLR 提供 `LoadMetadataForAOTAssembly` 方法，为 AOT 程序集补充完整的泛型元数据。当热更新代码调用 AOT 泛型方法时，如果原生实现不存在，HybridCLR 会自动使用解释模式执行。
 
-### 为什么需要 AOT 元数据补充？
-
-**问题**: HybridCLR 热更新中，AOT 程序集（如 mscorlib）的泛型函数如果没有 native 实现，会导致运行时错误。
-
-**解决方案**:
+**示例**:
 ```csharp
-var err = RuntimeApi.LoadMetadataForAOTAssembly(dllBytes, HomologousImageMode.SuperSet);
-```
-
-**作用**: 
-- 为 AOT 程序集补充完整的 metadata
-- 泛型函数缺失 native 实现时，自动使用解释模式执行
-- 确保热更新代码可以正常使用所有泛型
-
-### 为什么支持多种加载模式？
-
-**BuildIn**: 
-- 开发调试快速启动
-- 无需热更新的场景
-
-**Wolong/LoadDll**: 
-- 生产环境标准流程
-- 从 YooAsset 资源管理系统加载
-
-**LoadFromUrl**:
-- 开发调试（本地服务器）
-- 灰度测试（特定用户群）
-- 紧急热修复
-
-### 版本管理
-
-```csharp
-int version = PackageManager.Instance.Config.GetPackageMaxVersion(Define.DefaultName);
-if (this.assemblyVer != version) // DLL 版本不同
+// AOT 程序集中的泛型方法
+public class AOTClass
 {
-    assembly = null; // 强制重新加载
+    public static void GenericMethod<T>() { }
 }
-```
 
-**用途**: 
-- 检测资源版本变化
-- 版本不同时重新加载 DLL
-- 避免缓存旧代码
+// 热更新代码调用
+// 如果没有补充元数据，会报错
+// 调用 LoadMetadataForAOTAssembly 后可以正常执行
+AOTClass.GenericMethod<HotfixType>();
+```
 
 ---
 
 ## 相关文档
 
-- [IStaticMethod.cs.md](./IStaticMethod.cs.md) - 静态方法接口定义
-- [MonoStaticMethod.cs.md](./MonoStaticMethod.cs.md) - 反射静态方法实现
 - [AssemblyManager.cs.md](../Assembly/AssemblyManager.cs.md) - 程序集管理器
+- [IStaticMethod.cs.md](./IStaticMethod.cs.md) - 静态方法接口
+- [MonoStaticMethod.cs.md](./MonoStaticMethod.cs.md) - Mono 反射实现
 - [PackageManager.cs.md](../YooAssets/PackageManager.cs.md) - 资源包管理器
+- [Define.cs.md](../../Define.cs.md) - 全局配置（AOTLoadDir 等）
 
 ---
 
-*文档生成时间：2026-03-01 | OpenClaw AI 助手*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*
