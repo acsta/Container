@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 02:15  
+> **更新时间**: 2026-03-02 02:45  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 207 |
-| 覆盖率 | ~32.0% |
+| 已创建 .md 文档 | 217 |
+| 覆盖率 | ~33.6% |
 
 ---
 
@@ -171,25 +171,22 @@
 - [x] LruCache.cs.md
 
 #### Mono/Core/Object (待处理)
-- [ ] Object/UnOrderDoubleKeyMap.cs
-- [ ] Object/DictionaryComponent.cs
-- [ ] Object/UnOrderMultiMap.cs
-- [ ] Object/UnOrderDoubleKeyMapSet.cs
+- [ ] (全部完成 100%)
 
-#### Mono/Module/Assembly (程序集管理)
-- [ ] AttributeManager.cs
-- [ ] BaseAttribute.cs
-- [ ] AssemblyManager.cs
+#### Mono/Module/Assembly (程序集管理) (100%)
+- [x] AttributeManager.cs.md - 属性管理器
+- [x] BaseAttribute.cs.md - 基础特性类
+- [x] AssemblyManager.cs.md - 程序集管理器
 
 #### Mono/Module/Log (日志系统)
 - (已完成)
 
-#### Mono/Module/Http (HTTP 请求)
-- [ ] AcceptAllCertificate.cs
-- [ ] HttpManager.cs
+#### Mono/Module/Http (HTTP 请求) (100%)
+- [x] AcceptAllCertificate.cs.md - SSL 证书处理器
+- [x] HttpManager.cs.md - HTTP 请求管理器
 
-#### Mono/Module/I18N (国际化)
-- [ ] I18NText.cs
+#### Mono/Module/I18N (国际化) (部分完成)
+- [x] I18NText.cs.md - 国际化文本组件
 - [ ] I18NBridge.cs
 - [x] TextMeshFontAssetManager.cs.md - 文本网格字体资产管理
 
