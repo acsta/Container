@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 01:45  
+> **更新时间**: 2026-03-02 02:15  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 197 |
-| 覆盖率 | ~30.5% |
+| 已创建 .md 文档 | 207 |
+| 覆盖率 | ~32.0% |
 
 ---
 
@@ -21,6 +21,18 @@
 - [x] ObjectPool.cs - 对象池核心
 - [x] ManagerProvider.cs - 管理器注册与调度中心
 - [x] IManager.cs - 管理器接口定义
+
+### Core/Object 数据结构组件 (100%)
+- [x] HashSetComponent.cs.md - HashSet 对象池组件
+- [x] MultiMapSet.cs.md - 有序多重映射（HashSet 去重）
+- [x] IdGenerater.cs.md - 全局唯一 ID 生成器
+- [x] ListComponent.cs.md - List 对象池组件
+- [x] DynDictionary.cs.md - 动态字典（支持继承和变更通知）
+- [x] UnOrderMultiMapSet.cs.md - 无序多重映射（HashSet 去重）
+- [x] BigNumber.cs.md - 任意精度大数运算
+- [x] LinkedListComponent.cs.md - LinkedList 对象池组件
+- [x] MultiMap.cs.md - 有序多重映射（List 允许重复）
+- [x] LruCache.cs.md - LRU 缓存（线程安全）
 
 ### Timer 定时器模块 (100%)
 - [x] TimerManager.cs - 定时器管理系统
@@ -146,17 +158,19 @@
 
 ### 🔴 高优先级 - 核心框架
 
-#### Mono/Core (对象系统)
-- [ ] Object/HashSetComponent.cs
-- [ ] Object/MultiMapSet.cs
-- [ ] Object/IdGenerater.cs
-- [ ] Object/ListComponent.cs
-- [ ] Object/DynDictionary.cs
-- [ ] Object/UnOrderMultiMapSet.cs
-- [ ] Object/BigNumber.cs
-- [ ] Object/LinkedListComponent.cs
-- [ ] Object/MultiMap.cs
-- [ ] Object/LruCache.cs
+#### Mono/Core/Object (数据结构组件) (100%)
+- [x] HashSetComponent.cs.md
+- [x] MultiMapSet.cs.md
+- [x] IdGenerater.cs.md
+- [x] ListComponent.cs.md
+- [x] DynDictionary.cs.md
+- [x] UnOrderMultiMapSet.cs.md
+- [x] BigNumber.cs.md
+- [x] LinkedListComponent.cs.md
+- [x] MultiMap.cs.md
+- [x] LruCache.cs.md
+
+#### Mono/Core/Object (待处理)
 - [ ] Object/UnOrderDoubleKeyMap.cs
 - [ ] Object/DictionaryComponent.cs
 - [ ] Object/UnOrderMultiMap.cs
