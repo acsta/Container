@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 03:30  
+> **更新时间**: 2026-03-02 04:00  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 231 |
-| 覆盖率 | ~35.8% |
+| 已创建 .md 文档 | 237 |
+| 覆盖率 | ~36.7% |
 
 ---
 
@@ -127,6 +127,17 @@
 - [x] MapScene.cs.md - 地图场景基类
 - [x] CreateScene.cs.md - 角色创建场景
 - [x] GuideScene.cs.md - 引导场景
+
+### Code/Game/UI/UILoading (加载 UI) (100%)
+- [x] UILoadingView.cs.md - 加载界面基类
+- [x] UILoadingView2.cs.md - 加载界面版本 2（渐变遮罩）
+- [x] UIEnterView.cs.md - 入场动画视图
+- [x] UIBlendView.cs.md - 转场淡入淡出视图
+- [x] UINetView.cs.md - 网络状态视图
+
+### Code/Game/UI/UIGuidance (引导 UI) (100%)
+- [x] UIGuidanceView.cs.md - 引导视图（助手/对话/手势）
+- [x] UIFirstGuidanceView.cs.md - 首次引导视图
 
 ### Mono/Module/UI/Input (100%)
 - [x] InputAxisBind.cs.md - 虚拟摇杆轴绑定
