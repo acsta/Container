@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 02:45  
+> **更新时间**: 2026-03-02 03:30  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 217 |
-| 覆盖率 | ~33.6% |
+| 已创建 .md 文档 | 231 |
+| 覆盖率 | ~35.8% |
 
 ---
 
@@ -104,6 +104,29 @@
 - [x] HitBoxComponent.cs.md - HitBox 标记组件
 - [x] HitInfo.cs.md - 击中信息结构
 - [x] HitBoxType.cs.md - HitBox 类型枚举
+
+### Code/Game/Entity (实体系统) (100%)
+- [x] Entity.cs.md - 实体基类
+- [x] SceneEntity.cs.md - 场景实体基类
+- [x] Unit.cs.md - 场景单位基类
+- [x] Character.cs.md - 角色基类
+- [x] Player.cs.md - 玩家实体
+- [x] NPC.cs.md - NPC 实体
+- [x] Bidder.cs.md - 竞拍者实体
+- [x] Animal.cs.md - 动物实体
+- [x] Host.cs.md - 主机实体
+- [x] Box.cs.md - 宝盒实体
+- [x] IEntity.cs.md - 实体接口定义
+
+### Code/Game/Scene (场景系统) (100%)
+- [x] SceneManager.cs.md - 场景管理器
+- [x] IScene.cs.md - 场景接口
+- [x] LoadingScene.cs.md - 加载场景
+- [x] SceneManagerProvider.cs.md - 场景管理器提供者
+- [x] HomeScene.cs.md - 家园场景
+- [x] MapScene.cs.md - 地图场景基类
+- [x] CreateScene.cs.md - 角色创建场景
+- [x] GuideScene.cs.md - 引导场景
 
 ### Mono/Module/UI/Input (100%)
 - [x] InputAxisBind.cs.md - 虚拟摇杆轴绑定
