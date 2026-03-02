@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 22:15  
+> **更新时间**: 2026-03-03 05:05  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,36 +10,44 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | 646 |
-| 已创建 .md 文档 | 402 |
-| 覆盖率 | 62.2% |
+| 已创建 .md 文档 | 423 |
+| 覆盖率 | 65.5% |
 
 **注**: 
 - ThirdParty 目录 (125 个文件) 为第三方库，**不生成文档**
 - Generate 目录 (71 个文件) 为自动生成代码，**不生成文档**
-- Editor 目录 (79 个文件) 为编辑器工具，**低优先级** (20/79 = 25.3%)
+- Editor 目录 (79 个文件) 为编辑器工具，**低优先级** (41/79 = 51.9%)
 - **Runtime 运行时代码 (369 个文件): 100% 完成** ✅
 
 ---
 
 ## 📝 本次提交
 
-**批次**: BuildEditor 构建编辑器工具 + Editor 资产管理配置与资源分析工具
-**提交信息**: docs: 完成第 1 批 6 个文档 (BuildEditor 目录)
+**批次**: AI 编辑器 + YooAssets 编辑器工具
+**提交信息**: docs: 完成第 3 批 11 个文档 (AIEditor + YooAssets)
 
-### 本批次文件 (BuildEditor)
+### 本批次文件 (AIEditor)
 
-1. FilterCodeAssemblies.cs.md - 构建时程序集过滤器
-2. WebGLPlatformEditor.cs.md - WebGL 多平台适配工具
-3. BuildHelper.cs.md - 游戏打包核心辅助工具
-4. BuildEditor.cs.md - Unity Editor 打包工具 UI
-5. BuildAssemblyEditor.cs.md - 程序集构建工具
-6. BuildSettings.cs.md - 打包配置 ScriptableObject
+1. AIRootNode.cs.md - AI 决策树根节点
+2. AIGraph.cs.md - AI 决策树图数据
+3. AIGraphWindow.cs.md - AI 编辑器窗口
+4. AIActionNode.cs.md - AI 动作节点
+5. AIConditionNode.cs.md - AI 条件节点
+6. AICompareNode.cs.md - AI 比较节点
+
+### 本批次文件 (YooAssets)
+
+1. BundleEncryption.cs.md - 资源包加密服务
+2. AddressRuleExtends.cs.md - 地址规则扩展
+3. DefaultActiveRule.cs.md - AOT 分组激活规则
+4. PackRuleExtends.cs.md - 打包规则扩展
+5. FilterRuleExtends.cs.md - 过滤规则扩展
 
 ### 累计进度
 
 - **Runtime 代码**: 369/369 = 100% ✅
-- **Editor 工具**: 26/79 = 32.9% 🟡
-- **总体覆盖率**: 402/646 = 62.2%
+- **Editor 工具**: 41/79 = 51.9% 🟡
+- **总体覆盖率**: 423/646 = 65.5%
 
 ### 验证结果
 
@@ -61,14 +69,16 @@
 
 ### 剩余工作 (低优先级)
 
-**Editor 编辑器工具**: 26/79 = 32.9% 完成
-- 剩余 53 个 Editor 工具文件为可选文档化
+**Editor 编辑器工具**: 38/79 = 48.1% 完成
+- 剩余 38 个 Editor 工具文件为可选文档化
 - 已完成：
   - Atlas 目录 (6 个): AtlasHelper, AssetImportMgr, PngOptimizerCL, ReplaceImage, CheckEmptyImage, CheckUnuseImage
   - AssetsManager 目录 (7 个): EnableGPUInstance, ReplaceShader, DeleteInvalidComponent, AssetsManagerWindow, RemoveFace, MeshManager, Config (3 个)
   - Resource 目录 (5 个): ResourceCheckTool, Finddependent, FindReferences, PrefabProcessEditor, ProcessHelper, SceneProcessEditor
   - UGUIFont 目录 (2 个): FontSubsetEditor, 等
   - **BuildEditor 目录 (6 个)**: FilterCodeAssemblies, WebGLPlatformEditor, BuildHelper, BuildEditor, BuildAssemblyEditor, BuildSettings ✅
+  - **DesignEditor/AIEditor 目录 (6 个)**: AIRootNode, AIGraph, AIGraphWindow, AIActionNode, AIConditionNode, AICompareNode ✅
+  - **YooAssets 目录 (5 个)**: BundleEncryption, AddressRuleExtends, DefaultActiveRule, PackRuleExtends, FilterRuleExtends ✅
   - 其他 Editor 工具：AltasEditor, Readme, BashUtil, 等
 
 ---
@@ -456,4 +466,4 @@ Editor 目录为 Unity 编辑器扩展工具，共 79 个文件，已文档化 1
 
 ---
 
-*最后更新：2026-03-02 16:55*
+*最后更新：2026-03-03 05:05*
