@@ -1,190 +1,367 @@
-# ReplaceImage.cs 文档
+# ReplaceImage.cs 注解文档
 
-> **文件路径**: `Assets/Scripts/Editor/ArtEditor/Atlas/ReplaceImage.cs`  
-> **命名空间**: `TaoTie`  
-> **文档生成时间**: 2026-03-02  
-> **文件类型**: Unity 编辑器窗口
-
----
-
-## 📋 文件信息表
+## 文件基本信息
 
 | 属性 | 值 |
+|------|-----|
+| **文件名** | ReplaceImage.cs |
+| **路径** | Assets/Scripts/Editor/ArtEditor/Atlas/ReplaceImage.cs |
+| **所属模块** | Editor → ArtEditor/Atlas |
+| **文件职责** | Prefab 图片批量搜索与替换工具 |
+
+---
+
+## 类说明
+
+### ReplaceImage
+
+| 属性 | 说明 |
 |------|------|
-| **类名** | `ReplaceImage` |
-| **基类** | `EditorWindow` |
-| **所在程序集** | Editor |
-| **依赖命名空间** | `UnityEditor`, `UnityEngine`, `System.IO`, `UnityEngine.UI` |
-| **功能分类** | Sprite 批量替换工具 |
+| **职责** | Unity Editor 窗口工具，用于在 Prefab 中批量搜索和替换 Sprite 图片 |
+| **类型** | `EditorWindow` |
+| **命名空间** | `TaoTie` |
+
+**继承关系**:
+```
+EditorWindow → ScriptableObject → Object
+```
+
+**设计模式**: 工具窗口模式
 
 ---
 
-## 🎯 类说明
+## 字段说明
 
-**核心职责**: 提供 Unity 编辑器中批量搜索和替换 Sprite 的可视化工具窗口。
-
-**解决的核心问题**: 
-- 在大量预制体中查找使用特定 Sprite 的位置
-- 批量替换预制体中的 Sprite 引用
-- 记录替换历史和问题预制体
-
-**如果没有这个模块**: 需要手动打开每个预制体查找和替换 Sprite，效率极低。
-
----
-
-## 📦 字段与属性
-
-| 字段名 | 类型 | 说明 |
-|--------|------|------|
-| `a` | `Sprite` | 要搜索的源 Sprite |
-| `b` | `Sprite` | 用于替换的目标 Sprite |
-| `isDone` | `bool` | 搜索/替换是否完成 |
-| `curOpenPrefab` | `GameObject` | 当前打开的预制体 |
-| `curOpenPrefabKey` | `string` | 当前预制体的路径键 |
-| `curSelectTextKey` | `string` | 当前选中的文本键 |
-| `scrollPosition` | `Vector2` | 滚动视图位置 |
-| `record` | `Dictionary<string, List<string>>` | 记录每个预制体中找到的 Sprite 路径 |
-| `problems` | `Dictionary<string, List<string>>` | 记录无法判断的预制体 |
-| `res` | `List<string>` | 搜索结果列表 |
+| 名称 | 类型 | 访问级别 | 说明 |
+|------|------|----------|------|
+| `a` | `Sprite` | `private` | 要搜索的源图片 |
+| `b` | `Sprite` | `private` | 要替换的目标图片 |
+| `isDone` | `bool` | `private` | 操作是否完成标志 |
+| `curOpenPrefab` | `GameObject` | `private` | 当前打开的 Prefab 对象 |
+| `curOpenPrefabKey` | `string` | `private` | 当前打开 Prefab 的路径 |
+| `curSelectTextKey` | `string` | `private` | 当前选中的组件路径 |
+| `scrollPosition` | `Vector2` | `private` | 滚动视图位置 |
+| `record` | `Dictionary<string, List<string>>` | `private` | 记录匹配结果 (Prefab 路径 → 组件路径列表) |
+| `problems` | `Dictionary<string, List<string>>` | `private` | 记录无法处理的问题 (如 Filled/Tiled 类型) |
+| `res` | `List<string>` | `private` | 结果路径列表 |
 
 ---
 
-## 🔧 方法说明
+## 方法说明
 
-### 核心方法
+### ResetData()
 
-#### ResetData()
+**签名**:
 ```csharp
 private void ResetData()
 ```
-**功能**: 重置所有数据状态  
-**操作**:
-- 清空当前预制体引用
-- 清空 record、problems、res 字典/列表
-- 重置 isDone 标志
+
+**职责**: 重置所有数据状态
+
+**核心逻辑**:
+```
+1. 清空当前打开 Prefab 引用
+2. 清空记录字典
+3. 清空问题字典
+4. 清空结果列表
+5. 重置完成标志
+```
 
 ---
 
-#### OnGUI()
+### OnGUI()
+
+**签名**:
 ```csharp
 private void OnGUI()
 ```
-**功能**: 绘制编辑器窗口 UI  
-**UI 布局**:
-1. 顶部：源 Sprite 和目标 Sprite 选择框
-2. 中部：搜索和开始按钮
-3. 底部：滚动结果显示区域
+
+**职责**: 绘制编辑器窗口界面
+
+**界面布局**:
+```
+┌─────────────────────────────────────┐
+│  搜索图片：[Sprite 字段]  替换图片：[Sprite 字段]  │
+│  [搜索按钮] [开始替换按钮]                        │
+│  ─────────────────────────────────               │
+│  滚动视图：                                      │
+│  ├─ Prefab: path/to/prefab [打开]               │
+│  │   ├─ Component/Path [选择] ☚                │
+│  │   └─ ...                                     │
+│  ├─ 不能判断的 Prefab (problems)                │
+│  └─ 结果路径列表                                 │
+└─────────────────────────────────────┘
+```
+
+**交互逻辑**:
+```
+1. 绘制 Sprite 输入字段
+2. 绘制搜索和开始按钮
+3. 如果完成，显示结果列表
+4. 支持点击打开 Prefab
+5. 支持选择并高亮组件
+```
 
 ---
 
-#### Search()
+### DrawPrefabItem(string, List<string>)
+
+**签名**:
+```csharp
+private void DrawPrefabItem(string title, List<string> list)
+```
+
+**职责**: 绘制单个 Prefab 项目及其组件列表
+
+**核心逻辑**:
+```
+1. 绘制 Prefab 路径和打开按钮
+2. 如果当前打开的是此 Prefab:
+   - 遍历组件路径列表
+   - 绘制每个组件路径和选择按钮
+   - 高亮当前选中的组件
+```
+
+---
+
+### Search()
+
+**签名**:
 ```csharp
 private void Search()
 ```
-**功能**: 搜索所有使用源 Sprite 的预制体  
-**流程**:
-1. 遍历 AssetsPackage 目录下的所有预制体
-2. 检查每个 Image 组件的 sprite 属性
-3. 记录匹配结果到 record 字典
+
+**职责**: 搜索所有使用指定 Sprite 的 Prefab
+
+**核心逻辑**:
+```
+1. 获取所有 Prefab 路径 (UIAssetUtils.GetAllPrefabs)
+2. 遍历每个 Prefab:
+   a. 加载 Prefab 对象
+   b. 查找所有 Image 组件
+      - 如果 sprite == a，记录路径
+   c. 查找所有 Button 组件
+      - 检查 SpriteSwap 过渡状态
+      - 如果任何状态 sprite == a，记录路径
+3. 显示进度条
+4. 标记完成并显示通知
+```
+
+**检查的 Button 状态**:
+- highlightedSprite (高亮)
+- pressedSprite (按下)
+- selectedSprite (选中)
+- disabledSprite (禁用)
 
 ---
 
-#### Start()
+### Start()
+
+**签名**:
 ```csharp
 private void Start()
 ```
-**功能**: 执行批量替换操作  
-**流程**:
-1. 遍历 record 中记录的所有预制体
-2. 打开预制体并查找所有 Image 组件
-3. 将匹配的 Sprite 替换为目标 Sprite
-4. 保存预制体并记录结果
 
----
+**职责**: 执行图片替换操作
 
-#### DrawPrefabItem()
-```csharp
-private void DrawPrefabItem(string title, List<string> items)
+**核心逻辑**:
 ```
-**功能**: 绘制单个预制体项的 UI 显示  
-**参数**:
-- `title`: 预制体路径
-- `items`: 找到的 Sprite 路径列表
+1. 获取所有 Prefab 路径
+2. 遍历每个 Prefab:
+   a. 加载 Prefab 对象
+   b. 查找所有 Image 组件
+      - 如果 sprite == a:
+        * 检查是否为 Filled/Tiled 类型 → 加入 problems
+        * 根据目标图片 border 设置 Image 类型
+        * 替换 sprite
+        * 标记为已修改
+   c. 查找所有 Button 组件
+      - 检查 SpriteSwap 状态
+      - 替换匹配的 sprite
+      - 更新 spriteState
+   d. 如果有修改，保存 Prefab
+3. 显示进度条
+4. 显示完成通知
+```
+
+**类型自动判断**:
+```csharp
+if (b.border.w > 0 || b.border.x > 0 || b.border.y > 0 || b.border.z > 0)
+{
+    Images[k].type = Image.Type.Sliced;  // 九宫格
+}
+else
+{
+    Images[k].type = Image.Type.Simple;  // 简单
+}
+```
 
 ---
 
-## 🔄 核心流程图
+### AddRecord(string, Transform)
+
+**签名**:
+```csharp
+void AddRecord(string cur, Transform tran)
+```
+
+**职责**: 添加匹配记录
+
+**核心逻辑**:
+```
+1. 如果 Prefab 路径不存在于字典，创建新列表
+2. 添加组件路径到列表
+```
+
+---
+
+### AddProblem(string, Transform)
+
+**签名**:
+```csharp
+void AddProblem(string cur, Transform tran)
+```
+
+**职责**: 添加问题记录 (无法自动处理的情况)
+
+**核心逻辑**:
+```
+1. 如果 Prefab 路径不存在于字典，创建新列表
+2. 添加组件路径到问题列表
+```
+
+---
+
+### GetProblemFullPath(Transform)
+
+**签名**:
+```csharp
+string GetProblemFullPath(Transform tran)
+```
+
+**职责**: 获取组件在 Prefab 中的完整层级路径
+
+**核心逻辑**:
+```
+1. 从当前 Transform 开始
+2. 向上遍历父节点
+3. 拼接路径 "Parent/Child/Component"
+4. 排除根节点
+```
+
+**示例输出**:
+```
+Panel/Background/Image
+Button/Text
+```
+
+---
+
+## Mermaid 流程图
+
+### 搜索流程
 
 ```mermaid
-sequenceDiagram
-    participant User as 用户
-    participant Win as ReplaceImage 窗口
-    participant FS as 文件系统
-    participant Prefab as 预制体
+flowchart TD
+    A[Search] --> B[获取所有 Prefab]
+    B --> C[遍历 Prefab]
+    C --> D[查找 Image 组件]
+    D --> E{sprite == a?}
+    E -->|是 | F[记录路径]
+    E -->|否 | G[查找 Button 组件]
+    G --> H{SpriteSwap 状态匹配?}
+    H -->|是 | F
+    H -->|否 | I[下一个 Prefab]
+    F --> I
+    I --> J{还有 Prefab?}
+    J -->|是 | C
+    J -->|否 | K[完成]
+```
 
-    User->>Win: 选择源 Sprite (a)
-    User->>Win: 点击"搜索"按钮
-    Win->>FS: 遍历 AssetsPackage 目录
-    loop 每个预制体
-        Win->>Prefab: 检查 Image 组件
-        alt 找到匹配的 Sprite
-            Win->>Win: 记录到 record 字典
-        end
-    end
-    Win->>User: 显示搜索结果
-    
-    User->>Win: 选择目标 Sprite (b)
-    User->>Win: 点击"开始"按钮
-    loop 每个记录的预制体
-        Win->>Prefab: 打开并替换 Sprite
-        Win->>Prefab: 保存修改
-    end
-    Win->>Win: 设置 isDone = true
-    Win->>User: 显示替换完成
+### 替换流程
+
+```mermaid
+flowchart TD
+    A[Start] --> B[获取所有 Prefab]
+    B --> C[遍历 Prefab]
+    C --> D[查找 Image 组件]
+    D --> E{sprite == a?}
+    E -->|否 | F[查找 Button]
+    E -->|是 | G{Filled/Tiled?}
+    G -->|是 | H[加入 problems]
+    G -->|否 | I[设置类型 + 替换]
+    I --> J[标记修改]
+    F --> K{SpriteSwap 匹配?}
+    K -->|是 | L[更新 spriteState]
+    K -->|否 | M[下一个 Prefab]
+    L --> J
+    J --> N{有修改?}
+    N -->|是 | O[保存 Prefab]
+    N -->|否 | M
+    O --> M
+    M --> P{还有 Prefab?}
+    P -->|是 | C
+    P -->|否 | Q[完成]
 ```
 
 ---
 
-## 💡 使用示例
+## 使用示例
 
-### 批量替换 Sprite
-```
-1. 打开菜单 `Tools/工具/UI/搜索或批量替换 Sprite`
-2. 在"搜索图片"字段选择要查找的 Sprite
-3. 点击"搜索"按钮，等待搜索完成
-4. 在"替换图片"字段选择新的 Sprite
-5. 点击"开始"按钮执行批量替换
-6. 查看替换结果和不能判断的预制体列表
+### 打开工具窗口
+
+```csharp
+// 在 Unity 编辑器中
+var window = EditorWindow.GetWindow<ReplaceImage>();
+window.Show();
 ```
 
-### 查看替换记录
-```
-替换完成后，窗口会显示:
-- 成功替换的预制体列表 (绿色)
-- 不能判断的预制体列表 (红色)
-- 每个预制体中找到的 Sprite 路径
-```
+### 搜索图片
+
+1. 在 "搜索图片" 字段拖入要查找的 Sprite
+2. 点击 "搜索" 按钮
+3. 查看结果列表
+
+### 替换图片
+
+1. 在 "搜索图片" 字段拖入源 Sprite
+2. 在 "替换图片" 字段拖入目标 Sprite
+3. 点击 "开始" 按钮
+4. 等待处理完成
+
+### 查看和定位
+
+1. 在结果列表中点击 "打开" 按钮打开 Prefab
+2. 点击组件路径旁的 "选择" 按钮定位组件
+3. ☚ 标记表示当前选中的组件
 
 ---
 
-## 🔗 相关文档链接
+## 注意事项
 
-| 文档 | 说明 |
-|------|------|
-| [AltasEditor.cs](../AltasEditor.cs.md) | 编辑器菜单入口 |
-| [AtlasHelper.cs](./AtlasHelper.cs.md) | 图集处理工具 |
-| [AssetImportMgr.cs](./AssetImportMgr.cs.md) | 资源导入管理 |
+### 限制
+
+- **不支持 Filled/Tiled 类型**: 这些类型的 Image 会被加入 problems 列表，需要手动处理
+- **仅处理 SpriteSwap 过渡**: Button 的其他过渡类型不会被检查
+
+### 性能
+
+- 使用进度条显示处理进度
+- 批量处理所有 Prefab，适合大规模替换
+
+### 安全
+
+- 自动保存修改的 Prefab
+- 问题项会被记录但不会修改
 
 ---
 
-## ⚠️ 注意事项
+## 相关文档链接
 
-| 问题 | 说明 | 解决方案 |
-|------|------|----------|
-| **备份预制体** | 批量替换有风险 | 操作前建议版本控制备份 |
-| **窗口尺寸** | 固定 900x600 | 大量结果时需滚动查看 |
-| **替换确认** | 替换后无法撤销 | 替换前仔细检查目标 Sprite |
+- [AtlasHelper.cs.md](./AtlasHelper.cs.md) - 图集生成工具
+- [CheckEmptyImage.cs.md](./CheckEmptyImage.cs.md) - 空图片检查工具
+- [UIAssetUtils.cs](../../Common/Helper/UIAssetUtils.cs) - UI 资源工具类
 
 ---
 
-*文档由 OpenClaw AI 助手自动生成 | 基于静态代码分析*
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*
