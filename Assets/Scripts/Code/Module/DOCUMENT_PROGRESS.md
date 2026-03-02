@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 17:30  
+> **更新时间**: 2026-03-02 22:15  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | 646 |
-| 已创建 .md 文档 | 396 |
-| 覆盖率 | 61.3% |
+| 已创建 .md 文档 | 402 |
+| 覆盖率 | 62.2% |
 
 **注**: 
 - ThirdParty 目录 (125 个文件) 为第三方库，**不生成文档**
@@ -23,23 +23,23 @@
 
 ## 📝 本次提交
 
-**批次**: Editor 资产管理配置与资源分析工具
-**提交信息**: docs: 完成 Editor 资产管理配置与资源分析工具文档 (6 个文件)
+**批次**: BuildEditor 构建编辑器工具 + Editor 资产管理配置与资源分析工具
+**提交信息**: docs: 完成第 1 批 6 个文档 (BuildEditor 目录)
 
-### 本批次文件
+### 本批次文件 (BuildEditor)
 
-1. LabelConfig.cs.md - 资源标签配置结构
-2. AssetsManagerConfig.cs.md - 资产管理器 ScriptableObject 配置
-3. CollectConfig.cs.md - 资源收集配置结构
-4. ResourceCheckTool.cs.md - 资源分析工具 (多线程扫描 + Excel 导出)
-5. Finddependent.cs.md - 资源依赖查找工具
-6. EnableGPUInstance.cs.md - GPU Instancing 批量启用工具
+1. FilterCodeAssemblies.cs.md - 构建时程序集过滤器
+2. WebGLPlatformEditor.cs.md - WebGL 多平台适配工具
+3. BuildHelper.cs.md - 游戏打包核心辅助工具
+4. BuildEditor.cs.md - Unity Editor 打包工具 UI
+5. BuildAssemblyEditor.cs.md - 程序集构建工具
+6. BuildSettings.cs.md - 打包配置 ScriptableObject
 
 ### 累计进度
 
 - **Runtime 代码**: 369/369 = 100% ✅
-- **Editor 工具**: 20/79 = 25.3% 🟡
-- **总体覆盖率**: 396/646 = 61.3%
+- **Editor 工具**: 26/79 = 32.9% 🟡
+- **总体覆盖率**: 402/646 = 62.2%
 
 ### 验证结果
 
@@ -61,13 +61,15 @@
 
 ### 剩余工作 (低优先级)
 
-**Editor 编辑器工具**: 20/79 = 25.3% 完成
-- 剩余 59 个 Editor 工具文件为可选文档化
+**Editor 编辑器工具**: 26/79 = 32.9% 完成
+- 剩余 53 个 Editor 工具文件为可选文档化
 - 已完成：
   - Atlas 目录 (6 个): AtlasHelper, AssetImportMgr, PngOptimizerCL, ReplaceImage, CheckEmptyImage, CheckUnuseImage
   - AssetsManager 目录 (7 个): EnableGPUInstance, ReplaceShader, DeleteInvalidComponent, AssetsManagerWindow, RemoveFace, MeshManager, Config (3 个)
-  - Resource 目录 (2 个): ResourceCheckTool, Finddependent
-  - 其他 Editor 工具 (5 个): AltasEditor, Readme, BashUtil, 等
+  - Resource 目录 (5 个): ResourceCheckTool, Finddependent, FindReferences, PrefabProcessEditor, ProcessHelper, SceneProcessEditor
+  - UGUIFont 目录 (2 个): FontSubsetEditor, 等
+  - **BuildEditor 目录 (6 个)**: FilterCodeAssemblies, WebGLPlatformEditor, BuildHelper, BuildEditor, BuildAssemblyEditor, BuildSettings ✅
+  - 其他 Editor 工具：AltasEditor, Readme, BashUtil, 等
 
 ---
 
