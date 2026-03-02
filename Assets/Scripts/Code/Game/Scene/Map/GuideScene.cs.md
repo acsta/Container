@@ -6,8 +6,8 @@
 |------|-----|
 | **文件名** | GuideScene.cs |
 | **路径** | Assets/Scripts/Code/Game/Scene/Map/GuideScene.cs |
-| **所属模块** | 游戏层 → Code/Game/Scene/Map |
-| **文件职责** | 引导场景实现，管理新手引导场景的加载、引导阶段资源预加载和拍卖系统初始化 |
+| **所属模块** | 游戏逻辑层 → 场景系统 → 引导场景 |
+| **文件职责** | 新手引导场景实现，处理引导关卡的资源预加载和拍卖引导系统初始化 |
 
 ---
 
@@ -17,18 +17,29 @@
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 实现新手引导场景的完整生命周期管理，包括引导阶段资源预加载、拍卖系统初始化和场景切换 |
+| **职责** | 实现新手引导场景的完整生命周期，包括引导关卡配置、资源预加载、引导系统初始化 |
 | **泛型参数** | 无 |
 | **继承关系** | 继承 `SceneManagerProvider`，实现 `IScene` 接口 |
 | **实现的接口** | `IScene` |
 
-**设计模式**: 模板方法模式 + 异步加载
+**设计模式**: 场景模式 + 单例模式
 
 ```csharp
-// 使用方式
-// 通过 SceneManager 切换到引导场景
+// 切换到引导场景
 await SceneManager.Instance.SwitchScene<GuideScene>();
 ```
+
+---
+
+## 常量定义
+
+### ConfigId
+
+```csharp
+public const int ConfigId = -2;
+```
+
+**说明**: 引导场景使用固定的配置 ID `-2`，用于从 `LevelConfigCategory` 获取引导关卡配置。
 
 ---
 
@@ -36,337 +47,344 @@ await SceneManager.Instance.SwitchScene<GuideScene>();
 
 | 名称 | 类型 | 访问级别 | 说明 |
 |------|------|----------|------|
-| `ConfigId` | `int` | `public const` | 引导场景固定配置 ID（-2） |
-| `Config` | `LevelConfig` | `public` | 引导场景配置数据 |
-| `Collector` | `ReferenceCollector` | `public` | 引用收集器，用于获取场景中的对象引用 |
+| `ConfigId` | `const int` | `public` | 引导场景固定配置 ID（-2） |
+| `Config` | `LevelConfig` | `public` | 引导关卡配置数据 |
+| `Collector` | `ReferenceCollector` | `public` | 场景引用收集器 |
 | `Volume` | `UnityEngine.Rendering.Volume` | `public` | 后处理体积组件 |
-| `win` | `UILoadingView` | `private` | 加载进度 UI 窗口引用 |
-| `dontDestroyWindow` | `string[]` | `private` | 场景切换时保留的 UI 窗口类型名称列表 |
+| `win` | `UILoadingView` | `private` | 加载界面 UI |
+| `dontDestroyWindow` | `string[]` | `private` | 场景切换时保留的 UI 窗口列表 |
 
 ---
 
-## 方法说明（按重要程度排序）
+## IScene 接口实现
 
-### GetName()
+### 生命周期方法
 
-**签名**:
-```csharp
-public override string GetName()
-```
+| 方法 | 调用时机 | 职责 |
+|------|----------|------|
+| `OnCreate()` | 场景实例创建时 | 初始化（空实现） |
+| `OnEnter()` | 进入场景时 | 打开加载界面 |
+| `OnPrepare()` | 资源预加载阶段 | 注册 Manager，预加载引导单位资源 |
+| `OnComplete()` | 场景资源加载完成 | 空实现 |
+| `OnLeave()` | 离开场景时 | 移除 AuctionGuideManager 和 EntityManager |
+| `OnSwitchSceneEnd()` | 场景切换结束时 | 播放音乐，清理 UI |
 
-**职责**: 获取场景名称（从配置中读取）
+### 资源配置方法
 
-**返回值**: `Config.Name`
-
----
-
-### GetScenePath()
-
-**签名**:
-```csharp
-public string GetScenePath()
-```
-
-**职责**: 获取场景资源路径（从配置中读取）
-
-**返回值**: `Config.Perfab`
+| 方法 | 返回值 | 说明 |
+|------|--------|------|
+| `GetScenePath()` | `Config.Perfab` | 从配置获取场景路径 |
+| `GetName()` | `Config.Name` | 从配置获取场景名称 |
+| `GetDontDestroyWindow()` | `string[]` | 保留的 UI 窗口（UILoadingView, UIGuidanceView） |
+| `GetScenesChangeIgnoreClean()` | `List<string>` | 保留的 Prefab 路径 |
+| `GetProgressPercent()` | `cleanup=0.2, loadScene=0.45, prepare=0.35` | 进度分配比例 |
 
 ---
 
-### GetProgressPercent()
+## 核心流程
 
-**签名**:
-```csharp
-public void GetProgressPercent(out float cleanup, out float loadScene, out float prepare)
-```
-
-**职责**: 获取场景加载各阶段的进度权重分配
-
-**核心逻辑**:
-```
-cleanup = 0.2f   // 清理阶段占 20%
-loadScene = 0.45f // 场景加载占 45%
-prepare = 0.35f   // 准备阶段占 35%
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
----
-
-### GetDontDestroyWindow()
-
-**签名**:
-```csharp
-public string[] GetDontDestroyWindow()
-```
-
-**职责**: 获取场景切换时不需要销毁的 UI 窗口类型列表
-
-**核心逻辑**:
-```
-返回保留窗口列表：
-- UILoadingView
-- UIGuidanceView
-```
-
-**调用者**: `SceneManager`（场景切换时）
-
----
-
-### GetScenesChangeIgnoreClean()
-
-**签名**:
-```csharp
-public List<string> GetScenesChangeIgnoreClean()
-```
-
-**职责**: 获取场景切换时不需要清理的资源路径列表
-
-**核心逻辑**:
-```
-返回保留资源路径：
-- UILoadingView.PrefabPath
-- UIGuidanceView.PrefabPath
-```
-
-**调用者**: `SceneManager`（场景切换资源清理时）
-
----
-
-### OnEnter()
-
-**签名**:
-```csharp
-public async ETTask OnEnter()
-```
-
-**职责**: 场景进入时的初始化，显示加载界面
-
-**核心逻辑**:
-```
-1. 尝试获取 UILoadingView
-2. 如果不存在则创建 UILoadingView
-3. 设置加载进度为 0
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
-**被调用者**: `UIManager.Instance.OpenWindow<UILoadingView>()`
-
----
-
-### OnLeave()
-
-**签名**:
-```csharp
-public async ETTask OnLeave()
-```
-
-**职责**: 场景离开时的清理工作
-
-**核心逻辑**:
-```
-1. 移除 AuctionGuideManager 管理器
-2. 移除 EntityManager 管理器
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
----
-
-### OnPrepare()
-
-**签名**:
-```csharp
-public async ETTask OnPrepare(float progressStart, float progressEnd)
-```
-
-**职责**: 场景预加载阶段，加载引导阶段所需的所有资源
-
-**核心逻辑**:
-```
-1. 注册 EntityManager
-2. 获取主摄像机的 ReferenceCollector
-3. 获取 Volume 组件并禁用 ActionLineVolume
-4. 注册 AuctionGuideManager（传入 GuideScene 引用）
-5. 获取所有引导阶段配置（GuidanceStageConfigCategory）
-6. 遍历所有引导阶段和物品：
-   - 通过 ItemConfig 获取 UnitId
-   - 通过 UnitConfig 获取预制体路径
-   - 预加载单位预制体
-7. 预加载以下通用资源：
-   - 烟雾特效 (GameConst.SmokePrefab)
-   - UIGuideGameView（引导游戏界面）
-   - UIEmojiItem（表情道具）
-   - UIBubbleItem（气泡道具）
-   - UIButtonView（按钮视图）
-   - UIItemsView（物品视图）
-   - PlayTypeMat 材质
-   - TaskMat 材质
-8. 等待拍卖状态变为 Prepare 或 EnterAnim
-9. 等待所有加载任务完成
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
-**被调用者**: `GameObjectPoolManager.GetInstance().PreLoadGameObjectAsync()`, `MaterialManager.Instance.PreLoadMaterial()`, `ETTaskHelper.WaitAll()`
-
----
-
-### OnComplete()
-
-**签名**:
-```csharp
-public async ETTask OnComplete()
-```
-
-**职责**: 场景加载完成回调（当前为空实现）
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
----
-
-### SetProgress()
-
-**签名**:
-```csharp
-public async ETTask SetProgress(float value)
-```
-
-**职责**: 设置加载进度显示
-
-**核心逻辑**:
-```
-1. 如果存在加载窗口，更新进度值
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
----
-
-### OnSwitchSceneEnd()
-
-**签名**:
-```csharp
-public virtual async ETTask OnSwitchSceneEnd()
-```
-
-**职责**: 场景切换结束后的收尾工作
-
-**核心逻辑**:
-```
-1. 播放游戏背景音乐
-2. 销毁 UILoadingView 加载窗口
-3. 记录日志
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
-**被调用者**: `SoundManager.Instance.PlayMusic()`, `UIManager.Instance.DestroyWindow<UILoadingView>()`
-
----
-
-## Mermaid 流程图
-
-### 引导场景生命周期
+### 引导场景加载流程
 
 ```mermaid
 sequenceDiagram
     participant SM as SceneManager
     participant GS as GuideScene
-    participant UM as UIManager
     participant EM as EntityManager
     participant AGM as AuctionGuideManager
-    participant GM as GameObjectPoolManager
-    participant IC as ItemConfigCategory
-    participant UC as UnitConfigCategory
+    participant UM as UIManager
+    participant GPM as GameObjectPoolManager
 
+    SM->>GS: OnCreate()
+    Note over GS: 场景实例创建
+    
     SM->>GS: OnEnter()
-    GS->>UM: 获取/创建 UILoadingView
+    GS->>UM: OpenWindow<UILoadingView>()
     GS->>UM: SetProgress(0)
-
+    Note over GS: 显示加载界面
+    
     SM->>GS: OnPrepare()
-    GS->>SM: RegisterManager<EntityManager>
-    GS->>SM: RegisterManager<AuctionGuideManager>
-    GS->>IC: 获取引导物品配置
-    GS->>UC: 获取单位预制体
-    GS->>GM: 预加载所有引导资源
-    GS->>GM: 预加载通用资源
-    GS->>GS: 等待拍卖状态
-
+    GS->>SM: RegisterManager<EntityManager>()
+    GS->>SM: RegisterManager<AuctionGuideManager>(this)
+    GS->>Collector: 获取 ReferenceCollector
+    GS->>Volume: 获取并禁用 ActionLineVolume
+    
+    loop 遍历所有引导阶段配置
+        GS->>GPM: PreLoadGameObjectAsync(Unit.Prefab)
+    end
+    
+    GS->>GPM: PreLoadGameObjectAsync(SmokePrefab)
+    GS->>GPM: PreLoadGameObjectAsync(UIGuideGameView)
+    GS->>GPM: PreLoadGameObjectAsync(UIEmojiItem)
+    GS->>GPM: PreLoadGameObjectAsync(UIBubbleItem)
+    GS->>GPM: PreLoadGameObjectAsync(UIButtonView)
+    GS->>GPM: PreLoadGameObjectAsync(UIItemsView)
+    GS->>MM: PreLoadMaterial(PlayTypeMat)
+    GS->>MM: PreLoadMaterial(TaskMat)
+    
+    GS->>GS: 等待 AuctionState=Prepare/EnterAnim
+    Note over GS: 预加载完成，等待拍卖状态
+    
     SM->>GS: OnComplete()
-
+    Note over GS: 场景资源加载完成
+    
     SM->>GS: OnSwitchSceneEnd()
-    GS->>UM: 播放音乐
-    GS->>UM: DestroyWindow<UILoadingView>
-    GS->>EM: RemoveManager
-    GS->>AGM: RemoveManager
+    GS->>SoundManager: PlayMusic("Game.mp3")
+    GS->>UM: DestroyWindow<UILoadingView>()
+    Note over GS: 场景切换完成
 ```
 
-### 场景切换进度分配
+---
 
-```mermaid
-pie title GuideScene 进度分配
-    "清理阶段" : 20
-    "场景加载" : 45
-    "准备阶段" : 35
+## 方法说明
+
+### OnEnter()
+
+**职责**: 进入场景时显示加载界面
+
+**核心逻辑**:
+```
+1. 获取或创建 UILoadingView 实例
+2. 设置进度为 0
 ```
 
-### 引导资源预加载流程
+**代码示例**:
+```csharp
+win = UIManager.Instance.GetView<UILoadingView>(1);
+if (win == null)
+{
+    win = await UIManager.Instance.OpenWindow<UILoadingView>(
+        UILoadingView.PrefabPath, UILayerNames.TipLayer);
+}
+win.SetProgress(0);
+```
 
-```mermaid
-flowchart TD
-    A[开始 OnPrepare] --> B[获取所有引导阶段]
-    B --> C{还有阶段？}
-    C -->|是 | D[获取阶段物品列表]
-    D --> E{还有物品？}
-    E -->|是 | F[通过 ItemConfig 获取 UnitId]
-    F --> G[通过 UnitConfig 获取 Prefab]
-    G --> H[预加载 Prefab]
-    H --> E
-    E -->|否 | C
-    C -->|否 | I[预加载通用资源]
-    I --> J[等待拍卖状态]
-    J --> K[等待所有任务完成]
-    K --> L[结束]
+---
+
+### OnPrepare()
+
+**职责**: 预加载阶段初始化 Manager 和引导资源
+
+**核心逻辑**:
+```
+1. 注册 EntityManager
+2. 获取 ReferenceCollector 和 Volume 组件
+3. 禁用 ActionLineVolume
+4. 注册 AuctionGuideManager（传入当前 GuideScene）
+5. 遍历所有引导阶段配置，预加载单位 Prefab
+6. 预加载通用游戏资源
+7. 等待拍卖状态进入 Prepare 或 EnterAnim
+```
+
+**引导单位预加载**:
+```csharp
+var gStep = GuidanceStageConfigCategory.Instance.GetAllList();
+for (int i = 0; i < gStep.Count; i++)
+{
+    for (int j = 0; j < gStep[i].Items.Length; j++)
+    {
+        var unitId = ItemConfigCategory.Instance.Get(gStep[i].Items[i]).UnitId;
+        var unit = UnitConfigCategory.Instance.Get(unitId);
+        tasks.Add(GameObjectPoolManager.GetInstance().PreLoadGameObjectAsync(unit.Perfab, 1));
+    }
+}
+```
+
+**说明**: 
+- 遍历所有引导阶段（GuidanceStageConfigCategory）
+- 根据物品配置获取单位 ID
+- 根据单位配置预加载 Prefab
+
+---
+
+### OnLeave()
+
+**职责**: 离开场景时清理 Manager
+
+**核心逻辑**:
+```
+1. 移除 AuctionGuideManager
+2. 移除 EntityManager
+```
+
+---
+
+### OnSwitchSceneEnd()
+
+**职责**: 场景切换结束时播放音乐和清理 UI
+
+**核心逻辑**:
+```
+1. 播放背景音乐 "Audio/Music/Game.mp3"
+2. 销毁 UILoadingView
+3. 记录日志
+```
+
+---
+
+## 保留资源列表
+
+### 不销毁的 UI 窗口
+
+```csharp
+private string[] dontDestroyWindow =
+{
+    TypeInfo<UILoadingView>.TypeName,      // 加载界面 UI
+    TypeInfo<UIGuidanceView>.TypeName,     // 引导 UI
+};
+```
+
+### 资源清理时保留的 Prefab
+
+```csharp
+public List<string> GetScenesChangeIgnoreClean()
+{
+    var res = new List<string>();
+    res.Add(UILoadingView.PrefabPath); 
+    res.Add(UIGuidanceView.PrefabPath); 
+    return res;
+}
+```
+
+---
+
+## 进度分配
+
+### 场景加载进度权重
+
+| 阶段 | 权重 | 说明 |
+|------|------|------|
+| `cleanup` | 20% | 清理旧场景资源 |
+| `loadScene` | 45% | 加载新场景资源 |
+| `prepare` | 35% | 预加载资源（引导单位较多） |
+
+---
+
+## 后处理配置
+
+### Volume 组件处理
+
+```csharp
+Collector = CameraManager.Instance.MainCamera()?.GetComponent<ReferenceCollector>();
+Volume = Collector?.Get<UnityEngine.Rendering.Volume>("Volume");
+if (Volume == null) Volume = GameObject.FindObjectOfType<UnityEngine.Rendering.Volume>();
+if (Volume != null)
+{
+    if(Volume.sharedProfile.TryGet<ActionLineVolume>(out var co))
+    {
+        co.active = false;  // 禁用 ActionLineVolume
+    }
+}
 ```
 
 ---
 
 ## 使用示例
 
-### 切换到引导场景
+### 示例 1: 切换到引导场景
 
 ```csharp
-// 通过 SceneManager 切换
+// 切换到引导场景
 await SceneManager.Instance.SwitchScene<GuideScene>();
-
-// 或通过场景名称切换
-await SceneManager.Instance.SwitchMapScene("引导");
 ```
 
-### 获取引导场景配置
+### 示例 2: 检查是否在引导场景
 
 ```csharp
-// 在 GuideScene 中获取配置
-var guideScene = SceneManager.Instance.CurrentScene as GuideScene;
-if (guideScene != null)
+if (SceneManager.Instance.IsInTargetScene<GuideScene>())
 {
-    Debug.Log($"引导场景 ID: {GuideScene.ConfigId}"); // -2
-    Debug.Log($"场景名称：{guideScene.Config.Name}");
+    // 引导场景特定逻辑
+    var guideScene = SceneManager.Instance.GetCurrentScene<GuideScene>();
+    Log.Info($"引导关卡：{guideScene.Config.Name}");
 }
 ```
 
----
+### 示例 3: 访问引导配置
 
-## 相关文档链接
-
-- [SceneManager.cs.md](../../Module/Scene/SceneManager.cs.md) - 场景管理器核心
-- [IScene.cs.md](../../Module/Scene/IScene.cs.md) - 场景接口定义
-- [UIManager.cs.md](../../Module/UI/UIManager.cs.md) - UI 管理系统
-- [AuctionGuideManager.cs.md](../../Game/System/Auction/AuctionGuideManager.cs.md) - 引导拍卖管理器
-- [GuidanceStageConfig.cs.md](../../Module/Config/GuidanceStageConfig.cs.md) - 引导阶段配置
+```csharp
+// 在 GuideScene 内部访问配置
+var configName = Config.Name;
+var scenePath = Config.Perfab;
+```
 
 ---
 
-*文档生成时间：2026-03-02*
+## 与其他模块的交互
+
+```mermaid
+graph TD
+    subgraph GuideScene["GuideScene"]
+        GS[GuideScene]
+    end
+    
+    subgraph Managers["管理器"]
+        EM[EntityManager]
+        AGM[AuctionGuideManager]
+        UM[UIManager]
+        GPM[GameObjectPoolManager]
+    end
+    
+    subgraph UI["UI 组件"]
+        UILoad[UILoadingView]
+        UIGuide[UIGuidanceView]
+        UIGuideGame[UIGuideGameView]
+    end
+    
+    subgraph Config["配置"]
+        GSC[GuidanceStageConfigCategory]
+        IC[ItemConfigCategory]
+        UC[UnitConfigCategory]
+    end
+    
+    GS --> EM
+    GS --> AGM
+    GS --> UM
+    GS --> GPM
+    GS --> GSC
+    
+    GSC --> IC
+    IC --> UC
+    UC --> GPM
+    
+    UM --> UILoad
+    UM --> UIGuide
+    GPM --> UIGuideGame
+    
+    note right of GS "GuideScene 预加载所有引导单位<br/>确保引导流程流畅"
+    
+    style GuideScene fill:#e1f5ff
+    style Managers fill:#fff4e1
+    style UI fill:#e8f5e9
+    style Config fill:#fce4ec
+```
+
+---
+
+## 学习重点与陷阱
+
+### ✅ 学习重点
+
+1. **引导单位预加载**: 遍历所有引导阶段配置预加载单位
+2. **配置链**: GuidanceStageConfig → ItemConfig → UnitConfig → Prefab
+3. **引导系统初始化**: AuctionGuideManager 在 OnPrepare 中注册
+
+### ⚠️ 陷阱与注意事项
+
+| 问题 | 说明 | 解决方案 |
+|------|------|----------|
+| **单位未预加载** | 引导过程中卡顿 | 确保遍历所有引导阶段预加载 |
+| **配置缺失** | 物品配置无 UnitId | 检查 ItemConfig 配置表 |
+| **Manager 泄漏** | 忘记移除 Manager | 在 OnLeave 中调用 RemoveManager |
+
+---
+
+## 相关文档
+
+- [IScene.cs.md](./IScene.cs.md) - 场景接口定义
+- [SceneManager.cs.md](./SceneManager.cs.md) - 场景管理器
+- [AuctionGuideManager.cs.md](../../System/Auction/AuctionGuideManager.cs.md) - 拍卖引导管理器
+- [GuidanceStageConfig.cs.md](../../../Module/Config/GuidanceStageConfig.cs.md) - 引导阶段配置
+- [UILoadingView.cs.md](../../UI/UILoading/UILoadingView.cs.md) - 加载界面 UI
+
+---
+
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

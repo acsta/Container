@@ -6,8 +6,8 @@
 |------|-----|
 | **文件名** | CreateScene.cs |
 | **路径** | Assets/Scripts/Code/Game/Scene/Map/CreateScene.cs |
-| **所属模块** | 游戏层 → Code/Game/Scene/Map |
-| **文件职责** | 角色创建场景实现，管理角色创建界面的加载、角色预览和场景切换 |
+| **所属模块** | 游戏逻辑层 → 场景系统 → 地图场景 |
+| **文件职责** | 角色创建场景实现，处理角色创建流程、相机适配、UI 展示 |
 
 ---
 
@@ -17,16 +17,15 @@
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 实现角色创建场景的完整生命周期管理，包括角色预览、换装界面加载、场景转场效果 |
+| **职责** | 实现角色创建场景的完整生命周期，包括角色预览、相机适配、UI 管理 |
 | **泛型参数** | 无 |
 | **继承关系** | 继承 `SceneManagerProvider`，实现 `IScene` 接口 |
 | **实现的接口** | `IScene` |
 
-**设计模式**: 状态机模式 + 异步加载
+**设计模式**: 场景模式 + 单例模式（通过 ManagerProvider 注册）
 
 ```csharp
-// 使用方式
-// 通过 SceneManager 切换到角色创建场景
+// 场景注册与切换
 await SceneManager.Instance.SwitchScene<CreateScene>();
 ```
 
@@ -36,333 +35,345 @@ await SceneManager.Instance.SwitchScene<CreateScene>();
 
 | 名称 | 类型 | 访问级别 | 说明 |
 |------|------|----------|------|
-| `win` | `UIBlendView` | `private` | 转场淡入淡出效果视图 |
-| `player` | `Player` | `private` | 当前创建的玩家角色实体 |
-| `dontDestroyWindow` | `string[]` | `private` | 场景切换时保留的 UI 窗口类型名称列表 |
+| `dontDestroyWindow` | `string[]` | `private` | 场景切换时保留的 UI 窗口类型名列表 |
+| `player` | `Player` | `private` | 当前创建的玩家角色实例 |
+| `win` | `UIBlendView` | `private` | 淡入淡出转场 UI 视图 |
 
 ---
 
-## 方法说明（按重要程度排序）
+## IScene 接口实现
 
-### GetDontDestroyWindow()
+### 生命周期方法
 
-**签名**:
-```csharp
-public string[] GetDontDestroyWindow()
-```
+| 方法 | 调用时机 | 职责 |
+|------|----------|------|
+| `OnCreate()` | 场景实例创建时 | 初始化场景（当前为空实现） |
+| `OnEnter()` | 进入场景时 | 打开淡入淡出 UI，准备转场 |
+| `OnPrepare()` | 资源预加载阶段 | 创建 EntityManager，生成玩家角色 |
+| `OnComplete()` | 场景资源加载完成 | 空实现 |
+| `OnLeave()` | 离开场景时 | 播放入场动画，清理创建 UI，移除 Manager |
+| `OnSwitchSceneEnd()` | 场景切换结束时 | 调整相机位置，打开角色创建 UI，执行淡出 |
 
-**职责**: 获取场景切换时不需要销毁的 UI 窗口类型列表
+### 资源配置方法
 
-**核心逻辑**:
-```
-返回保留窗口列表：
-- UIEnterView
-- UIBlendView
-- UIGuidanceView
-```
-
-**调用者**: `SceneManager`（场景切换时）
-
----
-
-### GetScenesChangeIgnoreClean()
-
-**签名**:
-```csharp
-public List<string> GetScenesChangeIgnoreClean()
-```
-
-**职责**: 获取场景切换时不需要清理的资源路径列表
-
-**核心逻辑**:
-```
-返回保留资源路径：
-- UIEnterView.PrefabPath
-- UIBlendView.PrefabPath
-- UIGuidanceView.PrefabPath
-```
-
-**调用者**: `SceneManager`（场景切换资源清理时）
+| 方法 | 返回值 | 说明 |
+|------|--------|------|
+| `GetScenePath()` | `"Scenes/CreateScene/Create.unity"` | 场景资源路径 |
+| `GetName()` | `"Create"` | 场景名称 |
+| `GetDontDestroyWindow()` | `string[]` | 保留的 UI 窗口（UIEnterView, UIBlendView, UIGuidanceView） |
+| `GetScenesChangeIgnoreClean()` | `List<string>` | 资源清理时保留的 Prefab 路径 |
+| `GetProgressPercent()` | `cleanup=0.2, loadScene=0.65, prepare=0.15` | 进度分配比例 |
 
 ---
 
-### GetProgressPercent()
+## 核心流程
 
-**签名**:
-```csharp
-public void GetProgressPercent(out float cleanup, out float loadScene, out float prepare)
-```
-
-**职责**: 获取场景加载各阶段的进度权重分配
-
-**核心逻辑**:
-```
-cleanup = 0.2f   // 清理阶段占 20%
-loadScene = 0.65f // 场景加载占 65%
-prepare = 0.15f   // 准备阶段占 15%
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
----
-
-### OnEnter()
-
-**签名**:
-```csharp
-public async ETTask OnEnter()
-```
-
-**职责**: 场景进入时的初始化，显示转场效果
-
-**核心逻辑**:
-```
-1. 尝试获取 UIBlendView
-2. 如果不存在则创建 UIBlendView
-3. 捕获背景（CaptureBg）
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
-**被调用者**: `UIManager.Instance.OpenWindow<UIBlendView>()`
-
----
-
-### OnLeave()
-
-**签名**:
-```csharp
-public async ETTask OnLeave()
-```
-
-**职责**: 场景离开时的清理工作
-
-**核心逻辑**:
-```
-1. 打开 UIEnterView（入场动画）
-2. 将玩家角色绑定到入场动画目标
-3. 销毁 UICreateView（角色创建界面）
-4. 移除 EntityManager 管理器
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
-**被调用者**: `UIManager.Instance.OpenWindow<UIEnterView>()`, `UIManager.Instance.DestroyWindow<UICreateView>()`
-
----
-
-### OnPrepare()
-
-**签名**:
-```csharp
-public async ETTask OnPrepare(float progressStart, float progressEnd)
-```
-
-**职责**: 场景预加载阶段，创建玩家角色实体
-
-**核心逻辑**:
-```
-1. 注册 EntityManager
-2. 检查 PlayerDataManager.Instance.Show 是否存在
-3. 如果存在：
-   - 复制装备数组
-   - 创建带装备的 Player 实体
-4. 如果不存在：
-   - 创建默认 Player 实体
-5. 设置角色位置、旋转、缩放为默认值
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
-**被调用者**: `EntityManager.CreateEntity<Player>()`
-
----
-
-### OnComplete()
-
-**签名**:
-```csharp
-public async ETTask OnComplete()
-```
-
-**职责**: 场景加载完成回调（当前为空实现）
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
----
-
-### SetProgress()
-
-**签名**:
-```csharp
-public async ETTask SetProgress(float value)
-```
-
-**职责**: 设置加载进度显示（当前为空实现）
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
----
-
-### OnSwitchSceneEnd()
-
-**签名**:
-```csharp
-public async ETTask OnSwitchSceneEnd()
-```
-
-**职责**: 场景切换结束后的收尾工作，打开角色创建界面
-
-**核心逻辑**:
-```
-1. 获取主摄像机 Transform
-2. 根据屏幕比例计算摄像机位置和角度
-   - 计算 flag = (设计高 * 屏宽) / (设计宽 * (屏高 + 安全区下))
-   - flag 归一化到 [0, 1] 范围
-   - 根据 flag 插值计算摄像机位置 (Z 轴 6~7.5) 和旋转 (X 轴 17~20 度)
-3. 打开 UICreateView（传入 Player 实体）
-4. 执行淡入效果
-5. 清空引用
-```
-
-**调用者**: `SceneManager.InnerSwitchScene()`
-
-**被调用者**: `UIManager.Instance.OpenWindow<UICreateView>()`, `DoFade()`
-
----
-
-### GetName()
-
-**签名**:
-```csharp
-public override string GetName()
-```
-
-**职责**: 获取场景名称
-
-**返回值**: `"Create"`
-
----
-
-### GetScenePath()
-
-**签名**:
-```csharp
-public string GetScenePath()
-```
-
-**职责**: 获取场景资源路径
-
-**返回值**: `"Scenes/CreateScene/Create.unity"`
-
----
-
-### DoFade()
-
-**签名**:
-```csharp
-private async ETTask DoFade()
-```
-
-**职责**: 执行淡入效果并关闭转场视图
-
-**核心逻辑**:
-```
-1. 等待 UIBlendView 的淡入动画完成
-2. 关闭 UIBlendView
-3. 清空引用
-```
-
-**调用者**: `OnSwitchSceneEnd()`
-
----
-
-## Mermaid 流程图
-
-### 角色创建场景生命周期
+### 场景切换完整流程
 
 ```mermaid
 sequenceDiagram
     participant SM as SceneManager
     participant CS as CreateScene
-    participant UM as UIManager
     participant EM as EntityManager
-    participant PD as PlayerDataManager
+    participant UM as UIManager
+    participant Player as Player
+    participant CM as CameraManager
 
+    SM->>CS: OnCreate()
+    Note over CS: 场景实例创建
+    
     SM->>CS: OnEnter()
-    CS->>UM: 获取/创建 UIBlendView
-    CS->>UM: CaptureBg
-
+    CS->>UM: OpenWindow<UIBlendView>()
+    CS->>UM: CaptureBg(true)
+    Note over CS: 显示淡入淡出遮罩
+    
     SM->>CS: OnPrepare()
-    CS->>SM: RegisterManager<EntityManager>
-    CS->>PD: 检查 Show 数据
-    CS->>EM: CreateEntity<Player>
-    CS->>CS: 设置默认 Transform
-
+    CS->>SM: RegisterManager<EntityManager>()
+    CS->>EM: CreateEntity<Player>(equipData)
+    Note over Player: 根据玩家装备数据创建角色
+    
     SM->>CS: OnComplete()
-
+    Note over CS: 场景资源加载完成
+    
     SM->>CS: OnSwitchSceneEnd()
-    CS->>CS: 计算摄像机位置
-    CS->>UM: 打开 UICreateView
+    CS->>CM: 调整相机位置和角度
+    CS->>UM: OpenWindow<UICreateView>(player)
     CS->>CS: DoFade()
-    CS->>UM: CloseWindow<UIBlendView>
+    CS->>UM: CloseWindow<UIBlendView>()
+    Note over CS: 打开角色创建界面
+    
+    Note over SM: 场景切换完成
 ```
 
-### 摄像机位置计算
+### 相机适配逻辑
 
-```mermaid
-flowchart TD
-    A[获取屏幕尺寸] --> B[计算 flag]
-    B --> C{flag < 0?}
-    C -->|是 | D[flag = 0]
-    C -->|否 | E{flag > 1?}
-    E -->|是 | F[flag = 1]
-    E -->|否 | G[保持 flag]
-    D --> H[计算摄像机位置]
-    F --> H
-    G --> H
-    H --> I[设置摄像机 Transform]
+```csharp
+// 根据屏幕比例动态调整相机位置和角度
+var flagStart = 1;
+var flagEnd = 0.8003906f;
+var flag = (Define.DesignScreenHeight * SystemInfoHelper.screenWidth) / 
+           (Define.DesignScreenWidth * (SystemInfoHelper.screenHeight + SystemInfoHelper.safeArea.yMin));
+
+flag = (flag - flagStart) / (flagEnd - flagStart);
+if (flag < 0) flag = 0;
+
+// 相机位置：Z 轴根据屏幕比例在 6~7.5 之间插值
+trans.position = new Vector3(0, 1, 6 + 1.5f * flag);
+// 相机角度：X 轴旋转在 20°~17°之间插值
+trans.eulerAngles = new Vector3(20 - 3 * flag, 180, 0);
 ```
 
-### 场景切换进度分配
+**适配逻辑**:
+- 计算屏幕比例因子 `flag`（考虑安全区域）
+- 根据 `flag` 插值相机位置（Z 轴 6~7.5）
+- 根据 `flag` 插值相机角度（X 旋转 20°~17°）
 
-```mermaid
-pie title CreateScene 进度分配
-    "清理阶段" : 20
-    "场景加载" : 65
-    "准备阶段" : 15
+---
+
+## 方法说明
+
+### OnEnter()
+
+**职责**: 进入场景时显示淡入淡出 UI
+
+**核心逻辑**:
 ```
+1. 获取或创建 UIBlendView 实例
+2. 捕获背景（CaptureBg(true)）
+3. 显示渐变遮罩
+```
+
+---
+
+### OnPrepare()
+
+**职责**: 预加载阶段创建玩家角色
+
+**核心逻辑**:
+```
+1. 注册 EntityManager
+2. 检查 PlayerDataManager.Instance.Show（装备数据）
+3. 创建 Player 实体（带装备数据或 null）
+4. 设置玩家位置、旋转、缩放为默认值
+```
+
+**代码示例**:
+```csharp
+var em = RegisterManager<EntityManager>();
+if (PlayerDataManager.Instance.Show != null)
+{
+    int[] temp = new int[PlayerDataManager.Instance.Show.Length];
+    for (int i = 0; i < temp.Length; i++)
+    {
+        temp[i] = PlayerDataManager.Instance.Show[i];
+    }
+    player = em.CreateEntity<Player, int[]>(temp);
+}
+else
+{
+    player = em.CreateEntity<Player, int[]>(null);
+}
+player.Position = Vector3.zero;
+player.Rotation = Quaternion.identity;
+player.LocalScale = Vector3.one;
+```
+
+---
+
+### OnLeave()
+
+**职责**: 离开场景时播放入场动画并清理
+
+**核心逻辑**:
+```
+1. 打开 UIEnterView（入场动画 UI）
+2. 执行入场动画（EnterTarget）
+3. 销毁 UICreateView
+4. 移除 EntityManager
+```
+
+**调用者**: SceneManager.InnerSwitchScene()
+
+---
+
+### OnSwitchSceneEnd()
+
+**职责**: 场景切换结束时调整相机并打开创建 UI
+
+**核心逻辑**:
+```
+1. 获取主相机 Transform
+2. 计算屏幕比例因子 flag
+3. 插值调整相机位置和角度
+4. 打开 UICreateView（传入 player）
+5. 执行淡出动画（DoFade）
+6. 关闭 UIBlendView
+```
+
+---
+
+### DoFade()
+
+**职责**: 执行淡出动画并关闭遮罩
+
+**核心逻辑**:
+```
+1. 等待 UIBlendView.DoFade() 完成
+2. 关闭 UIBlendView
+3. 清空 win 引用
+```
+
+---
+
+## 保留资源列表
+
+### 不销毁的 UI 窗口
+
+```csharp
+private string[] dontDestroyWindow =
+{
+    TypeInfo<UIEnterView>.TypeName,      // 入场动画 UI
+    TypeInfo<UIBlendView>.TypeName,      // 淡入淡出 UI
+    TypeInfo<UIGuidanceView>.TypeName,   // 引导 UI
+};
+```
+
+### 资源清理时保留的 Prefab
+
+```csharp
+public List<string> GetScenesChangeIgnoreClean()
+{
+    var res = new List<string>();
+    res.Add(UIEnterView.PrefabPath); 
+    res.Add(UIBlendView.PrefabPath); 
+    res.Add(UIGuidanceView.PrefabPath); 
+    return res;
+}
+```
+
+---
+
+## 进度分配
+
+### 场景加载进度权重
+
+| 阶段 | 权重 | 说明 |
+|------|------|------|
+| `cleanup` | 20% | 清理旧场景资源 |
+| `loadScene` | 65% | 加载新场景资源 |
+| `prepare` | 15% | 预加载资源 |
 
 ---
 
 ## 使用示例
 
-### 切换到角色创建场景
+### 示例 1: 切换到创建场景
 
 ```csharp
-// 通过 SceneManager 切换
+// 从其他场景切换到角色创建场景
 await SceneManager.Instance.SwitchScene<CreateScene>();
 ```
 
-### 获取玩家角色
+### 示例 2: 检查是否在创建场景
 
 ```csharp
-// 在 CreateScene 中获取玩家角色
-var createScene = SceneManager.Instance.CurrentScene as CreateScene;
-// player 是私有字段，需要通过 EntityManager 获取
-var player = EntityManager.Instance.GetEntity<Player>();
+if (SceneManager.Instance.IsInTargetScene<CreateScene>())
+{
+    // 创建场景特定逻辑
+    var createScene = SceneManager.Instance.GetCurrentScene<CreateScene>();
+}
+```
+
+### 示例 3: 访问创建的玩家角色
+
+```csharp
+// 在 CreateScene 内部访问 player
+if (player != null)
+{
+    var numeric = player.GetComponent<NumericComponent>();
+    var view = player.GetComponent<GameObjectHolderComponent>();
+}
 ```
 
 ---
 
-## 相关文档链接
+## 与其他模块的交互
 
-- [SceneManager.cs.md](../../Module/Scene/SceneManager.cs.md) - 场景管理器核心
-- [IScene.cs.md](../../Module/Scene/IScene.cs.md) - 场景接口定义
-- [UIManager.cs.md](../../Module/UI/UIManager.cs.md) - UI 管理系统
-- [Player.cs.md](../../Game/Entity/Player.cs.md) - 玩家实体
-- [UICreateView.cs.md](../../Game/UIGame/UICreate/UICreateView.cs.md) - 角色创建界面
+```mermaid
+graph TD
+    subgraph CreateScene["CreateScene"]
+        CS[CreateScene]
+    end
+    
+    subgraph Managers["管理器"]
+        EM[EntityManager]
+        UM[UIManager]
+        CM[CameraManager]
+        SM[SceneManager]
+    end
+    
+    subgraph UI["UI 组件"]
+        UICreate[UICreateView]
+        UIBlend[UIBlendView]
+        UIEnter[UIEnterView]
+        UIGuide[UIGuidanceView]
+    end
+    
+    subgraph Entity["实体"]
+        Player[Player]
+    end
+    
+    CS --> EM
+    CS --> UM
+    CS --> CM
+    CS --> SM
+    
+    UM --> UICreate
+    UM --> UIBlend
+    UM --> UIEnter
+    UM --> UIGuide
+    
+    EM --> Player
+    
+    note right of CS "CreateScene 协调所有组件<br/>完成角色创建流程"
+    
+    style CreateScene fill:#e1f5ff
+    style Managers fill:#fff4e1
+    style UI fill:#e8f5e9
+    style Entity fill:#fce4ec
+```
 
 ---
 
-*文档生成时间：2026-03-02*
+## 学习重点与陷阱
+
+### ✅ 学习重点
+
+1. **相机适配**: 根据屏幕比例动态调整相机位置和角度
+2. **角色预览**: 使用 Player 实体展示角色外观
+3. **转场动画**: UIBlendView 实现平滑过渡
+4. **资源保留**: 正确配置 dontDestroyWindow 和 GetScenesChangeIgnoreClean
+
+### ⚠️ 陷阱与注意事项
+
+| 问题 | 说明 | 解决方案 |
+|------|------|----------|
+| **相机位置错误** | 未考虑安全区域导致 UI 被遮挡 | 使用 `SystemInfoHelper.safeArea.yMin` 计算 |
+| **角色数据丢失** | 切换场景时 Player 被销毁 | 在 OnPrepare 中重新创建 |
+| **UI 残留** | 忘记关闭 UIBlendView | 在 OnSwitchSceneEnd 中确保关闭 |
+| **Manager 泄漏** | 忘记移除 EntityManager | 在 OnLeave 中调用 RemoveManager |
+
+---
+
+## 相关文档
+
+- [IScene.cs.md](./IScene.cs.md) - 场景接口定义
+- [SceneManager.cs.md](./SceneManager.cs.md) - 场景管理器
+- [Player.cs.md](../Entity/Player.cs.md) - 玩家实体
+- [UICreateView.cs.md](../../UIGame/UICreate/UICreateView.cs.md) - 角色创建 UI
+- [UIBlendView.cs.md](../../UI/UILoading/UIBlendView.cs.md) - 淡入淡出 UI
+- [CameraManager.cs.md](../../../Mono/Module/Camera/CameraManager.cs.md) - 相机管理器
+
+---
+
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

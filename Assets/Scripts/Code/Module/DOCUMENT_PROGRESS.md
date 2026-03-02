@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 10:30  
+> **更新时间**: 2026-03-02 11:15  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 393 |
-| 覆盖率 | ~60.8% |
+| 已创建 .md 文档 | 377 |
+| 覆盖率 | ~58.4% |
 
 ---
 
@@ -215,7 +215,7 @@
 ### Code/Game/System/Numeric (数值系统) (100%)
 - [x] NumericSystem.cs.md - 数值系统管理器
 
-### Code/Game/System/Environment (环境系统) (90%)
+### Code/Game/System/Environment (环境系统) (100%)
 - [x] EnvironmentPriorityType.cs.md - 环境优先级
 - [x] Data/DayTimeType.cs.md - 昼夜类型
 - [x] Runner/DayEnvironmentRunner.cs.md - 昼夜环境运行器
@@ -226,6 +226,9 @@
 - [x] Runner/NormalEnvironmentRunner.cs.md - 普通环境运行器
 - [x] Runner/BlenderEnvironmentRunner.cs.md - 混合环境运行器
 - [x] Runner/EnvironmentRunner.cs.md - 环境运行器基类
+
+### Code/Game/System/Auction (拍卖系统) (新增)
+- [x] AuctionManager.AIMiniPlay.cs.md - AI 小玩法模拟
 
 ### Code/Game/UIGame/UIAuction (拍卖 UI) (100%)
 - [x] UIAssistantView.cs.md - 助手对话视图
