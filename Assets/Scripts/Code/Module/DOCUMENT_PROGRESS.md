@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 11:15  
+> **更新时间**: 2026-03-02 11:20  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -9,9 +9,58 @@
 
 | 类别 | 数量 |
 |------|------|
-| 总 .cs 文件数 | ~646 |
+| 总 .cs 文件数 | 646 |
 | 已创建 .md 文档 | 377 |
-| 覆盖率 | ~58.4% |
+| 覆盖率 | 58.4% |
+
+---
+
+## 📝 本次提交
+
+**批次**: 第 1 批 (17 个新增文档)
+**提交信息**: docs: 完成拍卖系统 AI 小玩法文档及批量补充文档 (17 个新增)
+
+### 本批次文件列表
+
+#### Code/Game/System/Auction (拍卖系统)
+- [x] AuctionManager.AIMiniPlay.cs.md - AI 小玩法模拟
+
+#### Code/Game/System/Auction (引导管理)
+- [x] AuctionGuideManager.API.cs.md - API 接口
+- [x] AuctionGuideManager.Anim.cs.md - 动画控制
+- [x] AuctionGuideManager.State.cs.md - 状态管理
+
+#### Code/Game/UIGame/UIAuction (拍卖 UI)
+- [x] UIGameView.cs.md - 游戏主界面
+
+#### Code/Game/Component/AI/Decision (AI 决策)
+- [x] AIDecisionInterface.cs.md - AI 决策接口
+
+#### Mono 核心框架
+- [x] Init.cs.md - 游戏初始化入口
+
+#### Mono/Module/Entity (实体模块)
+- [x] EntityType.cs.md - 实体类型定义
+
+#### Mono/Module/TimeLine (时间线)
+- [x] MessagerTrack.cs.md - 消息轨道
+- [x] MessagerClip.cs.md - 消息片段
+- [x] MessagerBehaviour.cs.md - 消息行为
+
+#### Mono/Module/UI (UI 辅助)
+- [x] BackgroundBlur.cs.md - 背景模糊效果
+- [x] BgRawAutoFit.cs.md - 背景自适应 RawImage
+- [x] Drag.cs.md - 拖拽组件
+- [x] ReferenceCollector.cs.md - 引用收集器
+- [x] TextColorCtrl.cs.md - 文本颜色控制
+
+#### Mono/Module/Update (更新系统)
+- [x] UpdateTimer.cs.md - 更新定时器
+- [x] IUpdate.cs.md - 更新接口
+
+---
+
+## ✅ 已完成的模块
 
 ---
 
