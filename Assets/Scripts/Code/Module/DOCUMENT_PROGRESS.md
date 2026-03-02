@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 07:55  
+> **更新时间**: 2026-03-02 09:30  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 362 |
-| 覆盖率 | ~56.0% |
+| 已创建 .md 文档 | 382 |
+| 覆盖率 | ~59.1% |
 
 ---
 
@@ -227,27 +227,43 @@
 - [x] Runner/BlenderEnvironmentRunner.cs.md - 混合环境运行器
 - [x] Runner/EnvironmentRunner.cs.md - 环境运行器基类
 
+### Code/Game/UIGame/UIAuction (拍卖 UI) (100%)
+- [x] UIAssistantView.cs.md - 助手对话视图
+- [x] UIAuctionItem.cs.md - 拍卖物品项组件
+- [x] UIBubbleItem.cs.md - 对话气泡项
+- [x] UIButtonView.cs.md - 拍卖结算按钮视图
+- [x] UIDiceWin.cs.md - 骰子选择窗口
+- [x] UIEmojiItem.cs.md - 表情项组件
+- [x] UIGameInfoView.cs.md - 游戏情报选择视图
+- [x] UIGameView.cs.md - 游戏主界面
+- [x] UIGuideGameView.cs.md - 引导游戏视图
+- [x] UIItemsView.cs.md - 物品列表视图
+- [x] UIItemStoryWin.cs.md - 物品故事窗口
+- [x] UIRaiseSuccessWin.cs.md - 抬价成功窗口
+- [x] UIReportItem.cs.md - 结算报告列表项
+- [x] UIReportWin.cs.md - 对局结算报告窗口
+- [x] UISuccessAuction.cs.md - 竞拍成功动画
+- [x] UITargetView.cs.md - 目标瞄准视图
+- [x] UITaskInfoWin.cs.md - 任务详情窗口
+- [x] GameInfoItem.cs.md - 情报项组件
+- [x] TaskListItem.cs.md - 任务列表项组件
+
 ### Code/Game/UIGame/UITT (抖音小游戏 UI) (部分完成)
 - [x] UISidebarRewardsWin.cs.md - 侧边栏奖励窗口
-- [ ] UIAssistantView.cs
-- [ ] UIAuctionItem.cs
-- [ ] UIBubbleItem.cs
-- [ ] UIButtonView.cs
-- [ ] UIDiceWin.cs
-- [ ] UIEmojiItem.cs
-- [ ] UIGameInfoView.cs
-- [ ] UIGameView.cs
-- [ ] UIGuideGameView.cs
-- [ ] UIItemsView.cs
-- [ ] UIRaiseSuccessWin.cs
-- [ ] UIReportItem.cs
-- [ ] UIReportWin.cs
-- [ ] UISuccessAuction.cs
-- [ ] UITargetView.cs
-- [ ] UITaskInfoWin.cs
-- [ ] GameInfoItem.cs
-- [ ] TaskListItem.cs
 - [ ] TurntableItem.cs
+
+### Code/Game/UIGame/UIMiniGame (小游戏 UI) (部分完成)
+- [x] UIAppraisalView.cs.md - 鉴定小游戏
+- [x] UICommonMiniGameView.cs.md - 小游戏通用视图基类
+- [x] UIGoodsCheckView.cs.md - 验货小游戏视图
+- [x] UIItemStoryWin.cs.md - 物品故事窗口
+- [ ] UIQuarantineView.cs
+- [ ] UIRepairView.cs
+- [ ] UISaleEvent.cs
+- [ ] UITurnTableEventView.cs
+- [ ] UITurntableView.cs
+- [ ] UIBombDisposalView.cs
+- [ ] UIAppraisalItem.cs
 
 ### Code/Game/UIGame/UICreate (角色创建 UI) (部分完成)
 - [x] GroupInfo.cs.md - 套装信息
