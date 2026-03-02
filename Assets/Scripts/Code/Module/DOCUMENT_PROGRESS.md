@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 09:30  
+> **更新时间**: 2026-03-02 10:30  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,8 +10,8 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | ~646 |
-| 已创建 .md 文档 | 382 |
-| 覆盖率 | ~59.1% |
+| 已创建 .md 文档 | 393 |
+| 覆盖率 | ~60.8% |
 
 ---
 
@@ -248,22 +248,23 @@
 - [x] GameInfoItem.cs.md - 情报项组件
 - [x] TaskListItem.cs.md - 任务列表项组件
 
-### Code/Game/UIGame/UITT (抖音小游戏 UI) (部分完成)
+### Code/Game/UIGame/UITT (抖音小游戏 UI) (100%)
 - [x] UISidebarRewardsWin.cs.md - 侧边栏奖励窗口
-- [ ] TurntableItem.cs
+- [x] TurntableItem.cs.md - 转盘奖励项组件
 
-### Code/Game/UIGame/UIMiniGame (小游戏 UI) (部分完成)
+### Code/Game/UIGame/UIMiniGame (小游戏 UI) (100%)
 - [x] UIAppraisalView.cs.md - 鉴定小游戏
+- [x] UIAppraisalItem.cs.md - 鉴定物品项组件
+- [x] UIBombDisposalView.cs.md - 拆弹小游戏视图
 - [x] UICommonMiniGameView.cs.md - 小游戏通用视图基类
 - [x] UIGoodsCheckView.cs.md - 验货小游戏视图
 - [x] UIItemStoryWin.cs.md - 物品故事窗口
-- [ ] UIQuarantineView.cs
-- [ ] UIRepairView.cs
-- [ ] UISaleEvent.cs
-- [ ] UITurnTableEventView.cs
-- [ ] UITurntableView.cs
-- [ ] UIBombDisposalView.cs
-- [ ] UIAppraisalItem.cs
+- [x] UIQuarantineView.cs.md - 检疫小游戏视图
+- [x] UIRepairView.cs.md - 修理小游戏视图
+- [x] UISaleEvent.cs.md - 销售事件小游戏视图
+- [x] UITurnTableEventView.cs.md - 转盘事件视图
+- [x] UITurntableView.cs.md - 大厅转盘视图
+- [x] TurntableItem.cs.md - 转盘奖励项组件
 
 ### Code/Game/UIGame/UICreate (角色创建 UI) (部分完成)
 - [x] GroupInfo.cs.md - 套装信息
@@ -278,19 +279,6 @@
 - [ ] ShopItem.cs (已完成)
 - [ ] TableItem.cs (已完成)
 - [ ] GroupInfoTable.cs (已完成)
-
-### Code/Game/UIGame/UIMiniGame (小游戏 UI) (部分完成)
-- [x] UIAppraisalView.cs.md - 鉴定小游戏
-- [ ] UICommonMiniGameView.cs
-- [ ] UIGoodsCheckView.cs
-- [ ] UIItemStoryWin.cs
-- [ ] UIQuarantineView.cs
-- [ ] UIRepairView.cs
-- [ ] UISaleEvent.cs
-- [ ] UITurnTableEventView.cs
-- [ ] UITurntableView.cs
-- [ ] UIBombDisposalView.cs
-- [ ] UIAppraisalItem.cs
 
 ### Code/Game/UIGame/UILobby (大厅 UI) (100%)
 - [x] DailyTaskItem.cs.md - 每日任务项
