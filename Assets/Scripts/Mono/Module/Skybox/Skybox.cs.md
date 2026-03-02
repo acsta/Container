@@ -6,28 +6,24 @@
 |------|-----|
 | **文件名** | Skybox.cs |
 | **路径** | Assets/Scripts/Mono/Module/Skybox/Skybox.cs |
-| **所属模块** | 框架层 → Mono/Module/Skybox |
-| **文件职责** | 天空盒昼夜循环系统，控制天空纹理切换、时间流逝和着色器参数更新 |
+| **所属模块** | Mono/Module/Skybox (天空盒) |
+| **命名空间** | 全局 (无命名空间) |
+| **文件职责** | 天空盒昼夜循环系统，控制天空盒纹理切换和全局 Shader 参数 |
 
 ---
 
-## 类说明
+## 类/结构体说明
 
 ### SkyboxMono
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 管理天空盒的昼夜循环效果，包括时间推进、纹理混合、着色器参数传递 |
-| **继承关系** | `MonoBehaviour` |
-| **执行模式** | 运行时执行（默认） |
+| **职责** | 控制天空盒昼夜循环，管理天空盒纹理和 Shader 全局参数 |
+| **类型** | `MonoBehaviour` |
+| **继承关系** | 继承自 `MonoBehaviour` |
+| **特性** | `[ExecuteAlways]` (编辑器中始终执行) |
 
-**设计模式**: 状态驱动 + 着色器全局参数
-
-```csharp
-// 组件使用方式
-// 挂载到场景中的 GameObject 上，配置纹理和时间参数
-// 自动通过 Shader.SetGlobalXXX 更新全局着色器参数
-```
+**设计模式**: 组件模式
 
 ---
 
@@ -35,17 +31,17 @@
 
 | 名称 | 类型 | 访问级别 | 说明 |
 |------|------|----------|------|
-| `m_currTime` | `float` | `public` | 当前时间角度（0-360 度），核心状态变量 |
-| `m_dayCycleProgress` | `float` | `public` | 昼夜循环进度（0-1），用于 UI 或逻辑判断 |
-| `m_dayCycleSpeed` | `float` | `public` | 时间流逝速度倍率（1 为正常速度） |
-| `m_dayLength` | `float` | `public` | 白天时长（角度制，默认 180） |
-| `m_nightLength` | `float` | `public` | 夜晚时长（角度制，默认 180） |
-| `m_starNebulaSpeed` | `float` | `public` | 星空/星云旋转速度 |
-| `m_skyDayTex` | `Texture2D` | `public` | 白天天空纹理 |
-| `m_skyNightTex` | `Texture2D` | `public` | 夜晚天空纹理 |
-| `m_skySunriseTex` | `Texture2D` | `public` | 日出天空纹理 |
-| `m_skySunsetTex` | `Texture2D` | `public` | 日落天空纹理 |
-| `m_Timer` | `GameObject` | `public` | 可视化时间指示器（可选） |
+| `m_dayCycleProgress` | `float` | `public` | 昼夜循环进度 (0-1) |
+| `m_dayCycleSpeed` | `float` | `public` | 昼夜循环速度 (默认 1) |
+| `m_dayLength` | `float` | `public` | 白天时长 (秒，默认 180) |
+| `m_nightLength` | `float` | `public` | 夜晚时长 (秒，默认 180) |
+| `m_currTime` | `float` | `public` | 当前时间 (角度 0-360，默认 45) |
+| `m_starNebulaSpeed` | `float` | `public` | 星空/星云动画速度 |
+| `m_Timer` | `GameObject` | `public` | 计时器可视化对象 |
+| `m_skyDayTex` | `Texture2D` | `public` | 白天天空盒纹理 |
+| `m_skyNightTex` | `Texture2D` | `public` | 夜晚天空盒纹理 |
+| `m_skySunsetTex` | `Texture2D` | `public` | 日落天空盒纹理 |
+| `m_skySunriseTex` | `Texture2D` | `public` | 日出天空盒纹理 |
 
 ---
 
@@ -58,19 +54,19 @@
 void Start()
 ```
 
-**职责**: 初始化天空盒系统，设置初始时间并加载天空纹理到着色器
+**职责**: 初始化天空盒系统，设置 Shader 全局纹理
 
 **核心逻辑**:
 ```
-1. 设置初始时间 m_currTime = 45（日出时刻）
-2. 将四张天空纹理注册到着色器全局参数：
-   - _SkyDayTex → 白天纹理
-   - _SkyNightTex → 夜晚纹理
-   - _SkySunriseTex → 日出纹理
-   - _SkySunsetTex → 日落纹理
+1. 设置初始时间 m_currTime = 45
+2. 设置 Shader 全局纹理:
+   - _SkyDayTex → m_skyDayTex
+   - _SkyNightTex → m_skyNightTex
+   - _SkySunriseTex → m_skySunriseTex
+   - _SkySunsetTex → m_skySunsetTex
 ```
 
-**调用者**: Unity 生命周期（场景启动时自动调用）
+**调用者**: Unity 生命周期 (场景启动时)
 
 ---
 
@@ -81,207 +77,320 @@ void Start()
 void Update()
 ```
 
-**职责**: 每帧更新时间状态并同步到着色器
+**职责**: 每帧更新天空盒状态，计算昼夜循环
 
 **核心逻辑**:
 ```
-1. 推进时间：m_currTime += Time.deltaTime * m_dayCycleSpeed
-2. 时间归一化：m_currTime %= 360（保持 0-360 范围）
-3. 更新着色器全局参数 _CurrTime
+1. 更新时间：m_currTime += Time.deltaTime * m_dayCycleSpeed
+2. 角度取模：m_currTime %= 360
+3. 设置 Shader 全局参数:
+   - _CurrTime → m_currTime
+   - _DayCycleProgress → m_dayCycleProgress
+   - _DayLength → m_dayLength
+   - _NightLength → m_nightLength
+   - _StarSpeed → m_starNebulaSpeed
+   - _NebulaSpeed → m_starNebulaSpeed
 4. 计算昼夜进度：m_dayCycleProgress = m_currTime / (m_dayLength + m_nightLength)
-5. 旋转时间指示器（如果有）
-6. 更新着色器全局参数 _DayCycleProgress
-7. 传递配置参数到着色器：
-   - _DayLength
-   - _NightLength
-   - _StarSpeed
-   - _NebulaSpeed
+5. 旋转计时器：m_Timer.transform.Rotate(Time.deltaTime * m_dayCycleSpeed, 0f, 0f)
 ```
 
-**调用者**: Unity 生命周期（每帧自动调用）
-
-**时间计算说明**:
-```
-时间范围：0-360 度
-- 0°:   午夜
-- 45°:  日出
-- 90°:  正午
-- 135°: 日落
-- 180°: 午夜
-- ...循环
-
-默认配置（dayLength=180, nightLength=180）:
-- 0-180°:   白天
-- 180-360°: 夜晚
-```
+**调用者**: Unity 生命周期 (每帧)
 
 ---
 
-## 着色器全局参数
+## Shader 全局参数
 
 ### 纹理参数
 
 | 参数名 | 类型 | 说明 |
 |--------|------|------|
-| `_SkyDayTex` | `Texture2D` | 白天天空纹理 |
-| `_SkyNightTex` | `Texture2D` | 夜晚天空纹理 |
-| `_SkySunriseTex` | `Texture2D` | 日出天空纹理 |
-| `_SkySunsetTex` | `Texture2D` | 日落天空纹理 |
+| `_SkyDayTex` | `Texture2D` | 白天天空盒纹理 |
+| `_SkyNightTex` | `Texture2D` | 夜晚天空盒纹理 |
+| `_SkySunriseTex` | `Texture2D` | 日出天空盒纹理 |
+| `_SkySunsetTex` | `Texture2D` | 日落天空盒纹理 |
 
 ### 浮点参数
 
 | 参数名 | 类型 | 说明 |
 |--------|------|------|
-| `_CurrTime` | `float` | 当前时间角度（0-360） |
-| `_DayCycleProgress` | `float` | 昼夜循环进度（0-1） |
-| `_DayLength` | `float` | 白天时长（角度） |
-| `_NightLength` | `float` | 夜晚时长（角度） |
-| `_StarSpeed` | `float` | 星空旋转速度 |
-| `_NebulaSpeed` | `float` | 星云旋转速度 |
+| `_CurrTime` | `float` | 当前时间角度 (0-360) |
+| `_DayCycleProgress` | `float` | 昼夜循环进度 (0-1) |
+| `_DayLength` | `float` | 白天时长 (秒) |
+| `_NightLength` | `float` | 夜晚时长 (秒) |
+| `_StarSpeed` | `float` | 星空动画速度 |
+| `_NebulaSpeed` | `float` | 星云动画速度 |
+
+---
+
+## 昼夜循环逻辑
+
+### 时间计算
+
+```csharp
+// 每帧累加时间
+m_currTime += Time.deltaTime * m_dayCycleSpeed;
+
+// 角度循环 (0-360 度)
+m_currTime %= 360;
+```
+
+**说明**: 
+- 0° = 午夜
+- 90° = 日出
+- 180° = 正午
+- 270° = 日落
+- 360° = 午夜 (循环)
+
+### 进度计算
+
+```csharp
+m_dayCycleProgress = m_currTime / (m_dayLength + m_nightLength);
+```
+
+**说明**: 
+- 进度 0.0 = 循环开始
+- 进度 0.5 = 白天结束
+- 进度 1.0 = 循环结束
+
+---
+
+## 流程图
+
+### 昼夜循环流程
+
+```mermaid
+sequenceDiagram
+    participant Unity as Unity Engine
+    participant SM as SkyboxMono
+    participant Shader as Shader Global
+
+    Unity->>SM: Start()
+    SM->>Shader: SetGlobalTexture(_SkyDayTex)
+    SM->>Shader: SetGlobalTexture(_SkyNightTex)
+    SM->>Shader: SetGlobalTexture(_SkySunriseTex)
+    SM->>Shader: SetGlobalTexture(_SkySunsetTex)
+    
+    loop 每帧 Update()
+        Unity->>SM: Update()
+        SM->>SM: m_currTime += deltaTime * speed
+        SM->>SM: m_currTime %= 360
+        SM->>Shader: SetGlobalFloat(_CurrTime)
+        SM->>SM: 计算 m_dayCycleProgress
+        SM->>Shader: SetGlobalFloat(_DayCycleProgress)
+        SM->>Shader: SetGlobalFloat(_DayLength)
+        SM->>Shader: SetGlobalFloat(_NightLength)
+        SM->>Shader: SetGlobalFloat(_StarSpeed)
+        SM->>Shader: SetGlobalFloat(_NebulaSpeed)
+        SM->>SM: 旋转 m_Timer
+    end
+```
+
+### 天空盒混合逻辑 (Shader 侧)
+
+```mermaid
+graph LR
+    subgraph 输入
+        T1[白天纹理]
+        T2[夜晚纹理]
+        T3[日出纹理]
+        T4[日落纹理]
+        P[当前时间角度]
+    end
+    
+    subgraph Shader
+        S1{时间判断}
+        S2[纹理混合]
+        S3[输出]
+    end
+    
+    P --> S1
+    S1 -->|白天 | T1
+    S1 -->|夜晚 | T2
+    S1 -->|日出 | T3
+    S1 -->|日落 | T4
+    T1 --> S2
+    T2 --> S2
+    T3 --> S2
+    T4 --> S2
+    S2 --> S3
+    
+    style 输入 fill:#e1f5ff
+    style Shader fill:#fff4e1
+```
 
 ---
 
 ## 使用示例
 
-### 示例 1: 基础配置
+### Inspector 配置
 
-```csharp
-// 在 Unity 编辑器中：
-// 1. 创建空 GameObject，命名为"SkyboxController"
-// 2. 添加 SkyboxMono 组件
-// 3. 配置四张天空纹理
-// 4. 调整时间参数（可选）
-
-// 默认配置即可运行，无需额外代码
+```
+SkyboxMono 组件:
+├─ m_dayCycleSpeed: 1.0          # 循环速度 (1=正常速度)
+├─ m_dayLength: 180              # 白天时长 (秒)
+├─ m_nightLength: 180            # 夜晚时长 (秒)
+├─ m_currTime: 45                # 初始时间角度
+├─ m_starNebulaSpeed: 1.0        # 星空动画速度
+├─ m_Timer: [GameObject]         # 可视化计时器
+├─ m_skyDayTex: [Texture2D]      # 白天天空盒
+├─ m_skyNightTex: [Texture2D]    # 夜晚天空盒
+├─ m_skySunriseTex: [Texture2D]  # 日出天空盒
+└─ m_skySunsetTex: [Texture2D]   # 日落天空盒
 ```
 
-### 示例 2: 运行时调整时间速度
+### 代码控制
 
 ```csharp
-// 获取天空盒控制器
+// 获取 SkyboxMono 实例
 var skybox = FindObjectOfType<SkyboxMono>();
 
-// 加速时间流逝（2 倍速）
-skybox.m_dayCycleSpeed = 2f;
+// 加速时间 (10 倍速)
+skybox.m_dayCycleSpeed = 10f;
 
-// 减慢时间流逝（0.5 倍速）
-skybox.m_dayCycleSpeed = 0.5f;
+// 设置到特定时间 (正午)
+skybox.m_currTime = 180f;
 
 // 暂停时间
 skybox.m_dayCycleSpeed = 0f;
+
+// 切换为长白天短夜晚
+skybox.m_dayLength = 300f;
+skybox.m_nightLength = 60f;
 ```
 
-### 示例 3: 设置特定时间
-
-```csharp
-// 直接设置当前时间角度
-var skybox = FindObjectOfType<SkyboxMono>();
-
-// 设置为正午（90 度）
-skybox.m_currTime = 90f;
-
-// 设置为午夜（0 度或 360 度）
-skybox.m_currTime = 0f;
-
-// 设置为黄昏（135 度）
-skybox.m_currTime = 135f;
-```
-
-### 示例 4: 获取当前昼夜进度
+### 获取当前昼夜进度
 
 ```csharp
 var skybox = FindObjectOfType<SkyboxMono>();
-
-// 获取进度（0-1）
 float progress = skybox.m_dayCycleProgress;
 
-if (progress < 0.5f)
+if (progress < 0.25f)
 {
-    // 白天逻辑
+    // 夜晚
+}
+else if (progress < 0.5f)
+{
+    // 早晨
+}
+else if (progress < 0.75f)
+{
+    // 白天
 }
 else
 {
-    // 夜晚逻辑
+    // 黄昏
 }
 ```
 
-### 示例 5: 配置昼夜时长
-
-```csharp
-var skybox = FindObjectOfType<SkyboxMono>();
-
-// 长白天短夜晚（白天 270 度，夜晚 90 度）
-skybox.m_dayLength = 270f;
-skybox.m_nightLength = 90f;
-
-// 长夜晚短白天（白天 90 度，夜晚 270 度）
-skybox.m_dayLength = 90f;
-skybox.m_nightLength = 270f;
-```
-
 ---
 
-## 技术要点
+## 与其他模块的交互
 
-### 1. 时间角度系统
-
-使用角度（0-360 度）而非时间（0-24 小时）表示时间：
-- 便于三角函数计算
-- 便于与旋转动画配合
-- 便于着色器插值混合
-
-### 2. 着色器全局参数
-
-通过 `Shader.SetGlobalXXX` 传递参数：
-- 所有材质共享同一套天空盒参数
-- 无需每材质单独设置
-- 性能优化（避免重复设置）
-
-### 3. 时间归一化
-
-```csharp
-m_currTime %= 360;
+```mermaid
+graph TD
+    subgraph Skybox["SkyboxMono"]
+        SM[SkyboxMono 组件]
+    end
+    
+    subgraph Shader["Shader 全局参数"]
+        T1[_SkyDayTex]
+        T2[_SkyNightTex]
+        T3[_SkySunriseTex]
+        T4[_SkySunsetTex]
+        F1[_CurrTime]
+        F2[_DayCycleProgress]
+    end
+    
+    subgraph Users["使用模块"]
+        Env[EnvironmentManager<br/>环境系统]
+        Light[Lighting System<br/>光照系统]
+    end
+    
+    SM --> T1
+    SM --> T2
+    SM --> T3
+    SM --> T4
+    SM --> F1
+    SM --> F2
+    
+    Env --> SM
+    Light --> SM
+    
+    note right of SM "SkyboxMono 控制全局<br/>Shader 参数，其他系统<br/>通过 Shader 读取"
+    
+    style Skybox fill:#e1f5ff
+    style Shader fill:#fff4e1
+    style Users fill:#e8f5e9
 ```
-确保时间始终在 0-360 范围内循环，避免浮点数溢出。
-
-### 4. 进度计算
-
-```csharp
-m_dayCycleProgress = m_currTime / (m_dayLength + m_nightLength);
-```
-将时间角度转换为 0-1 进度值，便于 UI 显示和逻辑判断。
-
----
-
-## 相关文档
-
-- **着色器**: 查看项目中的天空盒着色器（通常在天坛/Shader 目录）
-- **纹理资源**: Assets/AssetsPackage/Environment/Skybox/ 目录
-- **时间系统**: [TimeInfo.cs.md](../../Timer/TimeInfo.cs.md) - 游戏时间信息服务
 
 ---
 
 ## 注意事项
 
-### ⚠️ 编辑器模式
+### ⚠️ 性能考虑
 
-当前代码未启用 `[ExecuteAlways]`，如需在编辑器中实时预览效果：
+- `[ExecuteAlways]` 特性会在编辑器中每帧执行，可能影响编辑器性能
+- 建议开发时禁用，需要预览时再启用
+
 ```csharp
-[ExecuteAlways]  // 取消注释此行
+// 开发时注释掉
+// [ExecuteAlways]
 public class SkyboxMono : MonoBehaviour
 ```
 
-### ⚠️ 纹理资源
+### ⚠️ Shader 兼容性
 
-确保四张天空纹理：
-- 尺寸一致（建议 2048x1024 或 4096x2048）
-- 格式为 RGB 或 RGBA
-- 已正确导入到 Unity 项目
+- 确保使用的 Shader 支持这些全局参数
+- 全局参数会影响所有使用该 Shader 的对象
 
-### ⚠️ 时间指示器
+### ⚠️ 内存管理
 
-`m_Timer` 为可选的可视化组件，用于在场景中显示当前时间方向。如不需要可留空。
+- 天空盒纹理较大，注意内存占用
+- 使用纹理压缩格式 (如 ASTC)
 
 ---
 
-*文档生成时间：2026-03-01 | OpenClaw AI 助手*
+## 扩展建议
+
+### 添加时间控制 API
+
+```csharp
+public class SkyboxMono : MonoBehaviour
+{
+    /// <summary>
+    /// 设置当前时间 (小时 0-24)
+    /// </summary>
+    public void SetTimeOfDay(float hour)
+    {
+        m_currTime = (hour / 24f) * 360f;
+    }
+    
+    /// <summary>
+    /// 获取当前小时 (0-24)
+    /// </summary>
+    public float GetTimeOfDay()
+    {
+        return (m_currTime / 360f) * 24f;
+    }
+    
+    /// <summary>
+    /// 是否是白天
+    /// </summary>
+    public bool IsDaytime()
+    {
+        return m_currTime >= 90 && m_currTime <= 270;
+    }
+}
+```
+
+---
+
+## 相关文档
+
+- [EnvironmentManager.cs.md](../../../Code/Game/System/Environment/EnvironmentManager.cs.md) - 环境管理器
+- [EnvironmentInfo.cs.md](../../../Code/Game/System/Environment/EnvironmentInfo.cs.md) - 环境配置数据
+- [DayEnvironmentRunner.cs.md](../../../Code/Game/System/Environment/Runner/DayEnvironmentRunner.cs.md) - 昼夜环境运行器
+
+---
+
+*文档生成时间：2026-03-02 | OpenClaw AI 助手*

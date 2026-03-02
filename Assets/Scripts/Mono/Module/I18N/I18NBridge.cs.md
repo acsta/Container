@@ -6,8 +6,9 @@
 |------|-----|
 | **文件名** | I18NBridge.cs |
 | **路径** | Assets/Scripts/Mono/Module/I18N/I18NBridge.cs |
-| **所属模块** | Mono 层 → I18N 国际化 |
-| **文件职责** | 提供多语言文本获取的统一接口，作为国际化系统的桥接层 |
+| **所属模块** | Mono/Module/I18N (国际化) |
+| **命名空间** | `TaoTie` |
+| **文件职责** | 国际化桥接器，提供多语言文本获取接口 |
 
 ---
 
@@ -17,19 +18,14 @@
 
 | 属性 | 说明 |
 |------|------|
-| **职责** | 提供多语言文本获取的静态接口，委托实际的文本查找逻辑给外部实现 |
-| **泛型参数** | 无 |
+| **职责** | 提供统一的国际化文本获取接口，桥接具体实现 |
+| **类型** | `class` |
 | **继承关系** | 无继承 |
-| **实现的接口** | 无 |
-
-**设计模式**: 单例模式 + 桥接模式 + 策略模式
+| **设计模式** | 单例模式 + 桥接模式 |
 
 ```csharp
 // 单例实现
 public static I18NBridge Instance { get; private set; } = new I18NBridge();
-
-// 使用方式
-string text = I18NBridge.Instance.GetText("common.confirm");
 ```
 
 ---
@@ -39,258 +35,290 @@ string text = I18NBridge.Instance.GetText("common.confirm");
 | 名称 | 类型 | 访问级别 | 说明 |
 |------|------|----------|------|
 | `Instance` | `I18NBridge` | `public static` | 单例实例，全局访问点 |
-| `OnLanguageChangeEvt` | `Action` | `public` | 语言切换事件（通知 UI 更新文本） |
-| `GetValueByKey` | `Func<string, string>` | `public` | 文本查找委托（由外部实现注入） |
+| `OnLanguageChangeEvt` | `Action` | `public` | 语言切换事件 |
+| `GetValueByKey` | `Func<string, string>` | `public` | 通过 Key 获取文本的委托函数 |
 
 ---
 
-## 方法说明
+## 方法说明（按重要程度排序）
 
-### GetText()
+### GetText(string i18NKey)
 
 **签名**:
 ```csharp
 public string GetText(string i18NKey)
 ```
 
-**职责**: 通过国际化键获取对应语言的文本
+**职责**: 通过国际化 Key 获取多语言文本
 
 **参数**:
-- `i18NKey`: 国际化键（如 "common.confirm", "ui.title.home"）
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| `i18NKey` | `string` | 国际化 Key (如 "ui.confirm", "game.start") |
 
-**返回值**: `string` - 对应语言的文本，查找失败时返回 null 或空字符串
+**返回值**: `string` - 对应语言的文本，Key 不存在时返回 null
 
 **核心逻辑**:
 ```
-1. 调用 GetValueByKey?.Invoke(i18NKey)
-2. 返回查找结果
+1. 调用 GetValueByKey 委托
+2. 返回查询结果
 ```
-
-**调用者**: I18NText.OnSwitchLanguage(), 任何需要多语言文本的代码
 
 **使用示例**:
 ```csharp
-// 获取按钮文本
-string confirmText = I18NBridge.Instance.GetText("common.confirm");
-button.text = confirmText;
+// 获取确认按钮文本
+string confirmText = I18NBridge.Instance.GetText("ui.confirm");
 
-// 获取标题文本
-string title = I18NBridge.Instance.GetText("ui.title.home");
-titleLabel.text = title;
+// 获取游戏开始文本
+string startText = I18NBridge.Instance.GetText("game.start");
+
+// 安全获取 (带默认值)
+string text = I18NBridge.Instance.GetText(key) ?? key;
 ```
 
 ---
 
-## 语言切换机制
+## 事件说明
 
-### 切换流程
+### OnLanguageChangeEvt
+
+**签名**: `public Action OnLanguageChangeEvt`
+
+**触发时机**: 当用户切换游戏语言时
+
+**订阅示例**:
+```csharp
+// 订阅语言切换事件
+I18NBridge.Instance.OnLanguageChangeEvt += OnLanguageChanged;
+
+void OnLanguageChanged()
+{
+    // 刷新 UI 文本
+    RefreshAllUIText();
+}
+
+// 取消订阅 (在 Destroy 中)
+I18NBridge.Instance.OnLanguageChangeEvt -= OnLanguageChanged;
+```
+
+---
+
+## 委托说明
+
+### GetValueByKey
+
+**签名**: `public Func<string, string> GetValueByKey`
+
+**职责**: 设置具体的文本查询实现
+
+**说明**: 
+- 这是一个委托属性，需要外部设置具体实现
+- 通常由配置管理器或专门的 I18N 管理器设置
+- 实现应该从配置表中查询对应 Key 的文本
+
+**设置示例**:
+```csharp
+// 在初始化时设置实现
+I18NBridge.Instance.GetValueByKey = (key) =>
+{
+    var config = I18NConfigManager.Instance.GetTextConfig(key);
+    return config?.GetText(currentLanguage);
+};
+```
+
+---
+
+## 架构设计
+
+### 桥接模式
 
 ```mermaid
-sequenceDiagram
-    participant Caller as 调用者
-    participant IB as I18NBridge
-    participant Impl as 实现层 (YooAsset/Config)
-    participant UI as I18NText UI 组件
+classDiagram
+    class I18NBridge {
+        +static Instance: I18NBridge
+        +OnLanguageChangeEvt: Action
+        +GetValueByKey: Func<string, string>
+        +GetText(key: string): string
+    }
 
-    Caller->>IB: 切换语言 ("en-US")
-    Caller->>Impl: 加载语言包
-    Impl-->>Caller: 加载完成
+    class I18NManager {
+        +LoadLanguage(lang: string): void
+        +GetText(key: string): string
+    }
+
+    class I18NConfig {
+        +texts: Dictionary<string, string>
+        +GetText(key: string): string
+    }
+
+    I18NBridge --> I18NManager : 设置 GetValueByKey
+    I18NManager --> I18NConfig : 加载配置
     
-    Caller->>IB: OnLanguageChangeEvt?.Invoke()
-    IB->>UI: 触发事件
-    
-    loop 所有 I18NText 组件
-        UI->>IB: GetText(key)
-        IB->>Impl: GetValueByKey(key)
-        Impl-->>IB: 返回翻译文本
-        IB-->>UI: 返回文本
-        UI->>UI: 更新 text
-    end
+    note for I18NBridge "桥接层<br/>不关心具体实现"
+    note for I18NManager "具体实现<br/>管理语言配置"
 ```
 
-### 事件订阅
-
-```csharp
-// I18NText 组件订阅语言切换事件
-private void OnEnable()
-{
-    OnSwitchLanguage(); // 立即更新一次
-    I18NBridge.Instance.OnLanguageChangeEvt += OnSwitchLanguage;
-}
-
-private void OnDisable()
-{
-    I18NBridge.Instance.OnLanguageChangeEvt -= OnSwitchLanguage;
-}
-
-private void OnSwitchLanguage()
-{
-    m_Text.text = I18NBridge.Instance.GetText(key);
-}
-```
-
----
-
-## 外部实现注入
-
-### GetValueByKey 委托设置
-
-```csharp
-// 在游戏初始化时设置实际的文本查找实现
-void InitializeI18N()
-{
-    // 方式 1: 使用配置表实现
-    I18NBridge.Instance.GetValueByKey = (key) =>
-    {
-        return I18NConfigCategory.Instance.Get(key).Text;
-    };
-    
-    // 方式 2: 使用 JSON 语言包
-    I18NBridge.Instance.GetValueByKey = (key) =>
-    {
-        if (languageData.TryGetValue(key, out string value))
-        {
-            return value;
-        }
-        return key; // 找不到时返回 key 本身
-    };
-    
-    // 方式 3: 使用 YooAsset 资源包
-    I18NBridge.Instance.GetValueByKey = async (key) =>
-    {
-        var op = PackageManager.Instance.LoadAssetAsync<TextAsset>($"I18N/{currentLanguage}");
-        await op.Task;
-        // 解析并返回文本
-    };
-}
-```
+**优势**:
+- `I18NBridge` 不依赖具体实现，便于替换
+- UI 代码只需依赖 `I18NBridge`，降低耦合
+- 支持热切换语言实现
 
 ---
 
 ## 使用示例
 
-### 示例 1: 直接获取文本
+### 基础使用
 
 ```csharp
-// 在代码中直接使用
-string welcomeText = I18NBridge.Instance.GetText("ui.welcome");
-Log.Info(welcomeText);
-
-// 设置 UI 文本
-titleLabel.text = I18NBridge.Instance.GetText("ui.title.home");
-confirmButton.text = I18NBridge.Instance.GetText("common.confirm");
-cancelButton.text = I18NBridge.Instance.GetText("common.cancel");
-```
-
-### 示例 2: 切换语言
-
-```csharp
-// 定义支持的语言
-public enum LanguageType
+// 在 UI 脚本中获取文本
+public class UIButton : MonoBehaviour
 {
-    zh_CN,  // 简体中文
-    en_US,  // 英文
-    ja_JP,  // 日文
-    ko_KR,  // 韩文
-}
-
-// 切换语言函数
-async ETTask SwitchLanguage(LanguageType newLanguage)
-{
-    // 保存用户选择
-    PlayerPrefs.SetInt("Language", (int)newLanguage);
+    public string i18nKey;
+    private Text textComponent;
     
-    // 加载新的语言包
-    await LoadLanguagePack(newLanguage);
+    void Start()
+    {
+        textComponent = GetComponent<Text>();
+        UpdateText();
+        
+        // 订阅语言切换事件
+        I18NBridge.Instance.OnLanguageChangeEvt += UpdateText;
+    }
     
-    // 触发语言切换事件（所有 I18NText 组件会自动更新）
-    I18NBridge.Instance.OnLanguageChangeEvt?.Invoke();
+    void UpdateText()
+    {
+        textComponent.text = I18NBridge.Instance.GetText(i18nKey);
+    }
+    
+    void OnDestroy()
+    {
+        I18NBridge.Instance.OnLanguageChangeEvt -= UpdateText;
+    }
 }
 ```
 
-### 示例 3: 动态文本插值
+### 带默认值的安全获取
 
 ```csharp
-// 语言包中定义模板
-// "ui.player.level": "玩家等级：{0}"
-// "ui.player.exp": "经验值：{0}/{1}"
+public static class I18NHelper
+{
+    /// <summary>
+    /// 安全获取文本，Key 不存在时返回 Key 本身
+    /// </summary>
+    public static string GetTextOrDefault(string key)
+    {
+        return I18NBridge.Instance.GetText(key) ?? key;
+    }
+}
 
-string levelText = string.Format(
-    I18NBridge.Instance.GetText("ui.player.level"),
-    player.Level
-);
-
-string expText = string.Format(
-    I18NBridge.Instance.GetText("ui.player.exp"),
-    player.CurrentExp,
-    player.MaxExp
-);
+// 使用
+textComponent.text = I18NHelper.GetTextOrDefault("ui.unknown_key");
 ```
 
-### 示例 4: 复数形式处理
+### 批量刷新 UI
 
 ```csharp
-// 语言包中定义复数规则
-// "ui.item.count.one": "{0} 个项目"
-// "ui.item.count.other": "{0} 个项目"
-
-string GetItemCountText(int count)
+public class UIManager : IManager
 {
-    string key = count == 1 ? "ui.item.count.one" : "ui.item.count.other";
-    return string.Format(I18NBridge.Instance.GetText(key), count);
+    private List<UIText> textComponents = new List<UIText>();
+    
+    public void Init()
+    {
+        I18NBridge.Instance.OnLanguageChangeEvt += RefreshAllText;
+    }
+    
+    public void Destroy()
+    {
+        I18NBridge.Instance.OnLanguageChangeEvt -= RefreshAllText;
+    }
+    
+    private void RefreshAllText()
+    {
+        foreach (var text in textComponents)
+        {
+            text.Refresh();
+        }
+    }
 }
 ```
 
 ---
 
-## 国际化键命名规范
+## 扩展建议
 
-### 推荐命名结构
+### 添加语言枚举
 
-```
-<模块>.<子模块>.<具体项>
-
-示例:
-- common.confirm          // 通用确认按钮
-- common.cancel           // 通用取消按钮
-- ui.title.home           // 主页标题
-- ui.button.submit        // 提交按钮
-- item.weapon.sword       // 武器 - 剑
-- skill.fire.ball         // 技能 - 火球术
-- npc.merchant.greeting   // NPC-商人 - 问候语
-```
-
-### 键值对示例
-
-```json
+```csharp
+public enum LanguageType
 {
-    "common.confirm": "确认",
-    "common.cancel": "取消",
-    "common.ok": "确定",
-    "common.yes": "是",
-    "common.no": "否",
-    
-    "ui.title.home": "家园",
-    "ui.title.shop": "商店",
-    "ui.title.bag": "背包",
-    
-    "ui.button.submit": "提交",
-    "ui.button.back": "返回",
-    "ui.button.close": "关闭",
-    
-    "item.weapon.sword": "铁剑",
-    "item.weapon.axe": "斧头",
-    "item.armor.helmet": "头盔"
+    Chinese,
+    English,
+    Japanese,
+    Korean,
 }
+```
+
+### 添加语言切换方法
+
+```csharp
+public static class I18NManager
+{
+    private static LanguageType currentLanguage = LanguageType.Chinese;
+    
+    public static void SetLanguage(LanguageType lang)
+    {
+        currentLanguage = lang;
+        // 加载对应语言配置
+        LoadLanguageConfig(lang);
+        // 触发事件
+        I18NBridge.Instance.OnLanguageChangeEvt?.Invoke();
+    }
+    
+    public static LanguageType GetCurrentLanguage()
+    {
+        return currentLanguage;
+    }
+}
+```
+
+---
+
+## 注意事项
+
+### ⚠️ 内存泄漏
+
+订阅 `OnLanguageChangeEvt` 后务必在 `Destroy()` 中取消订阅：
+
+```csharp
+// ✅ 正确
+void OnDestroy()
+{
+    I18NBridge.Instance.OnLanguageChangeEvt -= OnLanguageChanged;
+}
+
+// ❌ 错误 - 会导致内存泄漏
+// 忘记取消订阅
+```
+
+### ⚠️ 空引用
+
+`GetValueByKey` 未设置时，`GetText()` 会返回 null：
+
+```csharp
+// ✅ 安全做法
+string text = I18NBridge.Instance.GetText(key) ?? key;
+
+// ❌ 危险做法
+string text = I18NBridge.Instance.GetText(key); // 可能为 null
 ```
 
 ---
 
 ## 相关文档
 
-- [I18NText.cs.md](./I18NText.cs.md) - 国际化文本 UI 组件（使用 I18NBridge）
+- [I18NText.cs.md](./I18NText.cs.md) - 国际化文本组件
 - [TextMeshFontAssetManager.cs.md](./TextMeshFontAssetManager.cs.md) - TextMesh 字体资产管理
-- [UIManager.cs.md](../../Code/Module/UI/UIManager.cs.md) - UI 管理器
+- [ConfigManager.cs.md](../../Code/Module/Config/ConfigManager.cs.md) - 配置管理器
 
 ---
 

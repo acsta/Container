@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 11:20  
+> **更新时间**: 2026-03-02 13:46  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,57 +10,32 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | 646 |
-| 已创建 .md 文档 | 377 |
-| 覆盖率 | 58.4% |
+| 已创建 .md 文档 | 386 |
+| 覆盖率 | 59.8% |
+
+**注**: 
+- ThirdParty 目录 (125 个文件) 为第三方库，通常不生成文档
+- Generate 目录为自动生成代码，暂不处理
+- 实际 runtime 代码文档覆盖率：**74.1%** (386/521)
 
 ---
 
 ## 📝 本次提交
 
-**批次**: 第 1 批 (17 个新增文档)
-**提交信息**: docs: 完成拍卖系统 AI 小玩法文档及批量补充文档 (17 个新增)
+**批次**: 第 3 批 (6 个文档更新)
+**提交信息**: docs: 完善核心框架文档 (Define, TimerType, GameSetting, I18NBridge, Skybox, AuctionManager)
 
 ### 本批次文件列表
 
-#### Code/Game/System/Auction (拍卖系统)
-- [x] AuctionManager.AIMiniPlay.cs.md - AI 小玩法模拟
-
-#### Code/Game/System/Auction (引导管理)
-- [x] AuctionGuideManager.API.cs.md - API 接口
-- [x] AuctionGuideManager.Anim.cs.md - 动画控制
-- [x] AuctionGuideManager.State.cs.md - 状态管理
-
-#### Code/Game/UIGame/UIAuction (拍卖 UI)
-- [x] UIGameView.cs.md - 游戏主界面
-
-#### Code/Game/Component/AI/Decision (AI 决策)
-- [x] AIDecisionInterface.cs.md - AI 决策接口
-
 #### Mono 核心框架
-- [x] Init.cs.md - 游戏初始化入口
+- [x] Define.cs.md - 全局常量与配置定义 (完善)
+- [x] TimerType.cs.md - 定时器类型常量 (完善)
+- [x] GameSetting.cs.md - 游戏设置 (完善)
+- [x] I18NBridge.cs.md - 国际化桥接 (完善)
+- [x] Skybox.cs.md - 天空盒系统 (完善)
 
-#### Mono/Module/Entity (实体模块)
-- [x] EntityType.cs.md - 实体类型定义
-
-#### Mono/Module/TimeLine (时间线)
-- [x] MessagerTrack.cs.md - 消息轨道
-- [x] MessagerClip.cs.md - 消息片段
-- [x] MessagerBehaviour.cs.md - 消息行为
-
-#### Mono/Module/UI (UI 辅助)
-- [x] BackgroundBlur.cs.md - 背景模糊效果
-- [x] BgRawAutoFit.cs.md - 背景自适应 RawImage
-- [x] Drag.cs.md - 拖拽组件
-- [x] ReferenceCollector.cs.md - 引用收集器
-- [x] TextColorCtrl.cs.md - 文本颜色控制
-
-#### Mono/Module/Update (更新系统)
-- [x] UpdateTimer.cs.md - 更新定时器
-- [x] IUpdate.cs.md - 更新接口
-
----
-
-## ✅ 已完成的模块
+#### Code/Game/System/Auction (拍卖系统)
+- [x] AuctionManager.cs.md - 拍卖管理器核心 (完善)
 
 ---
 
@@ -72,456 +47,379 @@
 - [x] IManager.cs - 管理器接口定义
 
 ### Core/Object 数据结构组件 (100%)
-- [x] HashSetComponent.cs.md - HashSet 对象池组件
-- [x] MultiMapSet.cs.md - 有序多重映射（HashSet 去重）
-- [x] IdGenerater.cs.md - 全局唯一 ID 生成器
-- [x] ListComponent.cs.md - List 对象池组件
-- [x] DynDictionary.cs.md - 动态字典（支持继承和变更通知）
-- [x] UnOrderMultiMapSet.cs.md - 无序多重映射（HashSet 去重）
-- [x] BigNumber.cs.md - 任意精度大数运算
-- [x] LinkedListComponent.cs.md - LinkedList 对象池组件
-- [x] MultiMap.cs.md - 有序多重映射（List 允许重复）
-- [x] LruCache.cs.md - LRU 缓存（线程安全）
+- [x] HashSetComponent.cs.md
+- [x] MultiMapSet.cs.md
+- [x] IdGenerater.cs.md
+- [x] ListComponent.cs.md
+- [x] DynDictionary.cs.md
+- [x] UnOrderMultiMapSet.cs.md
+- [x] BigNumber.cs.md
+- [x] LinkedListComponent.cs.md
+- [x] MultiMap.cs.md
+- [x] LruCache.cs.md
+- [x] DictionaryComponent.cs.md
+- [x] DoubleMap.cs.md
+- [x] UnOrderDoubleKeyDictionary.cs.md
+- [x] UnOrderDoubleKeyMap.cs.md
+- [x] UnOrderDoubleKeyMapSet.cs.md
+- [x] UnOrderMultiMap.cs.md
+- [x] PriorityStack/ (全部完成)
 
 ### Timer 定时器模块 (100%)
-- [x] TimerManager.cs - 定时器管理系统
-- [x] TimeInfo.cs - 时间信息服务
-- [x] GameTimerManager.cs - 游戏时间管理器
-- [x] ITimer.cs - 定时器处理器接口
-- [x] TimerAction.cs - 定时器动作数据结构
+- [x] TimerManager.cs
+- [x] TimeInfo.cs
+- [x] GameTimerManager.cs
+- [x] ITimer.cs
+- [x] TimerAction.cs
+- [x] TimerAttribute.cs
 
-### Mono 核心框架 (新增)
-- [x] Define.cs.md - 全局常量与配置定义
-- [x] AssemblyManager.cs.md - 程序集管理器
-- [x] AttributeManager.cs.md - 属性扫描管理器
-- [x] BaseAttribute.cs.md - 基础属性定义
-- [x] AcceptAllCertificate.cs.md - SSL 证书处理器
-- [x] HttpManager.cs.md - HTTP 请求管理器
-- [x] I18NBridge.cs.md - 国际化桥接
-- [x] I18NText.cs.md - 国际化文本组件
-- [x] TextMeshFontAssetManager.cs.md - TextMesh 字体资产管理
-- [x] CodeLoader.cs.md - 代码加载器（热更新）
-- [x] IStaticMethod.cs.md - 静态方法接口
-- [x] MonoStaticMethod.cs.md - Mono 反射实现
+### Mono 核心框架 (100%)
+- [x] Define.cs.md
+- [x] Init.cs.md
+- [x] WebGLPlatform.cs.md
+- [x] AssemblyManager.cs.md
+- [x] AttributeManager.cs.md
+- [x] BaseAttribute.cs.md
+- [x] AcceptAllCertificate.cs.md
+- [x] HttpManager.cs.md
+- [x] I18NBridge.cs.md
+- [x] I18NText.cs.md
+- [x] TextMeshFontAssetManager.cs.md
+- [x] CodeLoader.cs.md
+- [x] IStaticMethod.cs.md
+- [x] MonoStaticMethod.cs.md
+- [x] SetUIData.cs.md
 
 ### Log 日志模块 (100%)
-- [x] Log.cs - 日志系统入口
-- [x] ILog.cs - 日志接口定义
-- [x] UnityLogger.cs - Unity 日志实现
+- [x] Log.cs
+- [x] ILog.cs
+- [x] UnityLogger.cs
 
-### UI 模块 (100%)
-- [x] UIBaseContainer.cs.md
-- [x] UIBaseView.cs.md
-- [x] UIManager.cs.md
-- [x] UIManager.Layers.cs.md
-- [x] UILayer.cs.md
-- [x] UILayerNames.cs.md
-- [x] UIWindow.cs.md
-- [x] IOnCreate.cs.md
-- [x] IOnEnable.cs.md
-- [x] IOnDisable.cs.md
-- [x] IOnDestroy.cs.md
-- [x] IOnBeforeCloseWin.cs.md
-- [x] IOnWidthPaddingChange.cs.md
+### Messager 消息系统 (100%)
+- [x] Messager.cs
 
-### UI/RedDot 模块 (100%)
-- [x] UIRedDot.cs.md
-- [x] UINumRedDot.cs.md
-- [x] RedDotManager.cs.md
+### Mono/Module/Const (常量定义) (100%)
+- [x] GameInfoType.cs.md
+- [x] MessageId.cs.md
+- [x] TimerType.cs.md
 
-### UIComponent 模块 (100%)
-- [x] UIAnimator.cs.md
-- [x] UIButton.cs.md
-- [x] UICopyGameObject.cs.md
-- [x] UIDropdown.cs.md
-- [x] UIEmptyView.cs.md
-- [x] UIEventTrigger.cs.md
-- [x] UIImage.cs.md
-- [x] UIInput.cs.md
-- [x] UIInputTextmesh.cs.md
-- [x] UILoopGridView.cs.md
-- [x] UILoopListView2.cs.md
-- [x] UIMonoBehaviour.cs.md
-- [x] UIPointerClick.cs.md
-- [x] UIRawImage.cs.md
-- [x] UISlider.cs.md
-- [x] UIText.cs.md
-- [x] UITextmesh.cs.md
-- [x] UIToggle.cs.md
+### Mono/Module/Entity (实体系统) (100%)
+- [x] EntityComponent.cs.md
+- [x] EntityType.cs.md
+- [x] ExportBones.cs.md
+- [x] BonesData.cs.md
+- [x] Hit/ 目录全部完成
 
-### Mono/Module/Skybox (100%)
-- [x] Skybox.cs.md - 天空盒昼夜循环系统
+### Mono/Module/UI (UI 辅助) (100%)
+- [x] BackgroundBlur.cs.md
+- [x] BgAutoFit.cs.md
+- [x] BgAutoMax.cs.md
+- [x] BgRawAutoFit.cs.md
+- [x] CircleImage.cs.md
+- [x] CircleRawImage.cs.md
+- [x] CopyGameObject.cs.md
+- [x] Drag.cs.md
+- [x] EmptyGraphic.cs.md
+- [x] PointerClick.cs.md
+- [x] ReferenceCollector.cs.md
+- [x] ScrollViewEventRaycast.cs.md
+- [x] TextColorCtrl.cs.md
+- [x] UIScriptCreator.cs.md
 
-### Mono/Module/Const (100%)
-- [x] GameInfoType.cs.md - 游戏信息事件类型
-- [x] MessageId.cs.md - 全局消息 ID 常量
+### Mono/Module/UI/Input (输入绑定) (待处理)
+- [ ] InputAxisBind.cs
+- [ ] InputKeyBind.cs
 
-### Mono/Module/Entity (100%)
-- [x] EntityType.cs.md - 实体类型定义
-- [x] ExportBones.cs.md - 骨骼导出工具
-- [x] BonesData.cs.md - 骨骼数据组件
+### Mono/Module/Skybox (天空盒) (100%)
+- [x] Skybox.cs.md
 
-### Mono/Module/Entity/Hit (100%)
-- [x] ColliderBoxComponent.cs.md - 碰撞触发器
-- [x] CheckHitLayerType.cs.md - 检测层级类型
-- [x] HitBoxComponent.cs.md - HitBox 标记组件
-- [x] HitInfo.cs.md - 击中信息结构
-- [x] HitBoxType.cs.md - HitBox 类型枚举
+### Mono/Module/TimeLine (时间线) (100%)
+- [x] MessagerTrack.cs.md
+- [x] MessagerClip.cs.md
+- [x] MessagerBehaviour.cs.md
 
-### Code/Game/Entity (实体系统) (100%)
-- [x] Entity.cs.md - 实体基类
-- [x] SceneEntity.cs.md - 场景实体基类
-- [x] Unit.cs.md - 场景单位基类
-- [x] Character.cs.md - 角色基类
-- [x] Player.cs.md - 玩家实体
-- [x] NPC.cs.md - NPC 实体
-- [x] Bidder.cs.md - 竞拍者实体
-- [x] Animal.cs.md - 动物实体
-- [x] Host.cs.md - 主机实体
-- [x] Box.cs.md - 宝盒实体
-- [x] IEntity.cs.md - 实体接口定义
+### Mono/Module/Update (更新系统) (100%)
+- [x] UpdateTimer.cs.md
+- [x] IUpdate.cs.md
 
-### Code/Game/Scene (场景系统) (100%)
-- [x] SceneManager.cs.md - 场景管理器
-- [x] IScene.cs.md - 场景接口
-- [x] LoadingScene.cs.md - 加载场景
-- [x] SceneManagerProvider.cs.md - 场景管理器提供者
-- [x] HomeScene.cs.md - 家园场景
-- [x] MapScene.cs.md - 地图场景基类
-- [x] CreateScene.cs.md - 角色创建场景
-- [x] GuideScene.cs.md - 引导场景
+### Mono/Module/Particle (粒子系统) (100%)
+- [x] ParticleSimulationBudgetManager.cs.md
+- [x] ParticleSystemController.cs.md
 
-### Code/Game/UI/UILoading (加载 UI) (100%)
-- [x] UILoadingView.cs.md - 加载界面基类
-- [x] UILoadingView2.cs.md - 加载界面版本 2（渐变遮罩）
-- [x] UIEnterView.cs.md - 入场动画视图
-- [x] UIBlendView.cs.md - 转场淡入淡出视图
-- [x] UINetView.cs.md - 网络状态视图
-
-### Code/Game/UI/UIGuidance (引导 UI) (100%)
-- [x] UIGuidanceView.cs.md - 引导视图（助手/对话/手势）
-- [x] UIFirstGuidanceView.cs.md - 首次引导视图
-
-### Mono/Module/UI/Input (100%)
-- [x] InputAxisBind.cs.md - 虚拟摇杆轴绑定
-- [x] InputKeyBind.cs.md - UI 按键绑定
-
-### Mono/Module/UI (辅助组件) (100%)
-- [x] BgAutoMax.cs.md - 背景自适应组件
-- [x] CircleImage.cs.md - 圆形/扇形 Image 组件
-- [x] CircleRawImage.cs.md - 圆角 RawImage 组件
-- [x] CopyGameObject.cs.md - 游戏对象复制组件
-- [x] EmptyGraphic.cs.md - 空图形组件（透明点击区）
-- [x] PointerClick.cs.md - 点击事件组件
-- [x] ScrollViewEventRaycast.cs.md - 滚动视图事件传递组件
-- [x] UIScriptCreator.cs.md - UI 脚本创建器标记组件
-
-### Code/Game/UIGame/UICreate (角色创建 UI) (100%)
-- [x] UICreateView.cs.md - 角色创建主界面
-- [x] UIBagWin.cs.md - 背包窗口
-- [x] UIShopWin.cs.md - 商店窗口
-- [x] UIEquipWin.cs.md - 装备详情窗口
-- [x] UIBuyWin.cs.md - 购买窗口
-- [x] CreateItem.cs.md - 装备槽位项
-- [x] ClothItem.cs.md - 装备物品项
-- [x] ShopItem.cs.md - 商店商品项
-- [x] TableItem.cs.md - 背包列表项
-- [x] GroupInfoTable.cs.md - 套装信息表
+### Mono/Module/Performance (性能管理) (100%)
+- [x] PerformanceManager.cs.md
 
 ### Mono/Module/YooAssets (资源管理) (100%)
-- [x] PackageManager.cs.md - 资源包管理器核心
-- [x] PackageConfig.cs.md - 资源包配置
-- [x] BuildInPackageConfig.cs.md - 内置包配置
-- [x] CDNConfig.cs.md - CDN 配置
-- [x] RemoteServices.cs.md - 远程服务
-- [x] StreamingAssetsHelper.cs.md - 构建助手
-- [x] BundleDecryption.cs.md - 资源解密
+- [x] PackageManager.cs.md
+- [x] PackageConfig.cs.md
+- [x] BuildInPackageConfig.cs.md
+- [x] CDNConfig.cs.md
+- [x] RemoteServices.cs.md
+- [x] StreamingAssetsHelper.cs.md
+- [x] BundleDecryption.cs.md
+
+### Mono/Helper (工具类) (待处理)
+- [ ] BridgeHelper.cs
+- [ ] BridgeHelper.WebGL.cs
+- [ ] CDNConfigHelper.cs
+- [ ] EasingFunction.cs
+- [ ] JsonHelper.cs
+- [ ] PhysicsHelper.cs
+- [ ] PlatformUtil.cs
+- [ ] RangeHelper.cs
+- [ ] SkipUnityLogo.cs
+- [ ] SystemInfoHelper.cs
+- [ ] TypeInfo.cs
+- [ ] UnityLifeTimeHelper.cs
+
+### Code/Module/Config (配置系统) (100%)
+- [x] ConfigLoader.cs.md
+- [x] ConfigAttribute.cs.md
+- [x] NotNullAttribute.cs.md
+- [x] ProtoObject.cs.md
+- [x] IMerge.cs.md
+- [x] ProtobufHelper.cs.md
+- [x] IConfigLoader.cs.md
+- [x] OdinDropdownHelper.cs.md
+- [x] ConfigManager.cs.md
+
+### Code/Module/Config/DecisionTree (AI 决策树) (100%)
+- [x] ConfigAIDecisionTree.cs.md
+- [x] ConfigAIDecisionTreeCategory.cs.md
+- [x] ActDecision.cs.md
+- [x] AITactic.cs.md
+- [x] CompareMode.cs.md
+- [x] DecisionActionNode.cs.md
+- [x] DecisionCompareNode.cs.md
+- [x] DecisionConditionNode.cs.md
+- [x] DecisionNode.cs.md
+
+### Code/Module/Config/Environment (环境配置) (待处理)
+- [ ] ConfigEnvironment.cs
+- [ ] ConfigEnvironments.cs
+
+### Code/Module/Config/Blender (待处理)
+- [ ] ConfigBlender.cs
 
 ### Code/Module/Config/Value (配置值类型) (100%)
-- [x] BaseValue.cs.md - 值基类
-- [x] FormulaValue.cs.md - 公式值
-- [x] SingleValue.cs.md - 固定值
-- [x] ZeroValue.cs.md - 零值
-- [x] Range01Value.cs.md - 0-1 范围值
-- [x] OperatorValue.cs.md - 运算符值
-- [x] LogicMode.cs.md - 逻辑模式
-- [x] RandomAuctionTime.cs.md - 随机竞拍时间
-- [x] MinAuctionTime.cs.md - 最小竞拍时间
-- [x] TimeSinceLastBid.cs.md - 距上次竞拍时间
+- [x] BaseValue.cs.md
+- [x] FormulaValue.cs.md
+- [x] SingleValue.cs.md
+- [x] ZeroValue.cs.md
+- [x] Range01Value.cs.md
+- [x] OperatorValue.cs.md
+- [x] LogicMode.cs.md
+- [x] RandomAuctionTime.cs.md
+- [x] MinAuctionTime.cs.md
+- [x] TimeSinceLastBid.cs.md
+
+### Code/Module/Scene (场景系统) (待处理)
+- [ ] SceneManager.cs
+- [ ] LoadingScene.cs
+- [ ] IScene.cs
+- [ ] SceneManagerProvider.cs
+
+### Code/Game/Scene (场景系统) (100%)
+- [x] HomeScene.cs.md
+- [x] MapScene.cs.md
+- [x] CreateScene.cs.md
+- [x] GuideScene.cs.md
+
+### Code/Game/Entity (实体系统) (100%)
+- [x] Entity.cs.md
+- [x] SceneEntity.cs.md
+- [x] Unit.cs.md
+- [x] Character.cs.md
+- [x] Player.cs.md
+- [x] NPC.cs.md
+- [x] Bidder.cs.md
+- [x] Animal.cs.md
+- [x] Host.cs.md
+- [x] Box.cs.md
+- [x] IEntity.cs.md
 
 ### Code/Game/Component (组件系统) (100%)
-- [x] Component.cs.md - 组件基类
-- [x] IComponent.cs.md - 组件接口定义
-- [x] Numeric/NumericComponent.cs.md - 数值组件
-- [x] Numeric/INumericReplace.cs.md - 数值替换接口
-- [x] Numeric/NumericChange.cs.md - 数值变化事件
-- [x] Numeric/FormulaStringFx.cs.md - 公式解析器
-- [x] Type/BidderComponent.cs.md - 竞拍者组件
-- [x] View/BlackBoyComponent.cs.md - 黑色角色效果组件
-- [x] View/CasualActionComponent.cs.md - 休闲动作组件
-- [x] View/GameObjectHolderComponent.cs.md - 游戏对象持有组件
+- [x] Component.cs.md
+- [x] IComponent.cs.md
+- [x] Numeric/NumericComponent.cs.md
+- [x] Numeric/INumericReplace.cs.md
+- [x] Numeric/NumericChange.cs.md
+- [x] Numeric/FormulaStringFx.cs.md
+- [x] Type/BidderComponent.cs.md
+- [x] View/BlackBoyComponent.cs.md
+- [x] View/CasualActionComponent.cs.md
+- [x] View/GameObjectHolderComponent.cs.md
+- [x] AI/AIComponent.cs.md
+- [x] AI/Knowledge/AIKnowledge.cs.md
+- [x] AI/Decision/AIDecisionTree.cs.md
+- [x] AI/Decision/AIDecision.cs.md
+- [x] AI/Decision/AIDecisionInterface.cs.md
 
 ### Code/Game/System/Numeric (数值系统) (100%)
-- [x] NumericSystem.cs.md - 数值系统管理器
+- [x] NumericSystem.cs.md
+
+### Code/Game/System/Entity (实体管理) (100%)
+- [x] EntityManager.cs.md
+- [x] ClothGenerateManager.cs.md
 
 ### Code/Game/System/Environment (环境系统) (100%)
-- [x] EnvironmentPriorityType.cs.md - 环境优先级
-- [x] Data/DayTimeType.cs.md - 昼夜类型
-- [x] Runner/DayEnvironmentRunner.cs.md - 昼夜环境运行器
-- [x] EnvironmentManager.cs.md - 环境管理器
-- [x] EnvironmentManager.Light.cs.md - 光照应用
-- [x] EnvironmentManager.Skybox.cs.md - 天空盒应用
-- [x] EnvironmentInfo.cs.md - 环境配置数据
-- [x] Runner/NormalEnvironmentRunner.cs.md - 普通环境运行器
-- [x] Runner/BlenderEnvironmentRunner.cs.md - 混合环境运行器
-- [x] Runner/EnvironmentRunner.cs.md - 环境运行器基类
+- [x] EnvironmentPriorityType.cs.md
+- [x] Data/DayTimeType.cs.md
+- [x] Data/EnvironmentInfo.cs.md
+- [x] Runner/DayEnvironmentRunner.cs.md
+- [x] Runner/NormalEnvironmentRunner.cs.md
+- [x] Runner/BlenderEnvironmentRunner.cs.md
+- [x] Runner/EnvironmentRunner.cs.md
+- [x] EnvironmentManager.cs.md
+- [x] EnvironmentManager.Light.cs.md
+- [x] EnvironmentManager.Skybox.cs.md
 
-### Code/Game/System/Auction (拍卖系统) (新增)
-- [x] AuctionManager.AIMiniPlay.cs.md - AI 小玩法模拟
+### Code/Game/System/Auction (拍卖系统) (100%)
+- [x] AuctionManager.cs.md
+- [x] AuctionManager.API.cs.md
+- [x] AuctionManager.Anim.cs.md
+- [x] AuctionManager.State.cs.md
+- [x] AuctionManager.AIMiniPlay.cs.md
+- [x] AuctionGuideManager.cs.md
+- [x] AuctionGuideManager.API.cs.md
+- [x] AuctionGuideManager.Anim.cs.md
+- [x] AuctionGuideManager.State.cs.md
+- [x] AuctionHelper.cs.md
+- [x] AuctionState.cs.md
+- [x] IAuctionManager.cs.md
 
-### Code/Game/UIGame/UIAuction (拍卖 UI) (100%)
-- [x] UIAssistantView.cs.md - 助手对话视图
-- [x] UIAuctionItem.cs.md - 拍卖物品项组件
-- [x] UIBubbleItem.cs.md - 对话气泡项
-- [x] UIButtonView.cs.md - 拍卖结算按钮视图
-- [x] UIDiceWin.cs.md - 骰子选择窗口
-- [x] UIEmojiItem.cs.md - 表情项组件
-- [x] UIGameInfoView.cs.md - 游戏情报选择视图
-- [x] UIGameView.cs.md - 游戏主界面
-- [x] UIGuideGameView.cs.md - 引导游戏视图
-- [x] UIItemsView.cs.md - 物品列表视图
-- [x] UIItemStoryWin.cs.md - 物品故事窗口
-- [x] UIRaiseSuccessWin.cs.md - 抬价成功窗口
-- [x] UIReportItem.cs.md - 结算报告列表项
-- [x] UIReportWin.cs.md - 对局结算报告窗口
-- [x] UISuccessAuction.cs.md - 竞拍成功动画
-- [x] UITargetView.cs.md - 目标瞄准视图
-- [x] UITaskInfoWin.cs.md - 任务详情窗口
-- [x] GameInfoItem.cs.md - 情报项组件
-- [x] TaskListItem.cs.md - 任务列表项组件
+### Code/Game/UI/UICommon (通用 UI) (100%)
+- [x] UICopyWin.cs.md
+- [x] UILoginWin.cs.md
+- [x] UIMenu.cs.md
+- [x] UIMenuItem.cs.md
+- [x] UIMsgBoxWin.cs.md
+- [x] UIRareAnim.cs.md
+- [x] UISliderToggle.cs.md
+- [x] UIToast.cs.md
 
-### Code/Game/UIGame/UITT (抖音小游戏 UI) (100%)
-- [x] UISidebarRewardsWin.cs.md - 侧边栏奖励窗口
-- [x] TurntableItem.cs.md - 转盘奖励项组件
+### Code/Game/UI/UIUpdate (更新 UI) (100%)
+- [x] UIUpdateView.cs.md
 
-### Code/Game/UIGame/UIMiniGame (小游戏 UI) (100%)
-- [x] UIAppraisalView.cs.md - 鉴定小游戏
-- [x] UIAppraisalItem.cs.md - 鉴定物品项组件
-- [x] UIBombDisposalView.cs.md - 拆弹小游戏视图
-- [x] UICommonMiniGameView.cs.md - 小游戏通用视图基类
-- [x] UIGoodsCheckView.cs.md - 验货小游戏视图
-- [x] UIItemStoryWin.cs.md - 物品故事窗口
-- [x] UIQuarantineView.cs.md - 检疫小游戏视图
-- [x] UIRepairView.cs.md - 修理小游戏视图
-- [x] UISaleEvent.cs.md - 销售事件小游戏视图
-- [x] UITurnTableEventView.cs.md - 转盘事件视图
-- [x] UITurntableView.cs.md - 大厅转盘视图
-- [x] TurntableItem.cs.md - 转盘奖励项组件
+### Code/Game/UI/UILoading (加载 UI) (100%)
+- [x] UILoadingView.cs.md
+- [x] UILoadingView2.cs.md
+- [x] UIEnterView.cs.md
+- [x] UIBlendView.cs.md
+- [x] UINetView.cs.md
 
-### Code/Game/UIGame/UICreate (角色创建 UI) (部分完成)
-- [x] GroupInfo.cs.md - 套装信息
-- [x] EffectItem.cs.md - 效果项
-- [ ] UICreateView.cs (已完成)
-- [ ] UIBagWin.cs (已完成)
-- [ ] UIShopWin.cs (已完成)
-- [ ] UIEquipWin.cs (已完成)
-- [ ] UIBuyWin.cs (已完成)
-- [ ] CreateItem.cs (已完成)
-- [ ] ClothItem.cs (已完成)
-- [ ] ShopItem.cs (已完成)
-- [ ] TableItem.cs (已完成)
-- [ ] GroupInfoTable.cs (已完成)
+### Code/Game/UI/UIGuidance (引导 UI) (100%)
+- [x] UIGuidanceView.cs.md
+- [x] UIFirstGuidanceView.cs.md
 
 ### Code/Game/UIGame/UILobby (大厅 UI) (100%)
-- [x] DailyTaskItem.cs.md - 每日任务项
-- [x] UILobbyView.cs.md - 大厅主界面
-- [x] UIDailyWin.cs.md - 每日任务奖励窗口
-- [x] UIProfitWin.cs.md - 餐厅收益窗口
-- [x] UITaskDetailsWin.cs.md - 任务详情窗口
-- [x] UIMarketView.cs.md - 市场界面
-- [x] UIAuctionSelectView.cs.md - 拍卖选择界面
-- [x] UIRankView.cs.md - 排行榜界面
-- [x] UICashGroup.cs.md - 金币显示组件
-- [x] UIMatchView.cs.md - 匹配界面
-- [x] DailyTaskRewards.cs.md - 每日任务阶段奖励组件
-- [x] UserItem.cs.md - 玩家头像项组件
-- [x] RankItem.cs.md - 排行榜项组件
-- [x] UIRewardsView.cs.md - 奖励展示窗口
-- [x] UIUnlockWin.cs.md - 解锁确认窗口
-- [x] UIExpandWin.cs.md - 收益时间扩展窗口
-- [x] UISettingWin.cs.md - 设置窗口
-- [x] UIRankBtn.cs.md - 排行榜按钮（SDK 集成）
-- [x] AuctionSelectItem.cs.md - 拍卖场选择项组件
-- [x] UIWashDishView.cs.md - 餐厅洗碗界面
-- [x] TechnologyNode.cs.md - 科技树节点组件
-- [x] TechnologyNodeItem.cs.md - 科技树子节点组件
-- [x] UIBlackView.cs.md - 黑名单/科技树界面
-- [x] RestaurantTask.cs.md - 餐厅任务项组件
-- [x] UITopView.cs.md - 顶部信息栏视图
+- [x] DailyTaskItem.cs.md
+- [x] UILobbyView.cs.md
+- [x] UIDailyWin.cs.md
+- [x] UIProfitWin.cs.md
+- [x] UITaskDetailsWin.cs.md
+- [x] UIMarketView.cs.md
+- [x] UIAuctionSelectView.cs.md
+- [x] UIRankView.cs.md
+- [x] UICashGroup.cs.md
+- [x] UIMatchView.cs.md
+- [x] DailyTaskRewards.cs.md
+- [x] UserItem.cs.md
+- [x] RankItem.cs.md
+- [x] UIRewardsView.cs.md
+- [x] UIUnlockWin.cs.md
+- [x] UIExpandWin.cs.md
+- [x] UISettingWin.cs.md
+- [x] UIRankBtn.cs.md
+- [x] AuctionSelectItem.cs.md
+- [x] UIWashDishView.cs.md
+- [x] TechnologyNode.cs.md
+- [x] TechnologyNodeItem.cs.md
+- [x] UIBlackView.cs.md
+- [x] RestaurantTask.cs.md
+- [x] UITopView.cs.md
+
+### Code/Game/UIGame/UICreate (角色创建 UI) (100%)
+- [x] UICreateView.cs.md
+- [x] UIBagWin.cs.md
+- [x] UIShopWin.cs.md
+- [x] UIEquipWin.cs.md
+- [x] UIBuyWin.cs.md
+- [x] CreateItem.cs.md
+- [x] ClothItem.cs.md
+- [x] ShopItem.cs.md
+- [x] TableItem.cs.md
+- [x] GroupInfo.cs.md
+- [x] GroupInfoTable.cs.md
+- [x] EffectItem.cs.md
+
+### Code/Game/UIGame/UIAuction (拍卖 UI) (100%)
+- [x] UIAssistantView.cs.md
+- [x] UIAuctionItem.cs.md
+- [x] UIBubbleItem.cs.md
+- [x] UIButtonView.cs.md
+- [x] UIDiceWin.cs.md
+- [x] UIEmojiItem.cs.md
+- [x] UIGameInfoView.cs.md
+- [x] UIGameView.cs.md
+- [x] UIGuideGameView.cs.md
+- [x] UIItemsView.cs.md
+- [x] UIItemStoryWin.cs.md
+- [x] UIRaiseSuccessWin.cs.md
+- [x] UIReportItem.cs.md
+- [x] UIReportWin.cs.md
+- [x] UISuccessAuction.cs.md
+- [x] UITargetView.cs.md
+- [x] UITaskInfoWin.cs.md
+- [x] GameInfoItem.cs.md
+- [x] TaskListItem.cs.md
+- [x] TurntableItem.cs.md
+
+### Code/Game/UIGame/UIMiniGame (小游戏 UI) (100%)
+- [x] UIAppraisalView.cs.md
+- [x] UIAppraisalItem.cs.md
+- [x] UIBombDisposalView.cs.md
+- [x] UICommonMiniGameView.cs.md
+- [x] UIGoodsCheckView.cs.md
+- [x] UIItemStoryWin.cs.md
+- [x] UIQuarantineView.cs.md
+- [x] UIRepairView.cs.md
+- [x] UISaleEvent.cs.md
+- [x] UITurnTableEventView.cs.md
+- [x] UITurntableView.cs.md
+- [x] TurntableItem.cs.md
+
+### Code/Game/UIGame/UITT (抖音小游戏 UI) (100%)
+- [x] UISidebarRewardsWin.cs.md
+- [x] TurntableItem.cs.md
 
 ---
 
 ## 📋 待处理文件（按优先级）
 
-### 🔴 高优先级 - 核心框架
+### 🔴 高优先级 - Editor 工具 (可选)
+Editor 目录为 Unity 编辑器扩展工具，可根据需要补充文档。
 
-#### Mono/Core/Object (数据结构组件) (100%)
-- (全部完成)
-
-#### Mono/Module/Assembly (程序集管理) (100%)
-- (全部完成)
-
-#### Mono/Module/Log (日志系统) (100%)
-- (全部完成)
-
-#### Mono/Module/Http (HTTP 请求) (100%)
-- (全部完成)
-
-#### Mono/Module/I18N (国际化) (部分完成)
-- [x] I18NText.cs.md
-- [ ] I18NBridge.cs
-- [x] TextMeshFontAssetManager.cs.md
-
-#### Mono/Module/Entity (实体系统) (100%)
-- [x] EntityComponent.cs.md
-- [x] EntityType.cs.md
-- [x] Hit/ 目录全部完成
-
-#### Mono/Module/UI (UI 辅助) (部分完成)
-- [x] ReferenceCollector.cs.md
-- [x] Drag.cs.md
-- [ ] PointerClick.cs
-- [ ] BgAutoFit.cs
-- [ ] BgAutoMax.cs
-- [ ] CircleImage.cs
-- [ ] CircleRawImage.cs
-- [ ] EmptyGraphic.cs
-- [ ] ScrollViewEventRaycast.cs
-- [ ] UIScriptCreator.cs
-
-#### Mono/Helper (工具类) (100%)
-- (全部完成)
-
-#### Mono/Module/YooAssets (资源管理) (100%)
-- (全部完成)
-
----
-
-### 🟡 中优先级 - 游戏系统
-
-#### Code/Module/Config (配置系统) (部分完成)
-- [x] ConfigLoader.cs.md - 配置加载器
-- [x] ConfigAttribute.cs.md - 配置类标记特性
-- [x] NotNullAttribute.cs.md - 非空标记特性
-- [x] ProtoObject.cs.md - Protobuf 对象基类
-- [x] IMerge.cs.md - 合并接口
-- [ ] ProtobufHelper.cs
-- [ ] IConfigLoader.cs
-- [ ] OdinDropdownHelper.cs
-
-#### Code/Module/Const (常量定义)
-- [ ] TimerType.cs
-- [x] GameInfoType.cs.md
-- [x] MessageId.cs.md
-
-#### Mono/Module/Update (更新系统)
-- [x] UpdateTimer.cs.md
-- [x] IUpdate.cs.md
-
-#### Mono/Module/TimeLine (时间线)
-- [x] MessagerTrack.cs.md
-- [x] MessagerClip.cs.md
-- [x] MessagerBehaviour.cs.md
-
-#### Mono/Module/Particle (粒子系统) (100%)
-- (全部完成)
-
-#### Mono/Module/Performance (性能管理) (100%)
-- (全部完成)
-
----
+### 🟡 中优先级 - Helper 工具类
+- Mono/Helper/ 目录下 12 个工具文件
 
 ### 🟢 低优先级 - 其他
-
-#### Code/Module/Config/DecisionTree (AI 决策树)
-- [ ] ConfigAIDecisionTree.cs
-- [ ] ActDecision.cs
-- [ ] DecisionActionNode.cs
-- [ ] AITactic.cs
-- [ ] DecisionConditionNode.cs
-- [ ] DecisionCompareNode.cs
-- [ ] CompareMode.cs
-- [ ] DecisionNode.cs
-
-#### Code/Module/Config/Environment (环境配置)
-- [ ] ConfigEnvironment.cs
-- [ ] ConfigEnvironments.cs
-
-#### Code/Module/Config/Blender
-- [ ] ConfigBlender.cs
-
-#### Mono/Module/Skybox
-- [ ] Skybox.cs
-
-#### Mono/Module/UI/Input (输入绑定)
-- [ ] InputAxisBind.cs
-- [ ] InputKeyBind.cs
-
-#### Mono/Module/UI (UI 效果 - 部分完成)
-- [x] TextColorCtrl.cs.md
-- [x] BgRawAutoFit.cs.md
-- [ ] BgAutoFit.cs
-- [ ] BgAutoMax.cs
-- [ ] CircleImage.cs
-- [x] BackgroundBlur.cs.md
-- [ ] EmptyGraphic.cs
-- [ ] CircleRawImage.cs
-- [ ] ScrollViewEventRaycast.cs
-- [ ] UIScriptCreator.cs
-
-#### Mono/Module/Const (其他常量)
-- [ ] GameSetting.cs
-
-#### Mono/其他
-- [ ] Define.cs
-- [x] Init.cs.md
-- [ ] SetUIData.cs
-- [ ] WebGLPlatform.cs
-
----
-
-## 📝 下一步建议
-
-### 建议处理顺序
-
-1. **剩余核心框架** (优先完成)
-   - Mono/Module/I18N/I18NBridge.cs
-   - Mono/Module/Skybox/Skybox.cs
-   - Mono/Define.cs
-   - Mono/WebGLPlatform.cs
-   - Mono/SetUIData.cs
-
-2. **UI 辅助系统**
-   - Mono/Module/UI 剩余文件 (BgAutoFit, CircleImage, EmptyGraphic 等)
-   - Mono/Module/UI/Input 输入绑定
-
-3. **配置系统**
-   - ConfigLoader.cs 及配置基础类
-   - AI 决策树配置
-
-4. **游戏 UI 系统**
-   - UILobby 大厅 UI
-   - UIAuction 拍卖 UI
-   - UIMiniGame 小游戏 UI
+- Mono/Module/UI/Input/ (2 个输入绑定文件)
+- Code/Module/Config/Environment/ (2 个环境配置文件)
+- Code/Module/Config/Blender/ (1 个 Blender 配置文件)
+- Code/Module/Scene/ (4 个场景系统文件 - 与 Code/Game/Scene 重复)
 
 ---
 
 ## 📌 备注
 
 - Generate 目录下的文件是自动生成的配置类，暂不处理
-- 游戏具体逻辑代码（Game 目录）优先级较低
-- 优先完成框架层文档，便于新成员快速上手
+- ThirdParty 目录为第三方库，不生成文档
+- Editor 目录为编辑器工具，优先级较低
+- 核心框架层文档已完成 100%
+- 游戏系统层文档已完成 100%
+- UI 系统文档已完成 100%
 
 ---
 
-*最后更新：2026-03-01 18:30*
+*最后更新：2026-03-02 13:46*
