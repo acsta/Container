@@ -1,6 +1,6 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-02 16:55  
+> **更新时间**: 2026-03-02 17:30  
 > **统计范围**: Assets/Scripts 目录
 
 ---
@@ -10,34 +10,36 @@
 | 类别 | 数量 |
 |------|------|
 | 总 .cs 文件数 | 646 |
-| 已创建 .md 文档 | 390 |
-| 覆盖率 | 60.4% |
+| 已创建 .md 文档 | 396 |
+| 覆盖率 | 61.3% |
 
 **注**: 
 - ThirdParty 目录 (125 个文件) 为第三方库，**不生成文档**
 - Generate 目录 (71 个文件) 为自动生成代码，**不生成文档**
-- Editor 目录 (79 个文件) 为编辑器工具，**低优先级** (14/79 = 17.7%)
+- Editor 目录 (79 个文件) 为编辑器工具，**低优先级** (20/79 = 25.3%)
 - **Runtime 运行时代码 (369 个文件): 100% 完成** ✅
 
 ---
 
 ## 📝 本次提交
 
-**批次**: Editor 美术编辑器工具 (Atlas 目录)
-**提交信息**: docs: 完成 Editor 美术编辑器工具文档 (Atlas 目录 4 个文件)
+**批次**: Editor 资产管理配置与资源分析工具
+**提交信息**: docs: 完成 Editor 资产管理配置与资源分析工具文档 (6 个文件)
 
 ### 本批次文件
 
-1. AtlasHelper.cs.md - 图集生成与纹理导入设置管理工具
-2. AssetImportMgr.cs.md - 资源导入管理器（更新）
-3. PngOptimizerCL.cs.md - PNG 优化命令行工具（更新）
-4. ReplaceImage.cs.md - 图片替换工具（更新）
+1. LabelConfig.cs.md - 资源标签配置结构
+2. AssetsManagerConfig.cs.md - 资产管理器 ScriptableObject 配置
+3. CollectConfig.cs.md - 资源收集配置结构
+4. ResourceCheckTool.cs.md - 资源分析工具 (多线程扫描 + Excel 导出)
+5. Finddependent.cs.md - 资源依赖查找工具
+6. EnableGPUInstance.cs.md - GPU Instancing 批量启用工具
 
 ### 累计进度
 
 - **Runtime 代码**: 369/369 = 100% ✅
-- **Editor 工具**: 14/79 = 17.7% 🟡
-- **总体覆盖率**: 390/646 = 60.4%
+- **Editor 工具**: 20/79 = 25.3% 🟡
+- **总体覆盖率**: 396/646 = 61.3%
 
 ### 验证结果
 
@@ -59,9 +61,13 @@
 
 ### 剩余工作 (低优先级)
 
-**Editor 编辑器工具**: 14/79 = 17.7% 完成
-- 剩余 65 个 Editor 工具文件为可选文档化
-- 已完成：Atlas 目录 (4 个) + 其他 Editor 工具 (10 个)
+**Editor 编辑器工具**: 20/79 = 25.3% 完成
+- 剩余 59 个 Editor 工具文件为可选文档化
+- 已完成：
+  - Atlas 目录 (6 个): AtlasHelper, AssetImportMgr, PngOptimizerCL, ReplaceImage, CheckEmptyImage, CheckUnuseImage
+  - AssetsManager 目录 (7 个): EnableGPUInstance, ReplaceShader, DeleteInvalidComponent, AssetsManagerWindow, RemoveFace, MeshManager, Config (3 个)
+  - Resource 目录 (2 个): ResourceCheckTool, Finddependent
+  - 其他 Editor 工具 (5 个): AltasEditor, Readme, BashUtil, 等
 
 ---
 
