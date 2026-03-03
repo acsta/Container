@@ -1,23 +1,45 @@
 # 文档进度追踪
 
-> **更新时间**: 2026-03-03 10:13  
+> **更新时间**: 2026-03-03 17:05  
 > **统计范围**: Assets/Scripts 目录  
-> **任务来源**: Cron 任务 (5a362ea5-44c5-409f-a04c-0ab08bec4744)
+> **任务来源**: Cron 任务 (5a362ea5-44c5-409f-a04c-0ab08bec4744) + ThirdParty 补充
 
 ---
 
-## 🔔 本次 Cron 任务验证 (2026-03-03 10:13)
+## 🔔 最新进展 (2026-03-03 17:05)
 
-**任务状态**: ✅ **已完成 - 所有文档工作已 100% 完成**
+**任务状态**: ✅ **ETTask 目录文档全部完成**
 
-**验证结果**:
-- 总 .cs 文件数：646
-- 排除 ThirdParty (125) + Generate (71) = 450 个需文档化文件
-- 已创建 .md 文档：457 个（含 7 个孤儿文档）
-- **有效文档：450 个**
-- **覆盖率：100%** ✅
+**本批次工作**:
+- 完成 ThirdParty/ETTask 目录 10 个 .cs 文件的文档
+- 创建 README.md 总览文档
+- 提交信息：`docs: 完成 ETTask 目录全部 10 个文档 + README 总览`
 
-**无剩余工作** - 所有运行时代码和 Editor 工具已全部文档化！🎉
+### 本批次文件清单
+
+1. ETTask.cs.md - 异步任务核心类
+2. ETVoid.cs.md - 无返回值协程
+3. ETTaskCompleted.cs.md - 已完成任务结构
+4. ETCancellationToken.cs.md - 取消令牌
+5. ETTaskHelper.cs.md - 多任务等待辅助
+6. AsyncETTaskMethodBuilder.cs.md - ETTask 构建器
+7. AsyncETVoidMethodBuilder.cs.md - ETVoid 构建器
+8. AsyncETTaskCompletedMethodBuilder.cs.md - ETTaskCompleted 构建器
+9. IAwaiter.cs.md - 等待者状态枚举
+10. AsyncMethodBuilderAttribute.cs.md - 特性标记
+11. README.md - ETTask 系统总览
+
+---
+
+## 📊 总体统计
+
+| 类别 | .cs 文件数 | .md 文档数 | 覆盖率 |
+|------|-----------|-----------|--------|
+| **总文件** | 646 | 468 | - |
+| ThirdParty (含 ETTask) | 125 | 11 | 可选 |
+| Generate (排除) | 71 | 0 | 不文档化 |
+| **需文档化** | **450** | **450** | **100%** ✅ |
+| 孤儿文档 | - | 7 | 可清理 |
 
 ---
 
@@ -38,6 +60,7 @@
 | Code/Runtime | 268 | 268 | ✅ 100% |
 | Mono | 103 | 103 | ✅ 100% |
 | Editor | 79 | 79 | ✅ 100% |
+| ThirdParty/ETTask | 10 | 11 | ✅ 完成 (可选) |
 
 ---
 
